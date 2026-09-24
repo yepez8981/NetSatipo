@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04060d">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2322d3ee'/%3E%3Cstop offset='1' stop-color='%23818cf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='43' font-family='Arial' font-size='30' font-weight='900' text-anchor='middle' fill='%2304121f'%3EN%3C/text%3E%3C/svg%3E">
+<title>NetSatipo - Internet de alta velocidad en Satipo</title>
+<meta name="description" content="Plan internet fibra óptica en Satipo, Mazamari y alrededores. Contrata tu plan en línea, agenda visitas de soporte y paga con Yape, Plin o transferencia.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_PE">
+<meta property="og:site_name" content="NetSatipo">
+<meta property="og:title" content="NetSatipo - Internet de alta velocidad en Satipo">
+<meta property="og:description" content="Fibra óptica para tu casa o negocio en Satipo. Contrata en línea, agenda visitas técnicas y paga con Yape, Plin o ventanilla.">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="dns-prefetch" href="//script.google.com">
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  /* ===== CONFIG: URL de tu Web App de Apps Script (backend/API) ===== */
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxZfzGkuA7DGqD2lix5Y0Kw9lXNpX6JWSP56Upd7dJTs2Tt7-l-5vA58xeR8-rZqvg/exec";
+
+  function _api(fn, args){
+    args = args || [];
+    const inGAS = !!(window.google && google.script && google.script.run);
+    if (inGAS){
+      return new Promise((resolve)=>{
+        google.script.run
+          .withSuccessHandler((r)=> resolve(r && r.ok===false ? r : (r && r._rpc ? r.result : r)))
+          .withFailureHandler((err)=> resolve({ ok:false, error: String(err && err.message || err) }))
+          .__rpc(fn, args, null);
+      });
+    }
+    const ctrl = ('AbortController' in window) ? new AbortController() : null;
+    const t = ctrl ? setTimeout(()=>ctrl.abort(), 120000) : null;
+    return fetch(GAS_EXEC, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ fn: fn, args: args }),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(r=>{ if (t) clearTimeout(t); return r.text(); }, e=>{ if (t) clearTimeout(t); throw e; })
+      .then(txt=>{
+        const f = txt.trim().slice(0,1);
+        if (f === '<' || /<\s*(!doctype|html)/i.test(txt.slice(0,120))){
+          return { ok:false, error:'El Web App no respondió JSON. Revisa en Apps Script: publica con "Ejecutar como: Yo" y "Quién tiene acceso: Cualquier usuario", y activa la versión más reciente.' };
+        }
+        try { return JSON.parse(txt); }
+        catch(err){ return { ok:false, error:'Respuesta no válida del servidor ('+String(err&&err.message||err)+')' }; }
+      })
+      .catch(err=>{
+        if (err && (err.name==='AbortError' || /abor/i.test(String(err&&err.message||err)))) return { ok:false, error:'El servidor tardó demasiado en responder. Reintenta en unos segundos.' };
+        return { ok:false, error:String(err&&err.message||err) };
+      });
+  }
+  function _url(){ return GAS_EXEC; }
+</script>
+<style>
+:root{
+  --pri:#050b1f;
+  --pri-2:#0d2a55;
+  --acc:#00a2ff;
+  --acc-2:#2ee6ff;
+  --acc-3:#4db8ff;
+  --acc-ink:#f4fbff;
+  --bg:#01030a;
+  --bg-2:#070d1f;
+  --card:rgba(255,255,255,.05);
+  --card-2:rgba(255,255,255,.03);
+  --glass:rgba(255,255,255,.06);
+  --ink:#d9e7fa;
+  --head:#ffffff;
+  --muted:#9fb4cf;
+  --line:rgba(148,163,184,.16);
+  --ok:#34d399;
+  --err:#f87171;
+  --warn:#fbbf24;
+  --hero-soft:#bfe0ff;
+  --hero-glow:#00a2ff;
+  --glow:rgba(0,162,255,.5);
+  --radius:18px;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --shadow-lg:0 24px 60px rgba(0,0,0,.5);
+  --font-d:'Space Grotesk','Segoe UI',system-ui,Arial,sans-serif;
+  --font-b:'Manrope','Segoe UI',system-ui,Arial,sans-serif;
+}
+/* Tema: Moderno (azul eléctrico nocturno) */
+body[data-theme="moderno"]{
+  --pri:#030713; --pri-2:#0a1a38; --acc:#0099ff; --acc-2:#33e1ff; --acc-3:#66b8ff;
+  --acc-ink:#f2fbff; --hero-soft:#c6e5ff; --hero-glow:#0099ff; --glow:rgba(0,153,255,.5);
+}
+/* Tema: Corporativo (azul serio + dorado eléctrico) */
+body[data-theme="corporativo"]{
+  --pri:#081327; --pri-2:#0f2b57; --acc:#ffd166; --acc-2:#ffc300; --acc-3:#2ea8ff;
+  --acc-ink:#241a00; --hero-soft:#cfdfff; --hero-glow:#ffd166; --glow:rgba(255,209,102,.4);
+}
+/* Tema: Naturaleza (azul-verde vivo) */
+body[data-theme="naturaleza"]{
+  --pri:#031a22; --pri-2:#073a4e; --acc:#00d9ff; --acc-2:#57f2c2; --acc-3:#00b8ff;
+  --acc-ink:#032129; --hero-soft:#bdeeff; --hero-glow:#00d9ff; --glow:rgba(0,217,255,.5);
+}
+body{transition:background .3s}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  color-scheme:dark;
+  font-family:var(--font-b);
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(0,153,255,.16), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(46,230,255,.09), transparent 55%),
+    var(--bg);
+  color:var(--ink);line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+img{max-width:100%}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:15px}
+a{color:var(--acc-2)}
+::selection{background:var(--acc);color:var(--acc-ink)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#05070d}
+::-webkit-scrollbar-thumb{background:#1c2b47;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--acc-2)}
+html{scrollbar-width:thin;scrollbar-color:#1c2b47 #05070d}
+
+/* ===== TIPOGRAFÍA PREMIUM ===== */
+h1,h2,h3{font-family:var(--font-d);letter-spacing:-.015em;line-height:1.15}
+h1{letter-spacing:-.02em}
+.sec-tag,.brand,.t-item b,.plan b,.step b,.big-code,.svc-code{font-family:var(--font-d)}
+p{text-wrap:pretty}
+:focus-visible{outline:2px solid var(--acc-2);outline-offset:2px;border-radius:8px}
+button:focus:not(:focus-visible){outline:none}
+
+/* ===== REVEAL ON SCROLL ===== */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.rv.on{opacity:1;transform:none}
+
+/* ===== LAYOUT ===== */
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+section{padding:104px 0 92px;scroll-margin-top:64px;position:relative}
+section[hidden],#seguimiento[hidden]{display:none}
+section.alt{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.005))}
+section + section::before{
+  content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  width:min(940px,88%);height:2px;border-radius:99px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(0,153,255,.38),transparent);
+}
+#scroll-progress{
+  position:fixed;top:0;left:0;height:3px;width:0;z-index:130;
+  background:linear-gradient(90deg,var(--acc),var(--acc-2),var(--acc-3));
+  box-shadow:0 0 16px var(--glow);border-radius:0 99px 99px 0;
+}
+
+/* ===== HEADER ===== */
+header{
+  position:sticky;top:0;z-index:50;background:rgba(4,6,13,.62);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid transparent;transition:background .3s,transform .35s cubic-bezier(.4,0,.2,1);
+}
+header.hide{transform:translateY(-105%)}
+header.scrolled{
+  background:rgba(4,6,13,.86);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 14px 40px rgba(0,0,0,.4);
+}
+header.scrolled .ticker{display:none}
+header.scrolled .nav{height:60px}
+.nav{display:flex;align-items:center;justify-content:space-between;height:68px;transition:height .3s}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--head);text-decoration:none}
+.brand .dot{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc-2));display:grid;place-items:center;color:var(--acc-ink);font-size:17px;box-shadow:0 0 18px var(--glow);animation:logoPulse 3s ease-in-out infinite}
+nav.links{display:flex;gap:22px;align-items:center}
+nav.links a{color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;position:relative;transition:.2s}
+nav.links a::after{content:"";position:absolute;left:0;bottom:-5px;width:0;height:2px;background:linear-gradient(90deg,var(--acc),var(--acc-2));border-radius:99px;transition:.25s}
+nav.links a:hover{color:var(--acc)}
+nav.links a:hover::after{width:100%}
+nav.links a.btn-cuenta{background:linear-gradient(120deg,var(--acc),var(--acc-2));color:#06121f;padding:9px 18px;border-radius:99px;font-weight:800;box-shadow:0 6px 20px var(--glow);margin-left:2px}
+nav.links a.btn-cuenta::after{display:none}
+nav.links a.btn-cuenta:hover{transform:translateY(-1px);filter:brightness(1.08);color:#06121f}
+.menu-btn{display:none;background:none;border:none;font-size:22px;color:var(--ink)}
+
+/* ===== HERO ===== */
+.hero{
+  background:radial-gradient(1300px 620px at 80% -10%, var(--pri-2) 0%, var(--pri) 70%);
+  color:#fff;padding:112px 0 136px;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 55%,rgba(5,11,31,.9));
+}
+.hero .bg-fx{position:absolute;inset:0;pointer-events:none;z-index:0}
+.hero .orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5}
+.hero .orb.o1{width:420px;height:420px;left:-90px;top:60px;background:radial-gradient(circle,var(--acc) 0%,transparent 70%);animation:orbA 11s ease-in-out infinite}
+.hero .orb.o2{width:380px;height:380px;right:-60px;top:140px;background:radial-gradient(circle,var(--acc-2) 0%,transparent 70%);animation:orbB 14s ease-in-out infinite}
+.hero .orb.o3{width:260px;height:260px;right:34%;bottom:-70px;background:radial-gradient(circle,var(--acc-3) 0%,transparent 70%);animation:orbA 17s ease-in-out infinite reverse}
+.hero .grid-pan{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse 90% 70% at 50% 20%,rgba(0,0,0,.9),transparent 75%);opacity:.5;animation:gridPan 22s linear infinite}
+.hero .scan{position:absolute;left:0;right:0;top:0;height:120px;background:linear-gradient(180deg,transparent,rgba(34,211,238,.14),transparent);animation:scanMove 7s linear infinite;opacity:.7}
+.hero .ring{position:absolute;right:9%;top:26%;width:180px;height:180px;border-radius:50%;border:1px solid rgba(0,153,255,.4);opacity:0;animation:ringPing 4s ease-out infinite}
+.hero .ring.r2{right:13%;top:34%;animation-delay:2s}
+.hero::after{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(2px 2px at 20% 30%,var(--hero-glow),transparent),
+    radial-gradient(2px 2px at 70% 20%,var(--hero-glow),transparent),
+    radial-gradient(2px 2px at 40% 70%,var(--acc-2),transparent),
+    radial-gradient(2px 2px at 85% 60%,var(--acc-2),transparent),
+    radial-gradient(2px 2px at 60% 85%,var(--hero-glow),transparent);
+  background-size:120px 120px;opacity:.35;pointer-events:none;
+}
+.hero .wrap{position:relative;z-index:1}
+.hero h1{font-size:clamp(31px,5.2vw,54px);font-weight:800;max-width:640px;line-height:1.1;margin-bottom:16px;color:#fff;text-shadow:0 2px 34px rgba(0,162,255,.3)}
+.hero h1 span{
+  background:linear-gradient(90deg,var(--acc),var(--acc-2),var(--acc));
+  background-size:200% auto;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:gradShift 6s linear infinite;
+}
+.hero p{max-width:540px;color:var(--hero-soft);font-size:17px;margin-bottom:28px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap}
+a.btn{
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;
+  padding:14px 26px;border-radius:99px;font-size:15px;transition:.25s;position:relative;overflow:hidden;
+}
+.btn-primary{background:linear-gradient(120deg,var(--acc),var(--acc-2) 55%,var(--acc-3));background-size:200% auto;color:var(--acc-ink);box-shadow:0 12px 32px var(--glow);animation:gradShift 6s linear infinite}
+.btn-primary::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);transition:none}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-primary:hover::after{animation:shine 1.1s ease}
+.btn-ghost{border:1px solid rgba(255,255,255,.3);color:#fff;backdrop-filter:blur(6px)}
+.btn-ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.55)}
+.hero-meta{margin-top:34px;display:flex;gap:14px;flex-wrap:wrap;padding-top:30px;border-top:1px solid rgba(255,255,255,.1)}
+.hero-meta div{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 20px;
+  box-shadow:0 10px 26px rgba(0,0,0,.25);backdrop-filter:blur(8px);transition:.25s;min-width:150px;
+}
+.hero-meta div:hover{transform:translateY(-3px);border-color:rgba(0,153,255,.5);box-shadow:0 12px 30px rgba(0,0,0,.35),0 0 22px var(--glow)}
+.hero-meta b{display:block;color:#fff;font-size:21px;background:linear-gradient(120deg,#fff,var(--acc-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums}
+.hero-meta span{color:var(--hero-soft);font-size:13px}
+
+/* ===== HERO UX PREMIUM ===== */
+.hero .grain{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.05;mix-blend-mode:screen;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")}
+.hero-chip{
+  position:absolute;z-index:2;pointer-events:none;display:flex;flex-direction:column;gap:6px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:18px;
+  padding:16px 18px;backdrop-filter:blur(12px);box-shadow:0 22px 50px rgba(0,0,0,.5),0 0 32px var(--glow);
+  color:#fff;min-width:192px;animation:floatY 6s ease-in-out infinite;will-change:transform;
+}
+.hero-chip .hc-dot{position:absolute;top:16px;right:16px;width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 12px var(--ok);animation:logoPulse 2.2s ease-in-out infinite}
+.hero-chip b{font-family:var(--font-d);font-size:14px}
+.hero-chip small{color:var(--hero-soft);font-size:12px;font-weight:600;letter-spacing:.2px}
+.hc-bars{display:flex;align-items:flex-end;gap:3px;height:18px;margin-top:4px}
+.hc-bars i{width:4px;border-radius:99px;background:linear-gradient(180deg,var(--acc-2),var(--acc));display:block;animation:bars 1.6s ease-in-out infinite}
+.hc-bars i:nth-child(1){height:40%}.hc-bars i:nth-child(2){height:80%;animation-delay:.15s}
+.hc-bars i:nth-child(3){height:55%;animation-delay:.3s}.hc-bars i:nth-child(4){height:100%;animation-delay:.45s}
+.hc-bars i:nth-child(5){height:65%;animation-delay:.6s}
+.chip1{top:20%;right:6%}.chip2{bottom:16%;right:15%;animation-delay:-3s}
+@keyframes bars{0%,100%{transform:scaleY(.45);opacity:.7}50%{transform:scaleY(1);opacity:1}}
+@media(max-width:900px){.hero-chip{display:none}}
+@media(min-width:901px) and (max-width:1180px){.chip1{right:2%}.chip2{right:10%;bottom:12%}}
+
+/* ===== BANDA DE CONFIANZA ===== */
+.trust-strip{position:relative;z-index:3}
+.trust-flex{display:flex;gap:16px;flex-wrap:wrap;transform:translateY(-54px);margin-bottom:-54px}
+.t-item{
+  flex:1;min-width:200px;background:linear-gradient(170deg,var(--card),var(--card-2));
+  border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-lg);
+  display:flex;flex-direction:column;gap:4px;transition:.25s;backdrop-filter:blur(10px);
+}
+.t-item:hover{transform:translateY(-4px);border-color:rgba(0,153,255,.45);box-shadow:0 20px 44px rgba(0,0,0,.5),0 0 26px var(--glow)}
+.t-item i{font-style:normal;font-size:24px;margin-bottom:6px;display:inline-block;animation:floatY 4s ease-in-out infinite}
+.t-item:nth-child(2) i{animation-delay:.4s}
+.t-item:nth-child(3) i{animation-delay:.8s}
+.t-item:nth-child(4) i{animation-delay:1.2s}
+.t-item b{color:var(--head);font-size:15.5px}
+.t-item span{color:var(--muted);font-size:13px}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* barra superior móvil */
+.ticker{overflow:hidden;background:linear-gradient(90deg,var(--acc),var(--acc-2),var(--acc-3));color:var(--acc-ink);padding:8px 0;font-weight:800;font-size:12px;letter-spacing:1px;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.18)}
+.ticker .tick-inner{display:flex;width:max-content;align-items:center;gap:48px;will-change:transform;animation:marquee 26s linear infinite;transform:translate3d(0,0,0)}
+.ticker:hover .tick-inner{animation-play-state:paused}
+.ticker .tick-inner span{display:inline-flex;align-items:center;gap:48px}
+.ticker .tick-inner span::after{content:"✦";opacity:.55}
+
+/* ===== SECCION TITULOS ===== */
+.sec-tag{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:12px;letter-spacing:2.5px;color:var(--acc-2);text-transform:uppercase;margin-bottom:10px}
+.sec-tag::before{content:"";width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc-2));box-shadow:0 0 14px var(--glow)}
+h2.sec-title{
+  font-size:clamp(27px,4.2vw,38px);font-weight:800;margin-bottom:12px;position:relative;padding-bottom:20px;
+  background:linear-gradient(90deg,var(--head) 0%,#a9d6ff 45%,var(--head) 100%);background-size:220% auto;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+  animation:gradShift 9s linear infinite;
+}
+h2.sec-title::after{content:"";position:absolute;left:0;bottom:0;width:88px;height:4px;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc-2));box-shadow:0 0 20px var(--glow);animation:titleLine 5s ease-in-out infinite}
+p.sec-sub{color:var(--muted);max-width:620px;margin-bottom:40px}
+@keyframes titleLine{0%,100%{width:64px;opacity:.85}50%{width:116px;opacity:1;box-shadow:0 0 26px var(--glow)}}
+
+/* ===== PLANES ===== */
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.plan{
+  background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);
+  padding:28px 24px;display:flex;flex-direction:column;box-shadow:var(--shadow);position:relative;transition:.25s;
+  overflow:hidden;backdrop-filter:blur(8px);
+}
+.plan::before{content:"";position:absolute;top:0;left:16%;right:16%;height:3px;border-radius:99px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:0;transition:.3s}
+.plan:hover{transform:translateY(-6px);border-color:rgba(148,163,184,.32);box-shadow:0 18px 44px rgba(0,0,0,.45),0 0 34px var(--glow)}
+.plan:hover::before{opacity:1}
+.plan.recom{background:linear-gradient(170deg,rgba(0,153,255,.12),rgba(34,211,238,.05));border:1px solid var(--acc-2);box-shadow:0 0 40px var(--glow)}
+.plan .ribbon{position:absolute;top:14px;right:-34px;transform:rotate(45deg);background:linear-gradient(135deg,var(--acc),var(--acc-2));color:var(--acc-ink);font-weight:800;font-size:10px;padding:5px 38px;border-radius:0;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.plan h3{font-size:20px;font-weight:800;color:var(--head)}
+.plan .speed{font-size:14px;color:var(--acc);font-weight:700;margin:2px 0 14px;letter-spacing:.5px}
+.plan .price{font-size:30px;font-weight:800;color:var(--head)}
+.plan .price small{font-size:13px;font-weight:600;color:var(--muted)}
+.plan ul{list-style:none;margin:18px 0 22px;flex:1}
+.plan ul li{padding:6px 0 6px 26px;position:relative;font-size:14px;color:var(--ink)}
+.plan ul li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:800}
+.plan .btn-plan{background:var(--glass);color:var(--ink);border:1px solid var(--line);padding:12px;border-radius:12px;font-weight:700;font-size:15px;transition:.2s}
+.plan .btn-plan:hover{background:var(--pri-2);border-color:var(--acc-2)}
+.plan.recom .btn-plan{background:linear-gradient(120deg,var(--acc),var(--acc-2));background-size:200% auto;color:var(--acc-ink);border:none;animation:gradShift 6s linear infinite}
+.plan .btn-wa{display:block;text-align:center;text-decoration:none;margin-top:10px;padding:11px;border-radius:12px;font-weight:700;font-size:14px;color:#d1fae5;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.4);transition:.2s}
+.plan .btn-wa:hover{background:rgba(16,185,129,.25);border-color:rgba(16,185,129,.7)}
+.nota-planes{margin-top:20px;font-size:13.5px;color:var(--muted)}
+.plan::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(460px circle at var(--mx,50%) var(--my,50%),rgba(0,162,255,.16),transparent 65%);opacity:0;transition:opacity .35s;pointer-events:none}
+.plan:hover::after{opacity:1}
+.plan .btn-plan:hover{border-color:var(--acc-2);box-shadow:0 0 18px var(--glow)}
+
+/* ===== FORMULARIOS ===== */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.grid-2{grid-template-columns:1fr}}
+.form-card{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);max-width:760px;backdrop-filter:blur(8px);position:relative;overflow:hidden}
+.form-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:3px;border-radius:99px;background:linear-gradient(90deg,transparent,var(--acc-2),transparent);opacity:.85}
+.form-card h3{font-size:20px;margin-bottom:4px;color:var(--head)}
+.form-card .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+label{font-size:13px;font-weight:700;color:var(--ink);display:block;margin-bottom:6px}
+input,select,textarea{
+  width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;
+  background:var(--card-2);color:var(--ink);outline:none;transition:.15s;margin-bottom:16px;
+}
+input::placeholder,textarea::placeholder{color:#5d6f88}
+select option{background:#0b1120;color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--acc-2);box-shadow:0 0 0 3px rgba(0,153,255,.18),0 0 18px var(--glow)}
+textarea{min-height:90px;resize:vertical}
+input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(.8)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dupe-msg{display:none;margin:2px 0 12px;padding:10px 14px;border-radius:10px;font-size:.92rem;line-height:1.5;border:1px solid var(--line)}
+.dupe-msg.show{display:block}
+.dupe-msg.warn{background:rgba(255,176,32,.08);border-color:rgba(255,176,32,.45);color:var(--txt)}
+.dupe-msg.err{background:rgba(255,55,95,.08);border-color:rgba(255,55,95,.5);color:var(--txt)}
+.dupe-msg.ok{background:rgba(52,199,89,.08);border-color:rgba(52,199,89,.45);color:var(--txt)}
+@media(max-width:600px){.field-row{grid-template-columns:1fr}}
+
+.btn-submit{
+  width:100%;border:none;background:linear-gradient(120deg,var(--acc),var(--acc-2) 55%,var(--acc-3));
+  background-size:200% auto;color:var(--acc-ink);padding:15px;border-radius:12px;font-weight:800;font-size:16px;
+  transition:.25s;position:relative;overflow:hidden;animation:gradShift 6s linear infinite;
+}
+.btn-submit::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg)}
+.btn-submit:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-submit:hover::after{animation:shine 1.1s ease}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;animation:none}
+.hint{font-size:12.5px;color:var(--muted)}
+.note{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.28);color:var(--acc);padding:12px 14px;border-radius:12px;font-size:13.5px;margin-bottom:16px}
+
+/* ===== VERIFICAR CLIENTE ===== */
+.verify-box{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.verify-box input{flex:1;min-width:180px;margin-bottom:0}
+.verify-box button{background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border:none;padding:0 22px;border-radius:12px;font-weight:800}
+.verify-msg{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:14px}
+.verify-msg.ok{border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.09);color:#86efac}
+.verify-msg.err{border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.09);color:#fca5a5}
+.verify-msg .lbl{font-weight:800}
+.visita-form-panel{display:none}
+
+/* ===== SEGUIMIENTO ===== */
+.track-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:720px){.track-cards{grid-template-columns:1fr}}
+.step{border-left:3px solid var(--line);padding-left:18px;margin:14px 0}
+
+/* ===== CONTACTO / FOOTER ===== */
+.contact-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:26px;align-items:start}
+@media(max-width:720px){.contact-grid{grid-template-columns:1fr}}
+.info-cards{display:grid;gap:14px}
+.info-card{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+.info-card b{color:var(--head);display:block;margin-bottom:4px}
+.info-card span{color:var(--muted);font-size:14.5px;word-break:break-word}
+footer{background:linear-gradient(180deg,transparent,rgba(0,0,0,.45));border-top:1px solid rgba(0,153,255,.18);color:#7e92ac;padding:48px 0;font-size:14px;position:relative}
+footer::before{content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:min(640px,70%);height:2px;border-radius:99px;background:linear-gradient(90deg,transparent,rgba(0,153,255,.5),transparent)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer b{color:#fff}
+footer a{color:#7e92ac;text-decoration:none;transition:.2s}
+footer a:hover{color:var(--acc-2)}
+
+/* ===== RECLAMOS / LEGAL ===== */
+.rl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:24px}
+.rl-card{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);backdrop-filter:blur(8px);transition:.25s}
+.rl-card:hover{transform:translateY(-3px);border-color:rgba(148,163,184,.32)}
+.rl-card .ic{font-size:22px;margin-bottom:6px}
+.rl-card b{color:var(--head);display:block;margin-bottom:5px}
+.rl-card p{font-size:13.5px;color:var(--muted)}
+.listen-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border:none;padding:13px 24px;border-radius:99px;font-weight:800;font-size:15px;margin-top:6px;transition:.25s;position:relative;overflow:hidden;box-shadow:0 10px 26px var(--glow)}
+.listen-btn:hover{filter:brightness(1.08);transform:translateY(-2px)}
+.listen-btn:hover::after{animation:shine 1.1s ease}
+.listen-btn::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-20deg)}
+.legal-overlay{
+  position:fixed;inset:0;z-index:160;background:var(--bg);overflow-y:auto;display:none;
+}
+.legal-overlay.show{display:block}
+.legal-head{position:sticky;top:0;background:rgba(8,12,26,.9);backdrop-filter:blur(12px);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:14px;z-index:2;border-bottom:1px solid var(--line)}
+.legal-head .back{background:linear-gradient(120deg,var(--acc),var(--acc-2));border:none;color:var(--acc-ink);padding:9px 18px;border-radius:99px;font-weight:800;cursor:pointer}
+.legal-head .back:hover{filter:brightness(1.08)}
+.legal-head h3{font-size:17px;font-weight:800;margin:0}
+.legal-body{max-width:800px;margin:0 auto;padding:28px 20px 60px;background:var(--bg-2);min-height:100vh}
+.legal-body h4{color:var(--acc);font-size:16px;margin:24px 0 8px}
+.legal-body p,.legal-body li{font-size:14.5px;color:var(--ink);line-height:1.7}
+.legal-body ul{padding-left:22px;margin:8px 0}
+.legal-body .legal-meta{background:rgba(0,153,255,.1);border:1px solid rgba(0,153,255,.35);border-radius:12px;padding:14px 16px;font-size:13.5px;color:var(--acc-2);margin-bottom:20px}
+.lr-fields input,.lr-fields select,.lr-fields textarea{margin-bottom:14px}
+.lr-legales{font-size:12.5px;color:var(--muted);margin-top:10px}
+.modal-overlay{position:fixed;inset:0;background:rgba(2,4,10,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px}
+.modal-overlay.show{display:flex;animation:fadeApp .25s ease}
+.modal-overlay .modal-box{max-height:90vh;overflow:auto}
+
+/* ===== TOAST & MODAL ===== */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(10,16,34,.95);color:#fff;padding:14px 22px;border-radius:99px;font-size:14px;font-weight:600;
+  border:1px solid var(--line);opacity:0;pointer-events:none;transition:.3s;z-index:200;box-shadow:var(--shadow-lg);max-width:90vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:rgba(127,29,29,.95);border-color:rgba(248,113,113,.4)}
+#toast.ok{background:rgba(6,78,59,.95);border-color:rgba(52,211,153,.4)}
+#modal{
+  position:fixed;inset:0;background:rgba(2,4,10,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px;
+}
+#modal.show{display:flex;animation:fadeApp .25s ease}
+.modal-box{background:linear-gradient(170deg,#0e1730,#0a1020);border:1px solid var(--line);border-radius:20px;max-width:560px;width:100%;padding:30px;box-shadow:0 0 60px var(--glow);max-height:90vh;overflow:auto}
+.modal-box h3{color:var(--head);margin-bottom:8px}
+.modal-box .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+.big-code{font-size:26px;font-weight:800;color:var(--acc);letter-spacing:1px;background:rgba(34,211,238,.08);border:1px dashed rgba(34,211,238,.4);padding:14px;border-radius:12px;text-align:center;margin:12px 0;text-shadow:0 0 18px var(--glow)}
+.pay-line{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:10px;font-size:14px}
+.pay-line b{color:var(--head)}
+.btn-close{margin-top:18px;width:100%;padding:13px;border:none;background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border-radius:12px;font-weight:800}
+
+/* ===== WHATSAPP FLOTANTE ===== */
+#wa-fab{
+  position:fixed;right:20px;bottom:20px;z-index:120;width:58px;height:58px;border-radius:50%;
+  background:linear-gradient(135deg,#25d366,#128c4a);color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px rgba(37,211,102,.4);text-decoration:none;font-size:28px;transition:.25s;
+}
+#wa-fab:hover{transform:scale(1.1) rotate(6deg)}
+#wa-fab::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(37,211,102,.5);animation:waPing 2s ease-out infinite}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:800}
+.badge.PENDIENTE,.badge.REGISTRADO,.badge.pendiente{background:#fef3c7;color:#92400e}
+.badge.CONFIRMADO,.badge.CONFIRMADA,.badge.APROBADA,.badge.PAGADO,.badge.ACTIVO{background:#dcfce7;color:#166534}
+.badge.RECHAZADA,.badge.CANCELADA,.badge.CANCELADO{background:#fee2e2;color:#991b1b}
+.badge.REALIZADA,.badge.INSTALADA{background:#dbeafe;color:#1e40af}
+.badge.EN_REVISION{background:#e0e7ff;color:#3730a3}
+.badge.PAGADA{background:#dcfce7;color:#166534}
+.badge.VENCIDA{background:#fee2e2;color:#991b1b}
+.badge.BAJA_SOLICITADA{background:#e0e7ff;color:#3730a3}
+.mini-btn{background:var(--glass);border:1px solid var(--line);padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;color:var(--ink);transition:.2s}
+.mini-btn:hover{border-color:var(--acc-2);color:var(--acc)}
+.mini-btn.danger{color:var(--err);border-color:rgba(248,113,113,.3)}
+.mini-btn.ok{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.4);color:#86efac}
+.loading{padding:24px;text-align:center;color:var(--muted)}
+.cob-box{margin-bottom:20px}
+.cob-box h3{margin-bottom:12px}
+.cob-result{font-size:14px;margin-top:12px;padding:12px 14px;border-radius:12px;line-height:1.5}
+.cob-result.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:#86efac}
+.cob-result.warn{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);color:#fca5a5}
+#contratar .wrap > .form-card + .form-card{margin-top:28px}
+#contratar .wrap > .form-card.big-space{margin-top:44px;padding-top:34px;position:relative}
+#contratar .wrap > .form-card.big-space::before{content:"";position:absolute;top:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+.svc-card{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-top:14px}
+.svc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.svc-code{font-family:Consolas,monospace;color:var(--acc);font-weight:800;font-size:15px;margin-bottom:10px}
+.svc-card p{font-size:13.5px;color:var(--ink);margin:4px 0}
+.svc-card h4{color:var(--acc);font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+.svc-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.svc-list li{font-size:13.5px;color:var(--ink);padding:10px 12px;background:rgba(255,255,255,.04);border-radius:10px;border:1px solid var(--line)}
+.autodiag{background:rgba(255,255,255,.03);border:1px dashed var(--line);border-radius:14px;padding:16px 18px}
+.autodiag b{color:var(--head);font-size:15px}
+.st-res{font-size:13.5px;margin-top:12px;min-height:18px;line-height:1.5}
+.st-res.ok{color:#86efac}
+.st-res.warn{color:#fca5a5}
+@keyframes fadeApp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fadeApp{animation:fadeApp .35s ease}
+@keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes shine{from{left:-80%}to{left:130%}}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 16px var(--glow)}50%{box-shadow:0 0 34px var(--glow)}}
+@keyframes orbA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,40px) scale(1.15)}}
+@keyframes orbB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-40px,-30px) scale(1.1)}}
+@keyframes gridPan{from{background-position:0 0}to{background-position:44px 44px}}
+@keyframes scanMove{from{transform:translateY(-120px)}to{transform:translateY(70vh)}}
+@keyframes ringPing{0%{transform:scale(.4);opacity:.8}100%{transform:scale(1.9);opacity:0}}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes waPing{0%{transform:scale(.9);opacity:.8}100%{transform:scale(1.5);opacity:0}}
+
+/* ===== SKELETON CARGA ===== */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.sk{position:relative;overflow:hidden;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:var(--radius)}
+.sk::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent);animation:shimmer 1.6s infinite}
+.sk-card{min-height:236px}
+.sk-hot{border-color:rgba(0,153,255,.4)}
+.sk-lines{height:14px;border-radius:99px;margin:10px 2px;background:rgba(255,255,255,.06)}
+.pulsing{animation:logoPulse 1.6s ease-in-out infinite}
+
+/* ===== MICRO-ANIMACIONES PREMIUM ===== */
+.plans-grid > .plan:nth-child(2),.plans-grid > .rv:nth-child(2),.steps > .step:nth-child(2),.tip-grid > .tip:nth-child(2){transition-delay:.08s}
+.plans-grid > .plan:nth-child(3),.plans-grid > .rv:nth-child(3),.steps > .step:nth-child(3),.tip-grid > .tip:nth-child(3){transition-delay:.16s}
+.plans-grid > .plan:nth-child(4),.plans-grid > .rv:nth-child(4),.steps > .step:nth-child(4),.tip-grid > .tip:nth-child(4){transition-delay:.24s}
+.plans-grid > .plan:nth-child(5),.plans-grid > .rv:nth-child(5),.steps > .step:nth-child(5),.tip-grid > .tip:nth-child(5){transition-delay:.32s}
+.plan:hover .price{color:var(--acc-2)}
+.plan:hover .speed{text-shadow:0 0 12px var(--glow)}
+.btn-ghost:hover{box-shadow:0 0 22px rgba(0,153,255,.25)}
+.btn:active,.plan .btn-plan:active,.cat-chips button:active{transform:scale(.97)}
+.step i{animation:floatY 5s ease-in-out infinite}
+.step:nth-child(2) i{animation-delay:.5s}
+.step:nth-child(3) i{animation-delay:1s}
+.step:nth-child(4) i{animation-delay:1.5s}
+@media(prefers-reduced-motion:reduce){.t-item i,.step i{animation:none}}
+
+/* ===== PREMIUM RESPONSIVE ===== */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.2s!important}
+  .rv{opacity:1;transform:none}
+}
+.ticker .tick-inner{animation-duration:26s!important;animation-iteration-count:infinite!important}
+@media (max-width:860px){
+  section{padding:76px 0 66px}
+  nav.links{display:none}
+  nav.links.open{display:flex;flex-direction:column;position:absolute;right:16px;top:calc(100% + 6px);background:rgba(8,12,24,.97);padding:16px;border-radius:16px;border:1px solid var(--line);box-shadow:var(--shadow-lg);gap:4px;min-width:210px;z-index:60}
+  nav.links.open a{padding:9px 6px}
+  .menu-btn{display:block}
+  .hero{padding:88px 0 116px}
+  .hero-meta{gap:16px}
+  .ticker{font-size:11px;letter-spacing:.5px}
+}
+@media (max-width:520px){
+  .wrap{padding:0 14px}
+  .nav{height:60px}
+  .brand{font-size:17px}
+  .brand .dot{width:30px;height:30px;font-size:15px}
+  .hero h1{font-size:28px}
+  .hero p{font-size:15px}
+  .cta-row .btn{width:100%;justify-content:center}
+  .form-card{padding:22px 16px}
+  .hero-meta div{padding-right:14px}
+  .hero-meta b{font-size:17px}
+  h2.sec-title{font-size:23px}
+  .plan{padding:24px 18px}
+  .rl-cards{grid-template-columns:1fr}
+  .plans-grid{grid-template-columns:minmax(0,1fr)}
+  footer .wrap{flex-direction:column;gap:14px}
+  .ticker .tick-inner span,.ticker .tick-inner{gap:28px}
+}
+@media (max-width:380px){
+  .hero-meta{flex-direction:column;gap:12px}
+  .verify-box button{width:100%;padding:12px}
+}
+
+/* ===== HEADER INTELIGENTE: NAV ACTIVO ===== */
+nav.links a.active{color:var(--acc)}
+nav.links a.active::after{width:100%}
+
+/* ===== BOTON SUBIR ARRIBA ===== */
+.totop{
+  position:fixed;right:20px;bottom:86px;z-index:119;width:46px;height:46px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,var(--acc),var(--acc-2));color:var(--acc-ink);font-size:20px;font-weight:800;
+  display:grid;place-items:center;box-shadow:0 10px 24px var(--glow);opacity:0;pointer-events:none;
+  transform:translateY(12px);transition:.3s;cursor:pointer;
+}
+.totop.show{opacity:1;pointer-events:auto;transform:none}
+.totop:hover{transform:translateY(-3px)}
+
+/* ===== GLOW DEL CURSOR ===== */
+#cursor-glow{
+  position:fixed;left:0;top:0;width:360px;height:360px;border-radius:50%;pointer-events:none;z-index:3;
+  background:radial-gradient(circle,rgba(34,211,238,.13),transparent 62%);
+  transform:translate(-50%,-50%);opacity:0;transition:opacity .35s;mix-blend-mode:screen;
+  will-change:left,top;
+}
+body.glow-on #cursor-glow{opacity:1}
+
+/* ===== TILT 3D + GLOW DE PLANES ===== */
+@media (hover:hover) and (pointer:fine){
+  .plan{transform-style:preserve-3d;will-change:transform}
+  .plan::after{
+    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+    background:radial-gradient(430px circle at var(--mx,50%) var(--my,50%),var(--glow),transparent 62%);
+    opacity:0;transition:opacity .35s;
+  }
+  .plan:hover::after{opacity:.6}
+}
+.mag{transition:transform .18s cubic-bezier(.2,.7,.3,1)!important}
+
+/* ===== COMO FUNCIONA (PASOS) ===== */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+.step{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:28px 24px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:.25s}
+.step::after{content:"";position:absolute;top:-50%;right:-30%;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 70%);opacity:.4}
+.step:hover{transform:translateY(-5px);border-color:rgba(148,163,184,.32)}
+.step i{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc-2));color:var(--acc-ink);font-style:normal;font-weight:900;font-size:20px;box-shadow:0 0 20px var(--glow);margin-bottom:16px}
+.step b{display:block;color:var(--head);font-size:17px;margin-bottom:8px}
+.step p{color:var(--muted);font-size:14px}
+
+/* ===== COBERTURA ===== */
+.chips{display:flex;flex-wrap:wrap;gap:12px}
+.chips span{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:99px;padding:10px 18px;font-weight:700;font-size:14px;color:var(--ink);display:inline-flex;align-items:center;gap:8px;transition:.2s}
+.chips span::before{content:"✓";color:var(--ok);font-weight:900}
+.chips span:hover{border-color:var(--acc-2);color:var(--acc);transform:translateY(-2px)}
+.map-wrap{margin-top:22px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.map-wrap iframe{display:block;width:100%;height:380px;border:0;filter:saturate(.9) contrast(1.02)}
+
+/* ===== FAQ ===== */
+.faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.faq-item{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:.25s}
+.faq-item.on{border-color:var(--acc-2);box-shadow:0 0 26px var(--glow)}
+.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;background:none;border:none;padding:18px 20px;color:var(--head);font-weight:700;font-size:15px;text-align:left;transition:.2s}
+.faq-q:hover{color:var(--acc)}
+.faq-q i{font-style:normal;font-size:20px;font-weight:800;color:var(--acc-2);transition:transform .3s;flex-shrink:0}
+.faq-item.on .faq-q i{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-item.on .faq-a{max-height:220px}
+.faq-a p{padding:0 20px 18px;color:var(--muted);font-size:14.5px}
+
+/* ===== PROMO BAR ===== */
+.promo-bar{background:linear-gradient(90deg,#0033a0,#0099ff,#2ee6ff);color:#fff;text-align:center;padding:9px 14px;font-weight:800;font-size:13.5px;letter-spacing:.3px;display:none}
+.promo-bar a{color:#fff;text-decoration:underline;font-weight:900;margin-left:6px}
+.promo-bar .p-min{font-variant-numeric:tabular-nums;background:rgba(255,255,255,.22);padding:2px 9px;border-radius:8px;margin-left:6px}
+.ov-banner{background:linear-gradient(90deg,#7a1f1f,#c62828,#e05d5d);color:#fff;text-align:center;padding:10px 16px;font-size:13.5px;font-weight:700;line-height:1.5;display:none;position:relative;z-index:60}
+.ov-banner b{font-weight:900}
+.ov-banner .ov-x{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.25);border:0;color:#fff;font-size:14px;line-height:1;cursor:pointer;padding:6px 9px;border-radius:8px}
+
+/* ===== CATEGORIAS DE PLANES ===== */
+.cat-chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+.cat-chips button{background:var(--glass);border:1px solid var(--line);color:var(--muted);padding:9px 18px;border-radius:99px;font-weight:800;font-size:13.5px;transition:.2s;cursor:pointer}
+.cat-chips button:hover{color:var(--acc);border-color:var(--acc-2)}
+.cat-chips button.on{background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border-color:transparent;box-shadow:0 6px 18px var(--glow)}
+
+/* ===== CALCULADORA ===== */
+.calc-res{margin-top:10px;font-size:14px;line-height:1.6;color:var(--ink)}
+.calc-res b{color:var(--acc)}
+.calc-res .big{font-size:19px;font-weight:900;background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);display:inline-block;padding:4px 12px;border-radius:10px;margin:2px 0}
+
+/* ===== ESTADO DE RED ===== */
+.red-status{display:inline-flex;align-items:center;gap:9px;margin:4px 0 18px;padding:10px 16px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.35);border-radius:99px;font-size:13.5px;font-weight:700;color:#a7f3d0;max-width:100%}
+.red-status::before{content:"●";color:#34d399;animation:redPulse 1.4s ease-in-out infinite}
+@keyframes redPulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ===== ZONA WIFI ===== */
+.zona-wifi{margin-top:20px;padding:20px;background:linear-gradient(170deg,rgba(255,209,102,.08),transparent);border:1px dashed rgba(255,209,102,.4);border-radius:var(--radius);display:none}
+.zona-wifi b{color:var(--head);display:block;margin-bottom:6px}
+.zona-wifi p{color:var(--muted);font-size:14px}
+
+/* ===== TIPS ===== */
+.tip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.tip{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);transition:.25s}
+.tip:hover{transform:translateY(-5px);border-color:var(--acc-2)}
+.tip .ic{font-size:26px;margin-bottom:10px;display:inline-block}
+.tip b{color:var(--head);display:block;margin-bottom:8px;font-size:16px}
+.tip p{color:var(--muted);font-size:14px}
+.tip a{color:var(--acc-2);font-weight:700}
+
+/* ===== CHAT WHATSAPP ===== */
+#wa-wrap{position:fixed;right:20px;bottom:20px;z-index:80;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+#wa-chat{width:min(330px,calc(100vw - 30px));background:rgba(6,10,20,.96);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;display:none;transform-origin:bottom right}
+#wa-wrap.open #wa-chat{display:block;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+.wa-head{background:linear-gradient(120deg,#0b3d3a,#128c7e);color:#fff;padding:13px 16px;font-weight:800;font-size:15px;display:flex;align-items:center;gap:10px}
+.wa-head small{font-weight:600;opacity:.85;display:block;font-size:11.5px}
+.wa-body{padding:14px}
+.wa-body .wa-help{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+.wa-q{display:block;width:100%;text-align:left;background:var(--glass);border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:12px;font-weight:700;font-size:13.5px;margin-bottom:8px;transition:.2s;text-decoration:none}
+.wa-q:hover{border-color:var(--acc-2);color:var(--acc)}
+.wa-go{display:block;text-align:center;background:linear-gradient(120deg,#25d366,#1eb656);color:#fff;padding:12px;border-radius:12px;font-weight:800;font-size:14px;text-decoration:none;margin-top:6px}
+@media(max-width:520px){#wa-wrap{right:14px;bottom:14px}}
+
+/* ===== IMPRESION / PDF CONTRATO ===== */
+@media print{
+  body *{visibility:hidden}
+  #legal-view,#legal-view *{visibility:visible}
+  #legal-view{position:static!important;overflow:visible!important;background:#fff!important;padding:0!important}
+  #legal-view .legal-box{max-height:none!important;overflow:visible!important;box-shadow:none;border:none;width:100%!important;border-radius:0!important;background:#fff!important}
+  #legal-view .legal-box *{color:#1f2937!important;background:transparent!important}
+  #legal-view .legal-meta{color:#374151!important}
+  @page{margin:12mm}
+}
+</style>
+</head>
+<body>
+
+<div class="promo-bar" id="promo-bar" role="region" aria-label="Promoción"></div>
+<div class="ov-banner" id="ov-banner" role="status" aria-live="polite"></div>
+<div id="scroll-progress" aria-hidden="true"></div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "InternetServiceProvider",
+  "name": "NetSatipo",
+  "description": "Proveedor de internet por fibra óptica en Satipo y alrededores.",
+  "areaServed": ["Satipo", "Mazamari", "Coviriali", "Río Negro"],
+  "addressRegion": "Junín",
+  "addressCountry": "PE",
+  "priceRange": "S/ 59 - S/ 149"
+}
+</script>
+
+<header>
+  <div class="ticker" id="ticker" aria-hidden="true">
+    <div class="tick-inner" id="tick-inner">
+      <span>Fibra óptica</span><span>Hasta 200 megas</span><span>Instalación el mismo día</span><span>Soporte las 24 horas</span><span>Paga con Yape, Plin o tarjeta</span>
+      <span>Fibra óptica</span><span>Hasta 200 megas</span><span>Instalación el mismo día</span><span>Soporte las 24 horas</span><span>Paga con Yape, Plin o tarjeta</span>
+    </div>
+  </div>
+  <div class="wrap nav">
+    <a class="brand" href="#inicio" onclick="go('inicio');return false;"><span class="dot">N</span><span id="brand-name">NetSatipo</span></a>
+    <nav class="links" id="nav-links">
+      <a href="#inicio" data-nav="inicio" onclick="go('inicio');return false;">Inicio</a>
+      <a href="#contratar" data-nav="contratar" onclick="go('contratar');return false;">Contratar</a>
+      <a href="#soporte" data-nav="soporte" onclick="go('soporte');return false;">Soporte</a>
+      <a href="#seguimiento" data-nav="seguimiento" onclick="go('seguimiento');return false;">Seguimiento</a>
+      <a href="#preguntas" data-nav="preguntas" onclick="go('preguntas');return false;">FAQ</a>
+      <a href="#contacto" data-nav="contacto" onclick="go('contacto');return false;">Contacto</a>
+      <a href="portal.html" class="btn-cuenta">Mi cuenta</a>
+    </nav>
+    <button class="menu-btn" onclick="toggleMenu()">&#9776;</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="inicio" data-view="inicio">
+  <div class="bg-fx" aria-hidden="true">
+    <i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i>
+    <div class="grid-pan"></div>
+    <div class="scan"></div>
+    <div class="ring"></div><div class="ring r2"></div>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="hero-chip chip1" aria-hidden="true">
+    <i class="hc-dot"></i>
+    <b>Conexión activa</b>
+    <small>Fibra óptica · soporte 24/7</small>
+    <span class="hc-bars"><i></i><i></i><i></i><i></i><i></i></span>
+  </div>
+  <div class="hero-chip chip2" aria-hidden="true">
+    <i class="hc-dot" style="background:var(--acc-2);box-shadow:0 0 12px var(--acc-2)"></i>
+    <b>Pago fácil</b>
+    <small>Yape · Plin · Ventanilla</small>
+  </div>
+  <div class="wrap">
+    <div class="sec-tag" id="hero-tag" style="color:var(--hero-glow)">Internet de fibra óptica · nacido en Satipo</div>
+    <h1 id="hero-title">La señal de la selva, ahora <span>en tu casa</span></h1>
+    <p id="hero-lema">Planes fáciles de entender, instalación rápida y pago por Yape, Plin o ventanilla. Atención de gente, con buena onda: aquí el internet se hace en Satipo y se siente.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#contratar" onclick="go('contratar');return false;">⚡ Contratar mi plan</a>
+      <a class="btn btn-ghost" href="#soporte" onclick="go('soporte');return false;">Soy cliente, agendar visita</a>
+    </div>
+    <div class="hero-meta" id="hero-meta">
+      <div><b id="hm-1">0</b><span>Fibra óptica</span></div>
+      <div><b id="hm-2">0</b><span>Horas de soporte al día</span></div>
+      <div><b id="hm-3">0</b><span>Instalación el mismo día</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- BANDA DE CONFIANZA -->
+<div class="trust-strip" id="trust-strip" data-view="inicio" aria-label="Nuestras ventajas">
+  <div class="wrap trust-flex">
+    <div class="t-item rv"><i>⚡</i><b>Fibra GPON real</b><span>Baja latencia en toda la ciudad</span></div>
+    <div class="t-item rv"><i>🧰</i><b>Instalación 24–48 h</b><span>En Satipo, Mazamari y cercanías</span></div>
+    <div class="t-item rv"><i>🛟</i><b>Soporte 24/7</b><span>Técnicos locales todos los días</span></div>
+    <div class="t-item rv"><i>💳</i><b>Pago fácil</b><span>Yape, Plin, banco o ventanilla</span></div>
+  </div>
+</div>
+
+<!-- PLANES -->
+<section id="planes" data-view="inicio">
+  <div class="wrap">
+    <div class="sec-tag">Nuestros planes</div>
+    <h2 class="sec-title">Elige el plan perfecto para ti</h2>
+    <p class="sec-sub">Precios en soles, incluye instalación y material básico. Cambia de velocidad cuando quieras.</p>
+    <div class="cat-chips" id="plan-cat" role="tablist" aria-label="Filtrar por categoría">
+      <button class="on" data-cat="todos" onclick="setCat('todos',this)">Todos</button>
+      <button data-cat="hogar" onclick="setCat('hogar',this)">Hogar</button>
+      <button data-cat="empresa" onclick="setCat('empresa',this)">Empresa</button>
+      <button data-cat="mixto" onclick="setCat('mixto',this)">Trabajo remoto</button>
+    </div>
+    <div class="plans-grid" id="plans-grid">
+      <div class="sk sk-card"></div><div class="sk sk-card sk-hot"></div><div class="sk sk-card"></div><div class="sk sk-card"></div>
+    </div>
+    <p class="nota-planes">¿Necesitas algo distinto? <a href="#contacto" onclick="go('contacto');return false;">Escríbenos</a> y lo armamos para tu negocio u organización.</p>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section id="como-funciona" data-view="contratar" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Cómo funciona</div>
+    <h2 class="sec-title">En 3 pasos tienes internet</h2>
+    <p class="sec-sub">Así de simple: eliges tu plan, coordinamos la visita y navegas sin cables.</p>
+    <div class="steps">
+      <div class="step"><i>1</i><b>Elige tu plan</b><p>Compara velocidades y precios y presiona Contratar. Demora menos de 2 minutos.</p></div>
+      <div class="step"><i>2</i><b>Coordinamos la instalación</b><p>Te contactamos por WhatsApp o teléfono para validar cobertura y agendar la visita del técnico.</p></div>
+      <div class="step"><i>3</i><b>Navega sin cables</b><p>Instalamos la fibra, configuramos tu WiFi y listo: quedas conectado el mismo día cuando hay cobertura.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- COBERTURA -->
+<section class="alt" id="cobertura" data-view="contratar" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Cobertura</div>
+    <h2 class="sec-title">¿Llegamos a tu distrito?</h2>
+    <p class="sec-sub">Atendemos estos distritos de la provincia de Satipo y seguimos ampliando la red de fibra.</p>
+    <div id="red-status"></div>
+    <div class="chips" id="cobertura-chips"><div class="loading">Cargando cobertura…</div></div>
+    <p class="sec-sub" style="margin-top:16px;max-width:560px">¿No aparece tu zona? Cuéntanos dónde vives en <a href="#contacto" onclick="go('contacto');return false;">Contacto</a> y la evaluamos. Mapa: <a href="https://www.google.com/maps?q=Satipo,+Junin,+Peru" target="_blank" rel="noopener">abrir Satipo en Google Maps ↗</a></p>
+    <div class="zona-wifi" id="zona-wifi"></div>
+  </div>
+</section>
+
+<!-- CONTRATAR -->
+<section class="alt" id="contratar" data-view="contratar" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Contratación en línea</div>
+    <h2 class="sec-title">Solicita tu instalación</h2>
+    <p class="sec-sub">Completa el formulario. Te contactamos para confirmar cobertura y coordinar la visita de instalación.</p>
+    <div class="form-card fadeApp">
+      <h3>🧮 Calcula cuánto pagarías</h3>
+      <div class="sub">Costo de instalación + primer mes, según plan y distrito.</div>
+      <div class="verify-box" style="max-width:560px">
+        <select id="calc-plan" style="flex:1;min-width:170px;margin-bottom:0"><option value="">Selecciona tu plan</option></select>
+        <select id="calc-distrito" style="flex:1;min-width:150px;margin-bottom:0"><option value="">Tu distrito</option></select>
+        <button type="button" onclick="calcInstalacion()">Calcular</button>
+      </div>
+      <div id="calc-res" class="calc-res"></div>
+    </div>
+    <div class="cob-box form-card fadeApp" id="cob-box">
+      <h3>1. ¿Llegamos a tu zona? <span style="font-weight:600;font-size:12px;color:var(--muted)">(requerido)</span></h3>
+      <div class="verify-box">
+        <input id="cob-distrito" list="distritos" placeholder="Escribe tu distrito o sector (ej: Satipo)">
+        <button type="button" onclick="checkCobertura()">Verificar cobertura</button>
+      </div>
+      <div class="sub" style="margin-top:10px">Estamos construyendo el mapa de cobertura. Por ahora confirmamos en el acto por WhatsApp: escribe tu zona y dale click al botón.</div>
+      <div id="cob-result"></div>
+    </div>
+    <div class="form-card fadeApp big-space">
+      <h3>📝 Solicita tu instalación</h3>
+      <div class="sub">Tu plan ya va seleccionado en el paso anterior. Si cambiaste de idea, elige el que quieras aquí abajo.</div>
+      <form id="form-contratar" onsubmit="return onSubmitContract(event)">
+        <label>Plan seleccionado</label>
+        <select id="c-plan" required></select>
+        <div class="field-row">
+          <div>
+            <label>Nombres completos *</label>
+            <input id="c-nombres" required placeholder="Ej: Juan Pérez García">
+          </div>
+          <div>
+            <label>DNI *</label>
+            <input id="c-dni" required maxlength="8" inputmode="numeric" placeholder="8 dígitos" onblur="checkDuplicados()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label>Teléfono o WhatsApp *</label>
+            <input id="c-telefono" required maxlength="9" inputmode="numeric" placeholder="9 dígitos (9xx xxx xxx)" onblur="checkDuplicados()">
+          </div>
+          <div>
+            <label>Correo (opcional)</label>
+            <input id="c-email" type="email" placeholder="tucorreo@ejemplo.com">
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label>Dirección de instalación *</label>
+            <input id="c-direccion" required placeholder="Jr./Av./Calle, N°, referencia">
+          </div>
+          <div>
+            <label>Distrito o sector *</label>
+            <input id="c-distrito" required list="distritos" placeholder="Ej: Satipo">
+            <datalist id="distritos"></datalist>
+          </div>
+        </div>
+        <label>Tipo de solicitud</label>
+        <select id="c-tipo">
+          <option value="NUEVO_CONTRATO">Nuevo contrato</option>
+          <option value="AMPLIACION">Ampliación de velocidad</option>
+          <option value="REUBICACION">Reubicación</option>
+          <option value="RECONEXION">Reconexión</option>
+        </select>
+        <label>¿Cómo vas a pagar? *</label>
+        <select id="c-pago" required>
+          <option value="YAPE">Yape</option>
+          <option value="PLIN">Plin</option>
+          <option value="TRANSFERENCIA">Transferencia bancaria</option>
+          <option value="TARJETA">Tarjeta (en línea)</option>
+          <option value="EFECTIVO">Efectivo en oficina</option>
+        </select>
+        <label>Observaciones (opcional)</label>
+        <textarea id="c-obs" placeholder="Referencias, horarios preferidos..."></textarea>
+        <div id="c-dupe-msg" class="dupe-msg" role="status" aria-live="polite"></div>
+        <button class="btn-submit" id="btn-contratar" type="submit">Enviar solicitud de contratación</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- VISITAS -->
+<section id="visitas" data-view="soporte" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Soporte técnico</div>
+    <h2 class="sec-title">Agenda una visita</h2>
+    <p class="sec-sub">Solo para clientes con nuestro servicio. Verifícate primero y elige el tipo de atención que necesitas.</p>
+    <div class="form-card fadeApp">
+      <div class="autodiag">
+        <b>¿Se siente lento o se cae? ⚡</b>
+        <p class="sec-sub" style="margin:4px 0 10px">Mide tu velocidad primero; si el resultado es bajo, repórtalo como avería con el resultado incluido.</p>
+        <div class="verify-box" style="max-width:430px">
+          <button type="button" onclick="runSpeedTest()">Comenzar test de velocidad</button>
+        </div>
+        <div id="st-res" class="st-res"></div>
+        <button class="mini-btn" id="st-report" type="button" style="display:none;margin-top:10px" onclick="prefillAveria()">Enviar este resultado como avería</button>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:20px 0">
+      <label style="font-size:16px">1. Verifica que eres cliente</label>
+      <div class="verify-box">
+        <input id="v-query" placeholder="DNI, teléfono o email con el que contrataste">
+        <button type="button" onclick="onVerifyClient()">Verificar</button>
+      </div>
+      <div id="v-result"></div>
+      <div class="visita-form-panel" id="visita-form-panel">
+        <label style="font-size:16px">2. Datos de la visita</label>
+        <div class="field-row">
+          <div>
+            <label>Nombres *</label>
+            <input id="v-nombres" required>
+          </div>
+          <div>
+            <label>DNI *</label>
+            <input id="v-dni" required maxlength="8" inputmode="numeric">
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label>Teléfono *</label>
+            <input id="v-telefono" required maxlength="9" inputmode="numeric">
+          </div>
+          <div>
+            <label>Tipo de visita *</label>
+            <select id="v-tipo">
+              <option value="MANTENIMIENTO">Mantenimiento</option>
+              <option value="FALLA">Falla o sin servicio</option>
+              <option value="RECARGA">Recarga de servicio</option>
+              <option value="INSTALACION">Instalación</option>
+              <option value="COBRO">Cobro de mensualidad</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label>Fecha propuesta *</label>
+            <input id="v-fecha" type="date" required>
+          </div>
+          <div>
+            <label>Hora aproximada</label>
+            <input id="v-hora" type="time">
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label>Dirección</label>
+            <input id="v-direccion" placeholder="Si está vacío usamos la de tu registro">
+          </div>
+          <div>
+            <label>Distrito</label>
+            <input id="v-distrito" list="distritos">
+          </div>
+        </div>
+        <label>Detalle del problema (opcional)</label>
+        <textarea id="v-notas" placeholder="Describe lo que pasa, horarios en que hay personal en casa, etc."></textarea>
+        <label>¿Captura o foto del problema? (opcional)</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input type="file" id="v-foto" accept="image/*" onchange="onFoto(this)">
+          <span id="v-foto-st" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <img id="v-foto-prev" alt="Vista previa" style="display:none;max-width:130px;margin-top:10px;border-radius:10px;border:1px solid var(--line)">
+        <button class="btn-submit" id="btn-visita" type="button" onclick="onScheduleVisit()">Agendar visita</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEGUIMIENTO -->
+<section class="alt" id="seguimiento" data-view="seguimiento" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Seguimiento</div>
+    <h2 class="sec-title">Consulta el estado de tu solicitud o visita</h2>
+    <p class="sec-sub">Ingresa tu código y los últimos 4 dígitos de tu teléfono (o tu email) como verificación.</p>
+    <div class="track-cards">
+      <div class="form-card">
+        <h3>Solicitud de contratación</h3>
+        <div class="sub">Código tipo: SOL-20260101-001</div>
+        <label>Código</label>
+        <input id="t-sol" placeholder="SOL-...">
+        <label>Verificación</label>
+        <input id="t-sol-v" placeholder="Últimos 4 del teléfono, email o DNI">
+        <button class="btn-submit" onclick="onTrackSolicitud()">Consultar</button>
+        <div id="t-sol-res" style="margin-top:14px"></div>
+      </div>
+      <div class="form-card">
+        <h3>Visita técnica</h3>
+        <div class="sub">Código tipo: VIS-20260101-001</div>
+        <label>Código</label>
+        <input id="t-vis" placeholder="VIS-...">
+        <label>Verificación</label>
+        <input id="t-vis-v" placeholder="Últimos 4 del teléfono, DNI o email">
+        <button class="btn-submit" onclick="onTrackVisita()">Consultar</button>
+        <div id="t-vis-res" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RECLAMOS / ATENCION AL CLIENTE -->
+<section class="alt" id="reclamos" data-view="contacto" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Atención al cliente</div>
+    <h2 class="sec-title">Tus derechos como consumidor</h2>
+    <p class="sec-sub">Somos un proveedor de servicios de telecomunicaciones y nos rige la normativa peruana de usuarios: tu reclamo siempre será atendido y documentado.</p>
+    <div class="rl-cards">
+      <div class="rl-card"><div class="ic">📕</div><b>Libro de Reclamaciones</b><p>Puedes registrar aquí tu <b>queja, reclamo, gestión o sugerencia</b>. Respondemos en un plazo máximo de 15 días hábiles (D.S. N° 011-2011-PCM, Ley N° 29571).</p></div>
+      <div class="rl-card"><div class="ic">🏛️</div><b>OSIPTEL</b><p>Si no estás de acuerdo con nuestra respuesta, tienes derecho a acudir a OSIPTEL. Apelaciones: 15 días hábiles. El silencio administrativo juega a tu favor.</p></div>
+      <div class="rl-card"><div class="ic">🔧</div><b>Averías y fallas</b><p>Atendemos reportes de calidad/avería con máxima celeridad (OSIPTEL: 1 día calendario en zona urbana). Agenda una visita si el problema persiste.</p></div>
+    </div>
+    <div class="form-card" style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;max-width:none">
+      <div style="flex:1;min-width:240px">
+        <b style="color:var(--pri)">¿Tienes una queja o reclamo?</b><br>
+        <span style="color:var(--muted);font-size:14px">Regístralo en el Libro de Reclamaciones en línea. Es gratuito y tiene validez legal.</span>
+      </div>
+      <button class="listen-btn" onclick="openLibro()">📕 Ir al Libro de Reclamaciones</button>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto" data-view="contacto" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Contacto</div>
+    <h2 class="sec-title">¿Dudas? Escríbenos</h2>
+    <p class="sec-sub">Resolvemos tus consultas por WhatsApp, teléfono o este formulario.</p>
+    <div class="contact-grid">
+      <div class="info-cards" id="info-cards">
+        <div class="info-card"><b>Oficina</b><span id="ci-direccion">Cargando…</span></div>
+        <div class="info-card"><b>Horario</b><span id="ci-horario">Cargando…</span></div>
+        <div class="info-card"><b>Teléfono</b><span id="ci-telefono">Cargando…</span></div>
+        <div class="info-card"><b>WhatsApp</b><span id="ci-whatsapp">Cargando…</span></div>
+        <div class="info-card"><b>Yape o Plin</b><span id="ci-yape">Cargando…</span></div>
+      </div>
+      <div class="form-card" style="max-width:none">
+        <h3>Envíanos un mensaje</h3>
+        <div class="sub">Te respondemos en horario de oficina.</div>
+        <form onsubmit="return onSubmitContact(event)">
+          <input id="m-nombres" required placeholder="Tu nombre">
+          <div class="field-row">
+            <input id="m-telefono" required maxlength="9" inputmode="numeric" placeholder="Teléfono">
+            <input id="m-email" type="email" placeholder="Email (opcional)">
+          </div>
+          <textarea id="m-mensaje" required placeholder="¿En qué te ayudamos?"></textarea>
+          <button class="btn-submit" type="submit">Enviar mensaje</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREGUNTAS FRECUENTES -->
+<section class="alt" id="preguntas" data-view="preguntas" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Preguntas frecuentes</div>
+    <h2 class="sec-title">Resolvemos tus dudas</h2>
+    <div class="faq">
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Cuánto tarda la instalación?<i>+</i></button><div class="faq-a"><p>Si tu dirección tiene cobertura, instalamos normalmente el mismo día o dentro de los 2 días hábiles. Coordinamos la visita por WhatsApp o teléfono.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Incluye el router y la instalación?<i>+</i></button><div class="faq-a"><p>Sí. La instalación y los equipos (router y ONU) van incluidos en el precio del plan. Los equipos se entregan en comodato y deben devolverse al terminar el servicio.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Qué medios de pago aceptan?<i>+</i></button><div class="faq-a"><p>Yape, Plin, transferencia bancaria y efectivo en oficina. Desde la sección Contratar te damos el dato exacto para tu pago.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Puedo cambiar de plan más adelante?<i>+</i></button><div class="faq-a"><p>Claro. Solicita el cambio por WhatsApp o desde la sección de visitas técnicas y ajustamos tu velocidad y mensualidad.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Qué pasa si se va la señal?<i>+</i></button><div class="faq-a"><p>Escríbenos por WhatsApp o agenda una visita técnica. Atendemos reportes de averías con prioridad y, en zona urbana, el mismo día cuando es posible.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Dan soporte a un negocio u oficina?<i>+</i></button><div class="faq-a"><p>Sí, tenemos planes Empresariales con atención prioritaria y opción de más equipos, cableado y configuración para locales y organizaciones.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Cómo consulto el estado de mi solicitud?<i>+</i></button><div class="faq-a"><p>En la sección Seguimiento ingresa tu código (SOL-… o VIS-…) con los últimos 4 dígitos de tu teléfono, email o DNI.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Qué requisitos pide la instalación?<i>+</i></button><div class="faq-a"><p>Solo necesitas luz eléctrica como mínimo (es recomendable una conexión a tierra para proteger los equipos) y, según la zona, contar con un poste o acometida cerca. El técnico te confirma todo al coordinar la visita.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Cuánto cuesta mudar o reubicar el servicio?<i>+</i></button><div class="faq-a"><p>La reubicación es mucho más barata que una nueva instalación: solo pagas el traslado y re-instalamos en tu nuevo domicilio si hay cobertura. Consúltanos el costo exacto.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Sirve para videollamadas, juegos y ver Netflix?<i>+</i></button><div class="faq-a"><p>Sí. Con 50 Mbps una familia navega y ve streaming cómodo; con 100 Mbps o más puedes hacerlo todo a la vez: llamadas de video, clases en línea, redes y hasta hacer streaming de tus propios videos.</p></div></div>
+      <div class="faq-item"><button class="faq-q" onclick="faqToggle(this)">¿Atienden zonas rurales de la provincia?<i>+</i></button><div class="faq-a"><p>Estamos ampliando la red fuera de la ciudad. Si tu sector aún no tiene cobertura, déjanos tus datos y lo evaluamos; a veces se puede instalar con enlace por radio mientras llega la fibra.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TIPS -->
+<section class="alt" id="tips" data-view="preguntas" hidden>
+  <div class="wrap">
+    <div class="sec-tag">Guía práctica</div>
+    <h2 class="sec-title">Tips para mejorar tu internet en casa</h2>
+    <p class="sec-sub">Consejos simples del equipo técnico de NetSatipo para sacarle el máximo a tu fibra.</p>
+    <div class="tip-grid">
+      <div class="tip"><span class="ic">📍</span><b>Ubica el router en un punto central</b><p>Lejos del piso, de paredes gruesas y de electrodomésticos grandes. El wifi rinde mejor en el centro de la casa.</p></div>
+      <div class="tip"><span class="ic">🔒</span><b>Cambia la contraseña del wifi</b><p>Usa una clave larga con mayúsculas, números y símbolos. Si tu vecino usa tu red, tu velocidad se divide.</p></div>
+      <div class="tip"><span class="ic">🔁</span><b>Reinicia solo cuando haga falta</b><p>Un reinicio (10 segundos desconectado) resuelve el 80% de las caídas. No lo apagues todas las noches: las actualizaciones llegan mejor de noche.</p></div>
+      <div class="tip"><span class="ic">📡</span><b>Haz el test antes de reportar</b><p>Usa el test de velocidad de la sección <a href="#soporte" onclick="go('soporte');return false;">Agendar visita</a>. Si mides bien por cable y mal por wifi, el problema suele ser la cobertura wifi.</p></div>
+      <div class="tip"><span class="ic">🧹</span><b>Mantén limpio el equipo</b><p>El polvo y el calor bajan el rendimiento del router. Déjalo ventilado y tapa los puertos que no uses.</p></div>
+      <div class="tip"><span class="ic">🕒</span><b>Evita las horas pico si puedes</b><p>De 7 a 10 p.m. todo Satipo está conectado. Para trabajos pesados (nubes, descargas grandes) prefiere madrugada o medio día.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><b id="ft-name">NetSatipo</b><br><span id="ft-lema">Internet de alta velocidad</span><br><span id="ft-razon" style="font-size:12.5px"></span></div>
+    <div id="ft-dir">Satipo - Junín, Perú</div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:13.5px">
+      <a href="#inicio" onclick="showLegal('terminos');return false;" style="color:#8ca7c0">Términos y Condiciones</a>
+      <a href="#inicio" onclick="showLegal('privacidad');return false;" style="color:#8ca7c0">Política de Privacidad</a>
+      <a href="#inicio" onclick="showLegal('reclamos');return false;" style="color:#8ca7c0">Libro de Reclamaciones</a>
+      <a href="#inicio" onclick="showLegal('contrato');return false;" style="color:#8ca7c0">Contrato de servicio</a>
+    </div>
+  </div>
+</footer>
+
+<div id="wa-wrap" aria-hidden="false">
+  <div id="wa-chat" role="dialog" aria-label="Chat rápido de WhatsApp">
+    <div class="wa-head"><span style="font-size:20px">💬</span><div>NetSatipo Soporte<small>Te respondemos en horario de oficina</small></div><button onclick="toggleWaChat()" style="margin-left:auto;background:none;border:none;color:#fff;font-size:18px;font-weight:900;cursor:pointer" aria-label="Cerrar">✕</button></div>
+    <div class="wa-body">
+      <div class="wa-help">Elige una opción y te llevamos a nuestro WhatsApp con el mensaje ya redactado:</div>
+      <a class="wa-q" target="_blank" rel="noopener" data-qt="planes">📡 ¿Qué planes y precios tienen?</a>
+      <a class="wa-q" target="_blank" rel="noopener" data-qt="cobertura">📍 ¿Llegan a mi distrito?</a>
+      <a class="wa-q" target="_blank" rel="noopener" data-qt="averia">🛠️ Quiero reportar una avería</a>
+      <a class="wa-q" target="_blank" rel="noopener" data-qt="contratar">⚡ Quiero contratar ahora</a>
+      <a class="wa-q" target="_blank" rel="noopener" data-qt="factura">🧾 Mi factura o pago</a>
+      <a class="wa-go" id="wa-go" target="_blank" rel="noopener">Abrir WhatsApp directo</a>
+    </div>
+  </div>
+  <button id="wa-fab" onclick="toggleWaChat()" title="Escríbenos por WhatsApp" aria-label="Escríbenos por WhatsApp">
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.7 6L4 29l8.2-1.6c1.7.9 3.7 1.5 3.8 1.5 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.8 0-3.5-.5-5-1.3l-.4-.2-4.9 1 1-4.7-.3-.4c-.9-1.5-1.5-3.2-1.5-5 0-5.2 4.3-9.5 9.6-9.5 2.6 0 5 1 6.8 2.8a9.4 9.4 0 0 1 2.8 6.7c0 5.2-4.4 9.6-9.6 9.6zm5.3-7.1c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.4.2-.7.1-.3-.1-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1-1.1 2.5s1.1 2.9 1.3 3.1c.2.2 2.2 3.4 5.3 4.8.7.3 1.3.5 1.8.7.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>
+  </button>
+</div>
+<button class="totop" id="totop" title="Subir arriba" aria-label="Subir arriba">↑</button>
+<div id="cursor-glow" aria-hidden="true"></div>
+<div id="toast"></div>
+
+<!-- VISTA LEGAL -->
+<div class="legal-overlay" id="legal-view">
+  <div class="legal-head">
+    <button class="back" onclick="closeLegal()">&#8592; Volver</button>
+    <h3 id="legal-title">Documentos legales</h3>
+  </div>
+  <div class="legal-body" id="legal-body"></div>
+</div>
+
+<!-- LIBRO DE RECLAMACIONES -->
+<div id="modal-libro" class="modal-overlay">
+  <div class="modal-box fadeApp" style="max-width:620px">
+    <h3>📕 Libro de Reclamaciones</h3>
+    <div class="sub">Quejas, reclamos, gestiones y sugerencias (Ley N° 29571, D.S. N° 011-2011-PCM). Responderemos en un máximo de 15 días hábiles.</div>
+    <div class="lr-fields">
+      <div class="field-row">
+        <div><label>Nombres y apellidos *</label><input id="lr-nombres" required placeholder="Nombre completo"></div>
+        <div><label>Documento *</label>
+          <div style="display:flex;gap:8px">
+            <select id="lr-tipodoc" style="width:34%;margin-bottom:14px"><option>DNI</option><option>CE</option><option>RUC</option></select>
+            <input id="lr-documento" required style="flex:1;min-width:130px" placeholder="N° de documento">
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div><label>Teléfono o WhatsApp *</label><input id="lr-telefono" required maxlength="9" inputmode="numeric" placeholder="9xx xxx xxx"></div>
+        <div><label>Correo (opcional)</label><input id="lr-email" type="email" placeholder="tucorreo@ejemplo.com"></div>
+      </div>
+      <div class="field-row">
+        <div><label>N° de servicio o contrato</label><input id="lr-servicio" placeholder="Ej: SOL-… o tu código de cliente"></div>
+        <div><label>Tipo *</label>
+          <select id="lr-tipo">
+            <option value="QUEJA">Queja</option>
+            <option value="RECLAMO">Reclamo</option>
+            <option value="GESTION">Gestión o petición</option>
+            <option value="SUGERENCIA">Sugerencia</option>
+          </select>
+        </div>
+      </div>
+      <label>Descripción del hecho *</label>
+      <textarea id="lr-descripcion" required placeholder="Cuéntanos qué pasó (fecha, detalle del problema)"></textarea>
+      <label>¿Qué solución esperas? *</label>
+      <textarea id="lr-pedido" required placeholder="Ej: que se reponga el servicio, que se anule un cobro, etc."></textarea>
+      <div class="field-row">
+        <div><label>Dirección</label><input id="lr-direccion" placeholder="Opcional"></div>
+        <div><label>Distrito</label><input id="lr-distrito" list="distritos" placeholder="Opcional"></div>
+      </div>
+      <button class="btn-submit" onclick="onSubmitReclamo()">Enviar registro</button>
+      <p class="lr-legales">De conformidad con el art. 150.1 de la Ley N° 29571 y el Reglamento del Libro de Reclamaciones (D.S. N° 011-2011-PCM), este registro se conserva y genera un número de correlativo. Según la ley peruana de protección de datos (Ley N° 29733), tus datos se usan únicamente para atender tu gestión.</p>
+    </div>
+  </div>
+</div>
+
+<div id="modal">
+  <div class="modal-box fadeApp">
+    <h3 id="modal-title">Confirmación</h3>
+    <div class="sub" id="modal-sub"></div>
+    <div id="modal-body"></div>
+    <button class="btn-close" onclick="closeModal()">Entendido</button>
+  </div>
+</div>
+
+<noscript><p style="padding:20px;text-align:center">Activa JavaScript para usar esta página.</p></noscript>
+
+<script>
+let S = { cfg:{}, plans:[], clienteVerificado:null };
+const $ = id => document.getElementById(id);
+const esc = (s)=> String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const jsq = (v)=> esc(JSON.stringify(v==null?'':v));
+
+function toast(msg, tipo){
+  const t = $('toast');
+  t.textContent = msg; t.className = 'show '+(tipo||'');
+  clearTimeout(t._h);
+  t._h = setTimeout(()=> t.className='', 3200);
+}
+function openModal(title, sub, html){
+  $('modal-title').textContent = title;
+  $('modal-sub').textContent = sub||'';
+  $('modal-body').innerHTML = html||'';
+  $('modal').classList.add('show');
+}
+function closeModal(){ $('modal').classList.remove('show'); }
+$('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
+
+function toggleMenu(){
+  window.__menuOpen = $('nav-links').classList.toggle('open');
+}
+document.addEventListener('click', e=>{
+  if (e.target.closest('.links a')){ $('nav-links').classList.remove('open'); window.__menuOpen=false; }
+});
+window.addEventListener('resize', ()=>{ if(innerWidth>860){ const n=$('nav-links'); n.classList.remove('open'); window.__menuOpen=false; n.removeAttribute('style'); } });
+
+/* ===== ROUTER DE VISTAS (una sección a la vez) ===== */
+const VIEWS = {
+  inicio: ['inicio','planes'],
+  contratar: ['como-funciona','cobertura','contratar'],
+  soporte: ['visitas'],
+  seguimiento: ['seguimiento'],
+  preguntas: ['preguntas','tips'],
+  contacto: ['reclamos','contacto']
+};
+function viewOf(id){
+  for (const k in VIEWS){ if (VIEWS[k].indexOf(id)>=0) return k; }
+  return null;
+}
+function go(view, silent){
+  const v = VIEWS[view] ? view : 'inicio';
+  document.querySelectorAll('section[data-view]').forEach(sec => { sec.hidden = (sec.dataset.view !== v); });
+  const ts = $('trust-strip');
+  if (ts) ts.style.display = (v==='inicio') ? '' : 'none';
+  document.querySelectorAll('.links a[data-nav]').forEach(a => a.classList.toggle('active', a.getAttribute('data-nav')===v));
+  const navl = $('nav-links');
+  if (navl){ navl.classList.remove('open'); window.__menuOpen=false; }
+  try { if (history.replaceState) history.replaceState(null,'','#'+v); } catch(_){}
+  if (silent) scrollTo(0,0); else scrollTo({ top:0, behavior:'smooth' });
+}
+
+/* ===== API helper ===== */
+const __CACHE_TTL = 5*60*1000;
+const __CACHE_FNS = { getSiteData:1, getPublicSettings:1, getPlans:1 };
+function cacheGet(k){ try{ const j = JSON.parse(localStorage.getItem('Insat_'+k)||'null'); if (j && (Date.now()-j.t) < __CACHE_TTL) return j.v; }catch(_){ } return null; }
+function cacheGetRaw(k){ try{ const j = JSON.parse(localStorage.getItem('Insat_'+k)||'null'); if (j && j.v) return j.v; }catch(_){ } return null; }
+function cacheSet(k,v){ try{ localStorage.setItem('Insat_'+k, JSON.stringify({t:Date.now(), v:v})); }catch(_){ } }
+
+async function api(fn, args){
+  args = args || [];
+  try{
+    const r = await _api(fn, args);
+    if (__CACHE_FNS[fn]){
+      if (r && r.ok===false){
+        const c = cacheGet(fn);
+        return c || r;
+      }
+      cacheSet(fn, r);
+    }
+    return r;
+  }catch(e){
+    const c = __CACHE_FNS[fn] ? cacheGet(fn) : null;
+    return c || { ok:false, error:String(e&&e.message||e) };
+  }
+}
+
+/* ===== CARGA INICIAL ===== */
+function renderAviso(){
+  const b = $('ov-banner');
+  if (!b) return;
+  const on = String(S.cfg.aviso_activo||'').trim().toUpperCase()==='SI';
+  if (!on || !String(S.cfg.aviso_texto||'').trim()){
+    b.style.display = 'none';
+    return;
+  }
+  b.innerHTML = '<span>📣 <b>'+esc(S.cfg.aviso_texto)+'</b></span><button class="ov-x" onclick="closeAviso()" aria-label="Cerrar aviso">✕</button>';
+  b.style.display = 'block';
+}
+function closeAviso(){
+  const b = $('ov-banner');
+  if (b) b.style.display = 'none';
+}
+function applySite(){
+  document.body.dataset.theme = (S.cfg.tema||'confianza').trim() || 'confianza';
+  renderBrand(); renderContact(); renderDistritos();
+  renderPromo(); renderRed(); renderAviso();
+  if (S.plans.length) renderPlans(); else gridError();
+}
+async function boot(){
+  try{
+    const sig = () => JSON.stringify([S.cfg, S.plans]);
+    let last = '';
+    // 1) Pintura inmediata desde cualquier copia guardada (aunque esté vencida),
+    //    para que los planes aparezcan sin esperar la red.
+    const cached = cacheGetRaw('getSiteData');
+    if (cached && cached.ok !== false && cached.config){
+      S.cfg = cached.config;
+      S.plans = Array.isArray(cached.planes) ? cached.planes : [];
+      applySite();
+      last = sig();
+    }
+    // 2) Actualización en segundo plano con el backend (además refresca la caché).
+    let sd = null;
+    try { sd = await api('getSiteData'); } catch(_){ }
+    if (sd && sd.ok !== false && sd.config){
+      S.cfg = sd.config;
+      S.plans = Array.isArray(sd.planes) ? sd.planes : [];
+      if (sig() !== last) applySite();
+    } else if (!(S.plans && S.plans.length) && !(S.cfg && Object.keys(S.cfg).length)){
+      let cfg = null, planes = null;
+      try { [cfg, planes] = await Promise.all([ api('getPublicSettings'), api('getPlans') ]); } catch(_){ }
+      S.cfg = (cfg && cfg.ok===false) ? (S.cfg||{}) : (cfg||S.cfg||{});
+      S.plans = Array.isArray(planes) ? planes : [];
+      if (S.plans.length || Object.keys(S.cfg).length){ applySite(); } else gridError();
+    }
+    if (!S.plans.length) gridError();
+    if ($('modal')) $('modal').classList.remove('show');
+  }catch(e){
+    if (!S.plans.length) gridError();
+    toast('No se pudo conectar con el backend. Revisa la publicación del Web App (Apps Script).','err');
+  }
+}
+function gridError(){
+  $('plans-grid').innerHTML = '<div class="loading">No se pudieron cargar los planes.<br><button class="mini-btn" style="margin-top:12px" onclick="boot()">Reintentar</button></div>';
+}
+function renderBrand(){
+  if (S.cfg.empresa_nombre){
+    $('brand-name').textContent = S.cfg.empresa_nombre;
+    $('ft-name').textContent = S.cfg.empresa_nombre;
+    document.title = S.cfg.empresa_nombre+' - Internet en Satipo';
+  }
+  if (S.cfg.lema) $('hero-lema').textContent = S.cfg.lema;
+  if (S.cfg.razon_social){
+    $('ft-razon').textContent = S.cfg.razon_social + (S.cfg.ruc ? ', RUC '+S.cfg.ruc : '');
+  }
+}
+function renderDistritos(){
+  const d = S.cfg.distritos ? S.cfg.distritos.split(',').map(s=>s.trim()).filter(Boolean) : ['Satipo','Mazamari','Coviriali','Río Negro'];
+  $('distritos').innerHTML = d.map(x=>'<option value="'+esc(x)+'">').join('');
+  const chips = $('cobertura-chips');
+  if (chips) chips.innerHTML = d.map(x=>'<span>'+esc(x)+'</span>').join('');
+  const cd = $('calc-distrito');
+  if (cd) cd.innerHTML = '<option value="">Tu distrito</option>'+d.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
+}
+function faqToggle(btn){
+  const it = btn.parentElement;
+  const open = it.classList.contains('on');
+  document.querySelectorAll('.faq-item.on').forEach(x=>x.classList.remove('on'));
+  if (!open) it.classList.add('on');
+}
+function selectPlan(id){
+  document.getElementById('contratar').scrollIntoView({behavior:'smooth'});
+  $('c-plan').value = id;
+  if (id) toast('Plan seleccionado. Completa tus datos.','ok');
+}
+
+/* ===== COBERTURA ===== */
+let cobOk = false;
+function checkCobertura(){
+  const val = ($('cob-distrito').value||'').trim();
+  const res = $('cob-result');
+  if (!val){ res.className='cob-result warn'; res.innerHTML='Escribe tu distrito o sector para verificar.'; cobOk=false; return; }
+  const wa = S.wa || (S.cfg.whatsapp||'').replace(/\D/g,'');
+  const msg = 'Hola, quiero contratar su internet y necesito confirmar si tienen cobertura en: ' + val + '. ¿Llegan a mi zona?';
+  if (wa){
+    const u = 'https://wa.me/'+wa+'?text='+encodeURIComponent(msg);
+    try { window.open(u,'_blank','noopener'); } catch(e){ location.href = u; }
+  }
+  res.className='cob-result ok';
+  res.innerHTML='<b>¡Listo!</b> Te abrimos WhatsApp para confirmar la cobertura en <b>'+esc(val)+'</b>.<br>Así que sí llegamos, continúa con tu solicitud abajo sin problema.';
+  cobOk = true;
+}
+
+/* ===== CONTRATAR ===== */
+function validarName(){ return true; }
+function setDupe(tipo, html){
+  const box = $('c-dupe-msg');
+  if (!box) return;
+  if (!html){ box.className = 'dupe-msg'; box.innerHTML = ''; return; }
+  box.className = 'dupe-msg show '+(tipo||'warn');
+  box.innerHTML = html;
+}
+async function checkDuplicados(){
+  const dni = String($('c-dni').value||'').replace(/\D/g,'');
+  const tel = String($('c-telefono').value||'').replace(/\D/g,'');
+  if ((dni.length!==8 && tel.length!==9) || typeof api!=='function'){ setDupe(); return; }
+  const r = await api('verificarDuplicado', [{ dni: dni, telefono: tel }]);
+  if (!r || !r.ok){ setDupe(); return; }
+  if (r.solicitud){
+    setDupe('err','⚠️ Ya existe una solicitud en curso ('+esc(r.solicitud.solicitud_id)+', estado <b>'+esc(String(r.solicitud.estado).toLowerCase())+'</b>). Te contactaremos pronto; no es necesario enviar otra.');
+    return;
+  }
+  if (r.cliente){
+    if (/ACTIVO|INSTALAD/i.test(String(r.cliente.estado)))
+      setDupe('warn','ℹ️ Este DNI o teléfono ya figura como cliente activo (<b>'+esc(String(r.cliente.estado).toLowerCase())+'</b>). Si quieres ampliar, reubicar o reconectar, elige el tipo de solicitud correspondiente.');
+    else
+      setDupe('ok','ℹ️ Ya figuras en nuestra base (estado <b>'+esc(String(r.cliente.estado).toLowerCase())+'</b>). Confirmamos que no se dupliquen registros.');
+    return;
+  }
+  setDupe();
+}
+async function onSubmitContract(e){
+  e && e.preventDefault();
+  const p = {
+    tipo: $('c-tipo').value,
+    plan_id: $('c-plan').value,
+    nombres: $('c-nombres').value.trim(),
+    dni: $('c-dni').value.trim(),
+    telefono: $('c-telefono').value.trim(),
+    email: $('c-email').value.trim(),
+    direccion: $('c-direccion').value.trim(),
+    distrito: $('c-distrito').value.trim(),
+    pago_metodo: $('c-pago').value,
+    observaciones: $('c-obs').value.trim()
+  };
+  if (!p.plan_id){ toast('Selecciona un plan primero','err'); return false; }
+  if (!cobOk){
+    toast('Primero verifica tu cobertura (paso 1): escribe tu zona y presiona "Verificar cobertura".','err');
+    document.getElementById('cob-box').scrollIntoView({behavior:'smooth'});
+    return false;
+  }
+  const dupe = await api('verificarDuplicado', [{ dni: p.dni, telefono: p.telefono }]);
+  if (dupe && dupe.ok){
+    if (dupe.solicitud && p.tipo==='NUEVO_CONTRATO'){
+      setDupe('warn','⚠️ Ya existe una solicitud en curso ('+esc(dupe.solicitud.solicitud_id)+') en estado <b>'+esc(String(dupe.solicitud.estado).toLowerCase())+'</b>. Evita duplicar: si no te contactamos en 24h, escríbenos por WhatsApp.');
+      toast('Ya tienes una solicitud en curso. Te contactaremos pronto.','warn');
+      return false;
+    }
+    if (dupe.cliente && p.tipo==='NUEVO_CONTRATO' && /ACTIVO|INSTALAD/i.test(String(dupe.cliente.estado))){
+      setDupe('warn','⚠️ Este DNI o teléfono ya figura como cliente activo (<b>'+esc(String(dupe.cliente.estado).toLowerCase())+'</b>). Entra a <a href="#inicio" onclick="go(\'inicio\');return false;">Mi cuenta</a> o agenda una <a href="#soporte" onclick="go(\'soporte\');return false;">visita de soporte</a>.');
+      toast('Ya eres cliente. Gestiona tu servicio desde Mi cuenta.','warn');
+      return false;
+    }
+  }
+  const btn = $('btn-contratar');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  const r = await api('submitContract', [p]);
+  btn.disabled = false; btn.textContent = 'Enviar solicitud de contratación';
+  if (!r.ok) { toast(r.error||'No se pudo enviar','err'); return false; }
+  // Mostrar modal con instrucciones de pago
+  let payHtml = htmlPago(p.pago_metodo);
+  openModal('¡Solicitud enviada! 🎉', 'Guarda tu código para dar seguimiento.',
+    '<div class="big-code">'+esc(r.solicitud_id)+'</div>'+payHtml);
+  document.getElementById('form-contratar').reset();
+  toast(r.message,'ok');
+  return false;
+}
+function htmlPago(metodo){
+  const c = S.cfg;
+  if (metodo==='YAPE'){
+    return c.yape_telefono
+      ? '<div class="pay-line"><b>Yape:</b> '+esc(c.yape_telefono)+(c.yape_nombre?' — '+esc(c.yape_nombre):'')+'<br>Indica tu nombre y código de solicitud como referencia.</div>'
+      : '<div class="pay-line">Te indicaremos el yape para pagar cuando confirmemos tu solicitud.</div>';
+  }
+  if (metodo==='PLIN'){
+    return c.plin_telefono
+      ? '<div class="pay-line"><b>Plin:</b> '+esc(c.plin_telefono)+(c.plin_nombre?' — '+esc(c.plin_nombre):'')+'<br>Usa tu código de solicitud como referencia.</div>'
+      : '<div class="pay-line">Te indicaremos el plin para pagar cuando confirmemos tu solicitud.</div>';
+  }
+  if (metodo==='TRANSFERENCIA'){
+    return c.banco_cuenta
+      ? '<div class="pay-line"><b>'+esc(c.banco_nombre||'Banco')+':</b> '+esc(c.banco_cuenta)+'<br>Titular: '+esc(c.banco_titular||'—')+'<br>Envía el voucher a nuestro WhatsApp como referencia.</div>'
+      : '<div class="pay-line">Te pasaremos los datos bancarios para transferencia cuando confirmemos tu solicitud.</div>';
+  }
+  if (metodo==='TARJETA'){
+    if (String(c.pasarela_on).toLowerCase()==='si' || String(c.pasarela_on).toLowerCase()==='sí' || String(c.pasarela_on).toLowerCase()==='true' || c.pasarela_on==='1'){
+      return '<div class="note">💳 Pago con tarjeta: te enviaremos el enlace seguro ('+esc(c.pasarela_nombre||'')+') a tu correo/WhatsApp para pagar en línea.</div>';
+    }
+    return '<div class="pay-line">Pronto podrás pagar con tarjeta en línea. Por ahora te contactamos para coordinar el pago.</div>';
+  }
+  return '<div class="pay-line">Puedes acercarte a nuestra oficina a pagar en efectivo. Dirección: '+esc(c.direccion_oficina||'')+'</div>';
+}
+
+/* ===== VISITAS (solo clientes) ===== */
+let speedResult = null;
+async function runSpeedTest(){
+  const el = $('st-res'); const rep = $('st-report');
+  if (speedResult && speedResult.running) return;
+  el.className = 'st-res'; rep.style.display='none';
+  el.innerHTML = 'Midiendo descarga (10 MB)… tarda unos segundos.';
+  const st = performance.now(); let bytes = 0; speedResult = { running:true };
+  try{
+    const r = await fetch('https://speed.cloudflare.com/__down?bytes=10000000',{ mode:'cors', cache:'no-store' });
+    if (!r.ok || !r.body) throw new Error('rechazado');
+    const rd = r.body.getReader();
+    for(;;){ const { done, value } = await rd.read(); if (done) break; bytes += (value ? value.length : 0); }
+  }catch(e){
+    speedResult = null;
+    el.className = 'st-res warn';
+    el.innerHTML = 'No se pudo medir contra el servidor externo. Asegúrate de tener conexión y vuelve a intentar.';
+    return;
+  }
+  const secs = (performance.now()-st)/1000;
+  const mbps = ((bytes*8)/secs)/1e6;
+  speedResult = { running:false, mbps: Math.round(mbps), at: new Date().toLocaleString('es-PE') };
+  el.className = 'st-res ok';
+  el.innerHTML = 'Velocidad medida: <b>'+speedResult.mbps+' Mbps</b> &nbsp;('+ (mbps>=20?'Excelente':mbps>=8?'Buena':mbps>=3?'Regular':'Baja') +'). Realizado a las '+speedResult.at+'.';
+  rep.style.display = 'inline-block';
+}
+function prefillAveria(){
+  if (!S.clienteVerificado){ toast('Primero verifícate como cliente en el paso 1.','err'); $('v-query').scrollIntoView({behavior:'smooth'}); return; }
+  if (!speedResult || speedResult.running){ toast('Ejecuta primero el test de velocidad.','err'); return; }
+  $('v-tipo').value = 'FALLA';
+  const pre = $('v-notas').value;
+  $('v-notas').value = (pre ? pre+'\n' : '') + '[Test de velocidad] '+speedResult.mbps+' Mbps a las '+speedResult.at+'.';
+  $('visita-form-panel').style.display = 'block';
+  $('visita-form-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+  toast('Listo: agregamos tu medición al reporte. Agenda la visita.','ok');
+}
+async function onVerifyClient(){
+  const q = $('v-query').value.trim();
+  if (!q){ toast('Ingresa DNI, teléfono o email','err'); return; }
+  const res = $('v-result');
+  res.innerHTML = '<div class="verify-msg">Verificando…</div>';
+  const r = await api('verifyClient', [{ query:q }]);
+  if (!r.ok){
+    res.innerHTML = '<div class="verify-msg err"><span class="lbl">No verificado:</span> '+esc(r.error||'No encontramos el servicio')+'</div>';
+    $('visita-form-panel').style.display='none';
+    S.clienteVerificado = null;
+    return;
+  }
+  S.clienteVerificado = r.cliente;
+  res.innerHTML = '<div class="verify-msg ok"><span class="lbl">Cliente verificado ✓</span><br>'+esc(r.cliente.nombres||'')+' — '+esc(r.cliente.distrito||'')+' — '+esc(r.cliente.telefono||'')+'</div>';
+  $('v-nombres').value = r.cliente.nombres||'';
+  $('v-dni').value = String(r.cliente.dni||'').replace(/\D/g,'');
+  $('v-telefono').value = r.cliente.telefono||'';
+  if (!document.getElementById('v-distrito').value) $('v-distrito').value = r.cliente.distrito||'';
+  const hoy = new Date(); hoy.setDate(hoy.getDate()+1);
+  $('v-fecha').min = hoy.toISOString().slice(0,10);
+  $('visita-form-panel').style.display = 'block';
+  $('visita-form-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+  toast('Cliente verificado. Completa los datos de tu visita.','ok');
+}
+async function onScheduleVisit(){
+  const dniRaw = $('v-dni').value.trim() || (S.clienteVerificado&&S.clienteVerificado.dni) || '';
+  const dniClean = String(dniRaw).replace(/\D/g,'');
+  const p = {
+    nombres: $('v-nombres').value.trim(),
+    dni: /^\d{8}$/.test(dniClean) ? dniClean : '',
+    telefono: $('v-telefono').value.trim(),
+    tipo_visita: $('v-tipo').value,
+    fecha_propuesta: $('v-fecha').value,
+    hora_propuesta: $('v-hora').value,
+    direccion: $('v-direccion').value.trim(),
+    distrito: $('v-distrito').value.trim(),
+    notas: $('v-notas').value.trim(),
+    adjunto: window.__foto || '',
+    email: ''
+  };
+  if (!p.nombres || !p.telefono || !p.fecha_propuesta){ toast('Completa nombres, teléfono y fecha','err'); return; }
+  const btn = $('btn-visita');
+  btn.disabled = true; btn.textContent = 'Agendando…';
+  const r = await api('scheduleVisit', [p]);
+  btn.disabled = false; btn.textContent = 'Agendar visita';
+  if (!r.ok){ toast(r.error||'No se pudo agendar','err'); return; }
+  openModal('¡Visita agendada! 🛠️', 'Se envió el pedido a nuestro equipo técnico.',
+    '<div class="big-code">'+esc(r.visita_id)+'</div><div class="note">Guarda este código para consultar el estado en la sección "Seguimiento".</div>');
+  $('visita-form-panel').style.display='none';
+  $('v-result').innerHTML='';
+  $('v-query').value='';
+  window.__foto='';
+  const fi = document.getElementById('v-foto'); if (fi) fi.value='';
+  const fst = document.getElementById('v-foto-st'); if (fst) fst.textContent='';
+  const fpr = document.getElementById('v-foto-prev'); if (fpr) fpr.style.display='none';
+  toast(r.message,'ok');
+}
+
+/* ===== SEGUIMIENTO ===== */
+const badge = (s, okCols)=>{ const k=String(s||'').toUpperCase(); return '<span class="badge '+esc(k)+'">'+esc(s||'—')+'</span>'; };
+async function onTrackSolicitud(){ return onTrackMiServicio($('t-sol').value.trim(), $('t-sol-v').value.trim(), 't-sol-res'); }
+async function onTrackVisita(){ return onTrackMiServicio($('t-vis').value.trim(), $('t-vis-v').value.trim(), 't-vis-res'); }
+async function onTrackMiServicio(codigo, verifier, elId){
+  const r = await api('miServicio', [{ codigo: codigo, verifier: verifier }]);
+  const el = $(elId);
+  if (!r.ok){ el.innerHTML = '<div class="verify-msg err">'+esc(r.error||'Error')+'</div>'; return; }
+  el.innerHTML = buildServicioHtml(r);
+}
+function buildServicioHtml(r){
+  const reg = r.registro||{};
+  const h = [];
+  h.push('<div class="svc-card">');
+  h.push('<div class="svc-head"><b>'+esc(r.cliente&&r.cliente.nombres?r.cliente.nombres:'Cliente')+'</b> '+badge(reg.estado)+'</div>');
+  h.push('<div class="svc-code">'+esc(reg.codigo)+'</div>');
+  h.push('<p>'+(reg.tipo_visita ? 'Tipo: '+esc(reg.tipo_visita) : (reg.tipo==='CONTACTO'?'Mensaje enviado':'Plan: '+esc(reg.plan_nombre||'—')+(reg.tipo?' · '+esc(reg.tipo):'')))+'</p>');
+  if (reg.fecha_registro) h.push('<p>Creado: '+esc(reg.fecha_registro.replace('T',' ').slice(0,16))+'</p>');
+  if (reg.fecha_propuesta) h.push('<p>Fecha propuesta: '+esc(reg.fecha_propuesta)+'</p>');
+  if (reg.actualizado_en) h.push('<p>Última actualización: '+esc(reg.actualizado_en.replace('T',' ').slice(0,16))+'</p>');
+  if (reg.tecnico) h.push('<p>Técnico asignado: <b>'+esc(reg.tecnico)+'</b></p>');
+  ['solicitudes','visitas','pagos'].forEach(sec=>{
+    const arr = r[sec];
+    if (!Array.isArray(arr) || !arr.length) return;
+    const titles = { solicitudes:'Tus solicitudes', visitas:'Tus visitas técnicas', pagos:'Tus pagos' };
+    h.push('<h4>'+titles[sec]+'</h4><ul class="svc-list">');
+    arr.forEach(x=>{
+      if (sec==='pagos'){
+        const cli = (r.cliente&&r.cliente.nombres)||'';
+        h.push('<li>'+esc(x.pago_id)+' — S/ '+esc(x.monto)+(x.metodo?' ('+esc(x.metodo)+')':'')+' '+badge(x.estado)+'<br><button class="mini-btn ok" style="margin-top:8px" onclick="descargarComprobante('+jsq(Object.assign({cliente:cli},x))+')">🧾 Comprobante de pago</button></li>');
+      }
+      else if (sec==='solicitudes') h.push('<li>'+esc(x.codigo)+' — '+esc(x.tipo)+' '+badge(x.estado)+(x.plan_nombre?' · '+esc(x.plan_nombre):'')+'</li>');
+      else h.push('<li>'+esc(x.codigo)+' — '+esc(x.tipo_visita)+' · '+esc(x.fecha_propuesta)+' '+badge(x.estado)+(x.tecnico?' · '+esc(x.tecnico):'')+'</li>');
+    });
+    h.push('</ul>');
+  });
+  h.push('</div>');
+  return h.join('');
+}
+
+/* ===== CONTACTO ===== */
+function renderContact(){
+  const c = S.cfg;
+  $('ci-direccion').textContent = c.direccion_oficina||'—';
+  $('ci-horario').textContent = c.horario||'—';
+  $('ci-telefono').textContent = c.telefono||'—';
+  $('ci-whatsapp').textContent = c.whatsapp||'—';
+  let yp = [];
+  if (c.yape_nombre||c.yape_telefono) yp.push('<b>Yape:</b> '+(c.yape_nombre||'')+(c.yape_telefono?' '+c.yape_telefono:''));
+  if (c.plin_nombre||c.plin_telefono) yp.push('<b>Plin:</b> '+(c.plin_nombre||'')+(c.plin_telefono?' '+c.plin_telefono:''));
+  if (c.banco_nombre||c.banco_cuenta) yp.push('<b>Banco:</b> '+(c.banco_nombre||'')+' '+(c.banco_cuenta||''));
+  $('ci-yape').innerHTML = yp.length ? yp.join('<br>') : 'Consulta por WhatsApp';
+  // WhatsApp FAB + chat rápido
+  let wa = c.whatsapp||'';
+  wa = wa.replace(/\D/g,'');
+  S.wa = wa;
+  buildChat(wa);
+}
+function buildChat(wa){
+  const wrap = $('wa-wrap');
+  if (!wrap) return;
+  if (!wa){ wrap.style.display='none'; return; }
+  wrap.style.display='';
+  const base = 'https://wa.me/'+wa+'?text=';
+  const msgs = {
+    planes: 'Hola '+esc(S.cfg.empresa_nombre||'NetSatipo')+'! ¿Qué planes y precios tienen disponibles?',
+    cobertura: 'Hola! ¿Llega el internet de fibra a mi distrito? Vivo en ',
+    averia: 'Hola, soy cliente y quiero reportar una avería en mi servicio.',
+    contratar: 'Hola! Quiero contratar el servicio de internet. ¿Me ayudan?',
+    factura: 'Hola, necesito información sobre mi factura o pago.'
+  };
+  document.querySelectorAll('.wa-q').forEach(a=>{
+    const m = msgs[a.dataset.qt]||'Hola!';
+    a.href = base + encodeURIComponent(m);
+  });
+  const go = $('wa-go');
+  if (go) go.href = 'https://wa.me/'+wa;
+}
+function toggleWaChat(){
+  const w = $('wa-wrap');
+  if (w) w.classList.toggle('open');
+}
+async function onSubmitContact(e){
+  e && e.preventDefault();
+  const p = { nombres:$('m-nombres').value.trim(), telefono:$('m-telefono').value.trim(), email:$('m-email').value.trim(), mensaje:$('m-mensaje').value.trim() };
+  const r = await api('sendContactMessage', [p]);
+  if (!r.ok){ toast(r.error||'Error','err'); return false; }
+  document.getElementById('contacto').querySelector('form').reset();
+  toast(r.message,'ok');
+  return false;
+}
+
+/* ===== MEJORAS: PROMO / BADGES / RED / CALC / CATEGORIAS ===== */
+function setCat(cat, btn){
+  S.cat = cat;
+  document.querySelectorAll('#plan-cat button').forEach(b=> b.classList.toggle('on', b===btn));
+  renderPlans();
+}
+function planCat(p){
+  const e = (p.extras||[]).join(' ');
+  if (/empresa|negocio|oficina|pyme|sla/i.test(e)) return 'empresa';
+  if (/remoto|mixto|teletrabajo|tele/i.test(e)) return 'mixto';
+  return 'hogar';
+}
+function renderPlans(){
+  const grid = $('plans-grid');
+  const sel = $('c-plan');
+  const calc = $('calc-plan');
+  const wa = S.wa || (S.cfg.whatsapp||'').replace(/\D/g,'');
+  if (!S.plans.length){
+    grid.innerHTML = '<div class="loading">Aún no hay planes publicados.</div>';
+    if (sel) sel.innerHTML = '<option value="">Sin planes disponibles</option>';
+    if (calc) calc.innerHTML = '<option value="">Sin planes</option>';
+    return;
+  }
+  if (sel) sel.innerHTML = S.plans.map(p=>'<option value="'+esc(p.plan_id)+'">'+esc(p.nombre)+', '+esc(p.velocidad)+', S/ '+p.precio+'</option>').join('');
+  if (calc){ calc.innerHTML = '<option value="">Selecciona tu plan</option>'+S.plans.map(p=>'<option value="'+esc(p.plan_id)+'">'+esc(p.nombre)+' — S/ '+p.precio+'/mes</option>').join(''); }
+  const cat = S.cat || 'todos';
+  const list = cat==='todos' ? S.plans : S.plans.filter(p => planCat(p)===cat);
+  if (!list.length){
+    grid.innerHTML = '<div class="loading">Aún no hay planes en esta categoría.<br><button class="mini-btn" style="margin-top:12px" onclick="setCat(\'todos\', document.querySelector(\'#plan-cat button.on\'))">Ver todos</button></div>';
+    return;
+  }
+  grid.innerHTML = list.map(p=>{
+    const waBtn = wa ? '<a class="btn-wa" target="_blank" rel="noopener" href="https://wa.me/'+wa+'?text='+encodeURIComponent('Hola '+esc(S.cfg.empresa_nombre||'NetSatipo')+'! Quiero contratar el plan '+esc(p.nombre)+' ('+esc(p.velocidad)+') por S/ '+p.precio+' mensual.')+'">Contratar por WhatsApp</a>' : '';
+    return `
+    <div class="plan rv ${p.recomendado?'recom':''}">
+      ${p.recomendado?'<div class="ribbon">EL MÁS ELEGIDO</div>':''}
+      <h3>${esc(p.nombre)}</h3>
+      <div class="speed">${esc(p.velocidad)}</div>
+      <div class="price">S/ ${p.precio}<small> mensual</small></div>
+      <ul>${(p.extras||[]).map(x=>'<li>'+esc(x)+'</li>').join('')||'<li>Fibra óptica</li><li>Soporte las 24 horas</li>'}</ul>
+      <button class="btn-plan" onclick="selectPlan('${esc(p.plan_id)}')">Contratar ${esc(p.nombre)}</button>
+      ${waBtn}
+    </div>`;
+  }).join('');
+}
+function calcInstalacion(){
+  const pid = $('calc-plan').value;
+  const dist = $('calc-distrito').value;
+  const res = $('calc-res');
+  if (!pid || !dist){ res.innerHTML = '<span style="color:var(--muted)">Selecciona un plan y tu distrito para calcular.</span>'; return; }
+  const p = S.plans.find(x=>x.plan_id===pid);
+  if (!p){ res.textContent=''; return; }
+  const cuota = Math.max(0, Number(S.cfg.cuota_instalacion)||0);
+  const total = cuota + p.precio;
+  res.innerHTML = '<b>'+esc(p.nombre)+' ('+esc(p.velocidad)+')</b> en '+esc(dist)+'<br>Instalación: S/ '+cuota+' · Plan: S/ '+p.precio+'/mes<br><span class="big">Primer pago: S/ '+total+'</span>';
+}
+function renderPromo(){
+  const bar = $('promo-bar');
+  if (!bar) return;
+  const t = S.cfg.promo_titulo, fin = S.cfg.promo_fin;
+  if (!t || !fin){ bar.style.display='none'; clearInterval(bar._t); return; }
+  bar.style.display='block';
+  const precio = S.cfg.promo_price ? ' · <b>S/ '+esc(S.cfg.promo_price)+'</b>' : '';
+  const set = ()=>{
+    const left = new Date(fin).getTime() - Date.now();
+    if (left <= 0){ bar.innerHTML = '⏰ <b>'+esc(t)+'</b> terminó.'; clearInterval(bar._t); return; }
+    const h = String(Math.floor(left/3600000)).padStart(2,'0');
+    const m = String(Math.floor(left%3600000/60000)).padStart(2,'0');
+    const s = String(Math.floor(left%60000/1000)).padStart(2,'0');
+    bar.innerHTML = '🔥 <b>'+esc(t)+'</b>'+precio+' <span class="p-min">'+h+':'+m+':'+s+'</span><a href="#contratar" onclick="go(\'contratar\');return false;">Contratar ya</a>';
+  };
+  set();
+  clearInterval(bar._t);
+  bar._t = setInterval(set, 1000);
+}
+function renderRed(){
+  const rs = $('red-status');
+  if (rs && S.cfg.estado_red) rs.innerHTML = '<span class="red-status">'+esc(S.cfg.estado_red)+'</span>';
+  const zw = $('zona-wifi');
+  if (zw){
+    const txt = String(S.cfg.zona_wifi_text||'').trim();
+    if (!txt){ zw.style.display='none'; return; }
+    zw.style.display='block';
+    zw.innerHTML = '<b>📶 Wi-Fi gratis</b><p>'+esc(txt)+'</p>';
+  }
+}
+
+/* ===== FOTO EN VISITAS ===== */
+function onFoto(input){
+  const st = $('v-foto-st'), prev = $('v-foto-prev');
+  const f = input.files && input.files[0];
+  if (!f){ window.__foto=''; st.textContent=''; prev.style.display='none'; return; }
+  if (!/^image\//.test(f.type)){ toast('Solo imágenes (foto o captura)','err'); input.value=''; return; }
+  const rd = new FileReader();
+  rd.onload = e=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const MAX = 480;
+      let w = img.width, h = img.height;
+      if (w>h && w>MAX){ h = Math.round(h*MAX/w); w = MAX; }
+      else if (h>w && h>MAX){ w = Math.round(w*MAX/h); h = MAX; }
+      const cv = document.createElement('canvas');
+      cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      const data = cv.toDataURL('image/jpeg', .6);
+      if (data.length > 55000){
+        toast('La foto es muy pesada; recorta la captura o usa una más liviana.','err');
+        window.__foto=''; st.textContent='No se adjuntó.'; prev.style.display='none'; input.value=''; return;
+      }
+      window.__foto = data;
+      st.textContent = 'Adjunta ('+Math.round(data.length/1024)+' KB) ✓';
+      prev.src = data; prev.style.display='block';
+      toast('Foto lista para el reporte.','ok');
+    };
+    img.src = e.target.result;
+  };
+  rd.readAsDataURL(f);
+}
+
+/* ===== COMPROBANTE DE PAGO ===== */
+function descargarComprobante(p){
+  const c = S.cfg||{};
+  const fecha = String(p.confirmado_en||p.fecha||'').replace('T',' ').slice(0,16);
+  const monto = Number(p.monto||0).toFixed(2);
+  const doc = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Comprobante</title><style>'
+    +'body{font-family:Segoe UI,Arial,sans-serif;padding:32px;color:#111;max-width:520px;margin:auto}'
+    +'.h{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #003399;padding-bottom:12px;margin-bottom:18px}'
+    +'.h b{font-size:18px;color:#003399}.mono{font-family:Consolas,monospace;margin:0 0 6px}'
+    +'table{width:100%;border-collapse:collapse;margin:14px 0}td{padding:7px 4px;border-bottom:1px solid #ddd;font-size:13.5px}'
+    +'td:first-child{color:#555;width:46%}'
+    +'.total{background:#f0f5ff;font-weight:800;font-size:16px}'
+    +'.nota{font-size:11.5px;color:#666;margin-top:16px}'
+    +'.btn{display:block;width:100%;text-align:center;background:#003399;color:#fff;border:none;padding:13px;border-radius:8px;font-weight:800;font-size:15px;cursor:pointer;margin-top:16px}'
+    +'@media print{.btn{display:none}}</style></head><body>'
+    +'<div class="h"><div><b>'+esc(c.empresa_nombre||'NetSatipo')+'</b><br><small>'+esc(c.razon_social||'')+(c.ruc?' — RUC '+esc(c.ruc):'')+'</small><br><small>'+esc(c.domicilio_fiscal||c.direccion_oficina||'')+'</small></div><div><small>COMPROBANTE<br>DE PAGO</small></div></div>'
+    +'<p class="mono">'+esc(p.pago_id||'')+'<br>Emitido: '+esc(fecha)+'</p>'
+    +'<table><tr><td>Cliente</td><td>'+esc(p.cliente||'')+'</td></tr>'
+    +'<tr><td>Concepto</td><td>Mensualidad de servicio de internet</td></tr>'
+    +'<tr><td>Método de pago</td><td>'+esc(p.metodo||'—')+'</td></tr>'
+    +'<tr><td>Estado</td><td>'+esc(p.estado||'')+'</td></tr>'
+    +'<tr class="total"><td>Total pagado</td><td>S/ '+monto+'</td></tr></table>'
+    +'<p class="nota">Este es un comprobante interno de pago. No es una boleta ni factura SUNAT. Para efectos fiscales, solicita la boleta o factura correspondiente al momento del pago.</p>'
+    +'<button class="btn" onclick="window.print()">Imprimir / Guardar como PDF</button>'
+    +'</body></html>';
+  const w = window.open('','_blank');
+  if (w){ w.document.write(doc); w.document.close(); }
+  else toast('Permite ventanas emergentes para abrir el comprobante.','err');
+}
+
+/* ===== BOOT ===== */
+/* ===== EFECTOS TECNOLOGICOS ===== */
+function fixTicker(){
+  const el = $('tick-inner');
+  if (!el) return;
+  const box = $('ticker');
+  const txt = el.innerHTML;
+  let guard = 0;
+  while (el.scrollWidth < (box ? box.clientWidth : innerWidth) * 1.8 && guard++ < 8){
+    el.innerHTML += txt;
+  }
+}
+function initTech(){
+  fixTicker();
+  const rvSel = '.sec-title,.sec-sub,.plans-grid,.plan,.form-card,.rl-cards,.rl-card,.track-cards,.track-cards .form-card,.info-cards,.grid-2,.contact-form,.steps,.step,.chips,.faq,.faq-item,.cat-chips,.tip-grid,.tip,.zona-wifi,#red-status,.t-item';
+  const rvEls = Array.from(document.querySelectorAll(rvSel));
+  let idx = 0;
+  rvEls.forEach(el=>{
+    if (el.closest('.legal-overlay')) return;
+    el.classList.add('rv');
+    el.style.transitionDelay = ((idx++%6)*70)+'ms';
+  });
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(en=>{ if (en.isIntersecting){ en.target.classList.add('on'); io.unobserve(en.target); } });
+  }, { threshold:.12 });
+  rvEls.forEach(el=> io.observe(el));
+  const hd = document.querySelector('header');
+  const totop = $('totop');
+  const navAnchors = Array.from(document.querySelectorAll('.links a[data-nav]'));
+  const secIds = navAnchors.map(a=>a.getAttribute('href').slice(1)).filter(id=>document.getElementById(id));
+  if (totop) totop.addEventListener('click', ()=> scrollTo({top:0, behavior:'smooth'}));
+  let lastY = scrollY;
+  const onScroll = ()=>{
+    const y = scrollY;
+    const sp = $('scroll-progress');
+    const max = document.documentElement.scrollHeight - innerHeight;
+    if (sp) sp.style.width = (max>0 ? Math.min(100, y/max*100) : 0)+'%';
+    const goingDown = y > lastY && y > 260;
+    hd.classList.toggle('scrolled', y>40);
+    hd.classList.toggle('hide', goingDown && !window.__menuOpen);
+    if (totop) totop.classList.toggle('show', y>320);
+    lastY = y;
+  };
+  const secObs = new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if (en.isIntersecting){
+        const vid = viewOf(en.target.id);
+        if (vid) navAnchors.forEach(a=> a.classList.toggle('active', a.getAttribute('data-nav') === vid));
+      }
+    });
+  }, { rootMargin:'-45% 0px -50% 0px' });
+  secIds.forEach(id=>{ const el=document.getElementById(id); if(el) secObs.observe(el); });
+  if (matchMedia('(hover:hover)').matches){
+    document.querySelectorAll('.plan').forEach(c=>{
+      c.addEventListener('pointermove', e=>{
+        const r = c.getBoundingClientRect();
+        c.style.setProperty('--mx', (e.clientX-r.left)+'px');
+        c.style.setProperty('--my', (e.clientY-r.top)+'px');
+      });
+    });
+  }
+  addEventListener('scroll', onScroll, {passive:true});
+  window.__onScroll = onScroll; onScroll();
+  initInteract();
+}
+function initInteract(){
+  const fine = matchMedia('(hover:hover) and (pointer:fine)').matches;
+  const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!fine){ $('cursor-glow') && $('cursor-glow').remove(); return; }
+  const glow = $('cursor-glow');
+  if (glow && !rm){
+    document.body.classList.add('glow-on');
+    let tx=0, ty=0, busy=false;
+    addEventListener('pointermove', e=>{ tx=e.clientX; ty=e.clientY;
+      if (busy) return; busy=true;
+      requestAnimationFrame(()=>{ glow.style.left=tx+'px'; glow.style.top=ty+'px'; busy=false; });
+    });
+  }
+  const hero = document.querySelector('.hero');
+  const orbs = hero ? hero.querySelectorAll('.orb') : [];
+  if (hero && orbs.length && !rm){
+    hero.addEventListener('pointermove', e=>{
+      const cx = (e.clientX/innerWidth - .5), cy = (e.clientY/innerHeight - .5);
+      orbs.forEach((o,i)=>{ const d=(i+1)*14; o.style.translate = (cx*d)+'px '+(cy*d)+'px'; });
+    });
+    hero.addEventListener('pointerleave', ()=>{ orbs.forEach(o=>{ o.style.translate=''; }); });
+  }
+  document.addEventListener('pointermove', e=>{
+    const p = e.target.closest('.plan');
+    if (p && !rm){
+      const r = p.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width, py = (e.clientY - r.top)/r.height;
+      p.style.setProperty('--mx', (px*100)+'%');
+      p.style.setProperty('--my', (py*100)+'%');
+      p.style.transform = 'translateY(-6px) rotateX('+((.5-py)*9).toFixed(2)+'deg) rotateY('+((px-.5)*9).toFixed(2)+'deg)';
+    }
+  });
+  document.addEventListener('pointerout', e=>{
+    const p = e.target.closest('.plan');
+    if (p && p.style.transform) p.style.transform='';
+  });
+  const mags = Array.from(document.querySelectorAll('.btn-primary,.btn-ghost,.btn-plan'));
+  mags.forEach(btn=>{
+    btn.classList.add('mag');
+    btn.addEventListener('pointermove', e=>{
+      const r = btn.getBoundingClientRect();
+      const dx = e.clientX - (r.left+r.width/2), dy = e.clientY - (r.top+r.height/2);
+      btn.style.transform = 'translate('+(dx*.14)+'px,'+(dy*.2)+'px)';
+    });
+    btn.addEventListener('pointerleave', ()=>{ btn.style.transform=''; });
+  });
+}
+function animCounters(){
+  const items = [
+    [$('hm-1'), 100, '%', 1300, 0],
+    [$('hm-2'), 24, '', 900, 250],
+    [$('hm-3'), 1, ' día', 700, 400]
+  ];
+  items.forEach(([el,to,suffix,ms,del])=>{
+    if (!el) return;
+    setTimeout(()=>{
+      if (!('__counterDone' in el)) el.__counterDone = true;
+      const t0 = performance.now();
+      const step=(t)=>{
+        const p=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-p,3);
+        el.textContent = String(Math.round(to*e))+suffix;
+        if(p<1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    },del);
+  });
+}
+document.addEventListener('DOMContentLoaded', ()=>{ initTech(); animCounters(); const hv = (location.hash||'').replace('#',''); go(VIEWS[hv] ? hv : 'inicio', true); boot(); });
+</script>
+
+<script>
+/* ===== LIBRO DE RECLAMACIONES ===== */
+const L$ = id => document.getElementById(id);
+function openLibro(){
+  L$('modal-libro').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLibro(){
+  L$('modal-libro').classList.remove('show');
+  document.body.style.overflow = '';
+}
+window.addEventListener('click', e=>{ if (e.target.id==='modal-libro') closeLibro(); });
+async function onSubmitReclamo(){
+  const p = {
+    nombres: L$('lr-nombres').value.trim(),
+    tipo_doc: L$('lr-tipodoc').value,
+    documento: L$('lr-documento').value.trim(),
+    telefono: L$('lr-telefono').value.trim(),
+    email: L$('lr-email').value.trim(),
+    num_servicio: L$('lr-servicio').value.trim(),
+    tipo: L$('lr-tipo').value,
+    descripcion: L$('lr-descripcion').value.trim(),
+    pedido: L$('lr-pedido').value.trim(),
+    direccion: L$('lr-direccion').value.trim(),
+    distrito: L$('lr-distrito').value.trim()
+  };
+  if (!p.nombres || !p.documento || !p.telefono || !p.descripcion || !p.pedido){ alert('Completa los campos obligatorios (*)'); return; }
+  const btn = document.querySelector('#modal-libro .btn-submit');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  const r = await _api('saveReclamo', [p]);
+  btn.disabled = false; btn.textContent = 'Enviar registro';
+  if (!r || r.ok===false){ alert(r.error || 'No se pudo enviar. Intenta más tarde.'); return; }
+  const codigo = r.reclamo_id || r.solicitud_id || '';
+  closeLibro();
+  openModal('Registro recibido 📌', 'Registro de '+p.tipo.toLowerCase()+' registrado en el Libro de Reclamaciones.',
+    '<div class="big-code">'+esc(codigo)+'</div><div class="note">Responderemos dentro del plazo legal (15 días hábiles). Puedes darle seguimiento con este código en la sección "Seguimiento".</div>');
+  ['lr-nombres','lr-documento','lr-telefono','lr-email','lr-servicio','lr-descripcion','lr-pedido','lr-direccion','lr-distrito'].forEach(i=>{ L$(i).value=''; });
+}
+
+/* ===== DOCUMENTOS LEGALES ===== */
+const LEGAL = {
+  terminos: {
+    titulo: 'Términos y Condiciones de Uso y Contratación',
+    gen: c => `
+      <div class="legal-meta"><b>Última actualización:</b> ${new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'})}<br><b>Empresa:</b> ${esc(c.empresa_nombre||'NetSatipo')} ${c.razon_social?'('+esc(c.razon_social)+')':''} ${c.ruc?'RUC '+esc(c.ruc):''}</div>
+      <h4>1. Identidad del proveedor</h4>
+      <p>${esc(c.empresa_nombre||'NetSatipo')}, ${c.razon_social?'razón social '+esc(c.razon_social)+' con RUC '+esc(c.ruc)+',':''} con domicilio en ${esc(c.domicilio_fiscal||c.direccion_oficina||'Satipo, Junín')} y oficina de atención en ${esc(c.direccion_oficina||'Satipo, Junín')}. Contacto: ${esc(c.telefono||'')}, ${esc(c.correo_contacto||'')} y WhatsApp ${esc(c.whatsapp||'')}.</p>
+      <h4>2. Marco normativo</h4>
+      <p>Nuestros servicios de telecomunicaciones se prestan bajo la normativa peruana vigente, en especial: la Ley de Telecomunicaciones (D.L. N° 702) y su Reglamento (D.S. N° 013-93-TCC, TUO D.S. N° 020-2007-MTC); la Norma de las Condiciones de Uso de los Servicios Públicos de Telecomunicaciones (Res. N° 172-2022-CD/OSIPTEL) y el TUO de Condiciones de Uso; el TUO del Reglamento para la Atención de Gestiones y Reclamos (Res. N° 099-2022-CD/OSIPTEL); la Ley N° 29571 (Código de Protección y Defensa del Consumidor) y su Reglamento del Libro de Reclamaciones (D.S. N° 011-2011-PCM); y la Ley N° 29733 (Protección de Datos Personales).</p>
+      <h4>3. Contratación y activación</h4>
+      <p>La solicitud web constituye una manifestación de interés. El servicio se activa una vez verificada la cobertura y suscrito el contrato (modelo que se rige por las Condiciones de Uso OSIPTEL), con tu documento de identidad. La instalación se coordina por el canal que hayas elegido (mensajería, WhatsApp o visita agendada).</p>
+      <h4>4. Equipos en comodato</h4>
+      <p>Los equipos entregados (router/ONU y accesorios) son propiedad de ${esc(c.empresa_nombre||'la empresa')} y se entregan en comodato. Deben ser devueltos en buen estado al término del servicio; su pérdida o daño por mal uso será cobrado según tarifario.</p>
+      <h4>5. Obligaciones del abonado</h4>
+      <ul><li>Pagar oportunamente la mensualidad del plan elegido (art. 33 de la Norma de Condiciones de Uso).</li><li>Usar el servicio con fines lícitos y no realizar actividades prohibidas por ley.</li><li>No revender el servicio ni alterar la configuración de los equipos.</li><li>Mantener actualizados tus datos de contacto para notificaciones.</li></ul>
+      <h4>6. Facturación y pago</h4>
+      <p>Los planes se facturan según la periodicidad publicada en soles (S/). Los medios de pago disponibles son: Yape, Plin, transferencia bancaria, tarjeta en línea (cuando esté habilitada) y efectivo en oficina. El atraso en el pago habilita la suspensión del servicio conforme a lo pactado y la normativa aplicable.</p>
+      <h4>7. Suspensión y corte</h4>
+      <p>Podemos suspender o dar de baja el servicio por: falta de pago, uso indebido, incumplimiento del contrato o solicitud del abonado. Toda suspensión/corte se hará conforme a las Condiciones de Uso vigentes, y los reclamos sobre los mismos se tramitan en el Libro de Reclamaciones.</p>
+      <h4>8. Velocidad, disponibilidad y mantenimientos</h4>
+      <p>Las velocidades son "hasta" el valor del plan, y pueden variar por configuración del equipo del cliente, interferencia o congestión transitoria. Publicaremos con antelación razonable los mantenimientos programados (idealmente 24 horas) por canales y WhatsApp. No se reconocerá indemnización por interrupciones salvo lo previsto por la normativa.</p>
+      <h4>9. Responsabilidad y fuerza mayor</h4>
+      <p>No seremos responsables por interrupciones atribuibles a fuerza mayor, caso fortuito o hechos de terceros (cortes eléctricos, rotura de fibra por terceros, desastres naturales, etc.). Haremos los esfuerzos razonables para restablecer el servicio.</p>
+      <h4>10. Datos personales</h4>
+      <p>Tus datos personales se tratan conforme a la Ley N° 29733, su Reglamento (D.S. N° 003-2013-JUS) y nuestra Política de Privacidad. Puedes ejercer tus derechos ARCO a través de ${esc(c.dpo_email||c.correo_contacto||'nuestros canales de contacto')}.</p>
+      <h4>11. Reclamos y doble instancia ante OSIPTEL</h4>
+      <p>Todo reclamo se atiende primero por nosotros en los plazos que fija el OSIPTEL según el tipo de reclamo (la guía de OSIPTEL distingue, por ejemplo, hasta 3, 15 o 20 días hábiles para resolver). Si no quedas conforme, tienes derecho a interponer el recurso de apelación ante el Tribunal Administrativo de Solución de Reclamos de Usuarios (TRASU) del OSIPTEL dentro de los 15 días hábiles de notificada nuestra respuesta. El silencio administrativo juega a tu favor cuando no respondemos a tiempo. Asimismo, la Solución Anticipada de Reclamo (SAR) puede cerrar el procedimiento con una propuesta de solución.</p>
+      <h4>12. Del sitio web</h4>
+      <p>Esta página y su contenido son de nuestra titularidad. Queda prohibido su uso indebido, copia o explotación sin autorización.</p>
+      <h4>13. Modificaciones y ley aplicable</h4>
+      <p>Podemos actualizar estos términos cuando la normativa o el servicio lo requieran, comunicándolo por este medio o por el canal de contacto. Estos términos se rigen por la legislación peruana y, en caso de controversia, priman las normas de OSIPTEL, del INDECOPI y, en su caso, la jurisdicción del distrito judicial correspondiente a ${esc(c.domicilio_fiscal||'Satipo')}.</p>
+    `
+  },
+contrato: {
+    titulo: 'Contrato de Servicio de Internet Fijo',
+    gen: c => `
+      <div class="legal-meta"><b>Modelo de contrato (plantilla).</b> Los datos del operador se completan desde la configuración. Al definir nombre comercial y RUC definitivos se revisa y firma la versión final antes de difundirla. Documento sujeto a las normas vigentes y sus modificatorias.</div>
+      <div class="legal-meta"><b>OPERADOR:</b> ${esc(c.razon_social||'[RAZÓN SOCIAL / EMPRESA]')}${c.ruc?' - RUC '+esc(c.ruc):' - [RUC]'}<br><b>Domicilio fiscal:</b> ${esc(c.domicilio_fiscal||c.direccion_oficina||'[DOMICILIO FISCAL]')}<br><b>Correo de contacto:</b> ${esc(c.correo_contacto||'[CORREO]')} | <b>Web:</b> ${esc(c.sitio_web||'[URL / GITHUB PAGES]')}</div>
+      <h4>CLÁUSULA 1 - PARTES Y OBJETO</h4>
+      <p>El OPERADOR prestará al ABONADO el servicio de telecomunicaciones de acceso a <b>Internet fijo</b> (en adelante, el "Servicio"), en las condiciones del plan elegido: velocidad ofrecida "hasta", tráfico, periodicidad y contraprestación. La presente relación se rige por la normativa peruana, especialmente: el TUO de la Ley General de Telecomunicaciones (D.L. N° 702 y D.S. N° 020-2007-MTC), la Ley N° 27336 y normas del OSIPTEL, el TUO de las Condiciones de Uso (Res. N° 172-2022-CD/OSIPTEL y modificatorias), el Reglamento de Reclamos (Res. N° 099-2022-CD/OSIPTEL) y el Código de Protección y Defensa del Consumidor (Ley N° 29571). El OPERADOR presta el Servicio bajo el título habilitante otorgado por el MTC detallado en el Anexo A. <b>[COMPLETAR: RAZÓN SOCIAL, RUC, TÍTULO HABILITANTE Y N° DE CONCESIÓN].</b></p>
+      <h4>CLÁUSULA 2 - ACEPTACIÓN Y PERFECCIONAMIENTO</h4>
+      <p>La contratación se perfecciona con la <b>aceptación expresa</b> del ABONADO (envío del formulario de contratación, confirmación telefónica, por WhatsApp o firma del contrato físico), momento desde el cual estas condiciones forman parte integrante del contrato. El envío del formulario en la web constituye declaración jurada de veracidad de los datos consignados y manifestación de voluntad de contratar. La identidad del ABONADO se confirmará con su documento de identidad o la documentación fehaciente que corresponda.</p>
+      <h4>CLÁUSULA 3 - INSTALACIÓN, EQUIPOS Y COMODATO</h4>
+      <p>El OPERADOR realizará la instalación y activación del Servicio en el domicilio declarado y dentro del plazo informado al ABONADO. Los equipos de usuario (router y ONU), cuando el OPERADOR los suministre, se entregan en <b>comodato</b>: son de propiedad del OPERADOR, el ABONADO solo tiene su uso, y debe conservarlos y devolverlos en buen estado al término del contrato. El ABONADO responde por pérdida, deterioro o sustracción de los equipos salvo caso fortuito o fuerza mayor. La conexión y configuración de equipos de terceros es responsabilidad del ABONADO; el OPERADOR puede cobrar la asistencia técnica cuando no se derive de la calidad del Servicio.</p>
+      <h4>CLÁUSULA 4 - VELOCIDAD Y CALIDAD</h4>
+      <p>Las velocidades se ofrecen como "hasta" el valor del plan y están sujetas a las <b>velocidades mínimas garantizadas</b> (VMG) previstas en el Reglamento de Calidad de OSIPTEL (Res. N° 123-2014-CD/OSIPTEL y modificatorias), que mide la velocidad real de bajada en el hogar. Variaciones por congestión transitoria, configuración de los equipos del ABONADO, WiFi u otras causas externas no constituyen incumplimiento cuando se respeta la VMG. Los mantenimientos programados se comunicarán con antelación razonable, idealmente 24 horas, por los canales del OPERADOR. Los reportes de <b>averías</b> se atienden con máxima celeridad (la regulación OSIPTEL fija 1 día calendario en zona urbana); su incumplimiento habilita reclamo y las compensaciones que correspondan.</p>
+      <h4>CLÁUSULA 5 - OBLIGACIONES DEL OPERADOR</h4>
+      <ul><li>Prestar el Servicio en condiciones de calidad, continuidad y según lo pactado.</li><li>Facturar conforme a ley, detallando el concepto y período.</li><li>Atender averías, reclamos y consultas dentro de los plazos legales y reglamentarios.</li><li>No suspender, degradar o cortar el Servicio sin observar las notificaciones y plazos exigidos.</li><li>Proteger los datos personales del ABONADO conforme a la Ley N° 29733.</li></ul>
+      <h4>CLÁUSULA 6 - OBLIGACIONES DEL ABONADO</h4>
+      <ul><li>Proporcionar información veraz y mantenerla actualizada (nombre, documento, domicilio, contacto).</li><li>Pagar la contraprestación en las fechas de vencimiento por los medios habilitados.</li><li>No usar el Servicio para actividades ilícitas, ataques a terceros, spam, ni adulterar los equipos o la red.</li><li>No revender ni ceder el Servicio sin autorización del OPERADOR.</li><li>Permitir el acceso del personal técnico para instalación, mantenimiento y retiro de equipos.</li><li>Denunciar oportunamente la sustracción o deterioro de los equipos en comodato.</li></ul>
+      <h4>CLÁUSULA 7 - TARIFA, FACTURACIÓN Y PAGOS</h4>
+      <p>La contraprestación es la del plan contratado, pagadera por períodos (mensual, quincenal u otro). El pago se realiza por los medios informados (Yape, Plin, transferencia bancaria, tarjeta o ventanilla) y se imputa a las deudas más antiguas. La falta de pago a la fecha de vencimiento legitima al OPERADOR para aplicar los intereses moratorios permitidos y, salvo contrario, proceder a la suspensión y posterior corte del Servicio, observando previamente las <b>notificaciones y plazos</b> que fija la normativa OSIPTEL. Los descuentos o promociones constan en el plan y pueden estar sujetos a condiciones claramente informadas. El ABONADO puede cambiar de plan según su necesidad, sin que ello implique penalidad por permanencia, salvo los supuestos que la regulación permita expresamente.</p>
+      <h4>CLÁUSULA 8 - SUSPENSIÓN, CORTE Y BAJA</h4>
+      <p>El OPERADOR puede suspender el Servicio por falta de pago (previo aviso conforme a reglamento), uso indebido, incumplimiento contractual, orden judicial o administrativa, o solicitud del ABONADO. El corte se ejecuta solo en los supuestos y plazos legales; el restablecimiento se produce al regularizar la causa y, de ser el caso, pagar los conceptos adeudados. El ABONADO puede solicitar la baja definitiva por los canales del OPERADOR, devolviendo los equipos en comodato; los adeudos pendientes se mantienen exigibles.</p>
+      <h4>CLÁUSULA 9 - RECLAMOS Y DOBLE INSTANCIA ANTE OSIPTEL</h4>
+      <p>Todo reclamo sobre facturación, calidad o condiciones del Servicio se tramita primero ante el OPERADOR mediante el Libro de Reclamaciones y los canales de atención, dentro de los plazos máximos que fija la Res. N° 099-2022-CD/OSIPTEL (por tipo de reclamo, hasta 3, 15 o 20 días hábiles). Si el ABONADO no queda conforme con la respuesta, tiene derecho a interponer <b>recurso de apelación ante el TRASU</b> (Tribunal Administrativo de Solución de Reclamos de Usuarios del OSIPTEL) dentro de los 15 días hábiles de notificada la respuesta. El <b>silencio administrativo positivo</b> opera a favor del ABONADO si el OPERADOR no responde en plazo. La <b>Solución Anticipada de Reclamo (SAR)</b> puede cerrar el procedimiento mediante acuerdo.</p>
+      <h4>CLÁUSULA 10 - DATOS PERSONALES</h4>
+      <p>Los datos personales del ABONADO se tratan conforme a la Ley N° 29733 (Protección de Datos Personales), su Reglamento (D.S. N° 003-2013-JUS) y la Política de Privacidad del OPERADOR. El ABONADO puede ejercer los derechos ARCO y conexos escribiendo a <b>${esc(c.dpo_email||c.correo_contacto||'[CORREO DE CONTACTO]')}</b>. La información solicitada se limita a lo necesario para la contratación, la facturación y el cumplimiento de obligaciones legales.</p>
+      <h4>CLÁUSULA 11 - RESPONSABILIDAD Y FUERZA MAYOR</h4>
+      <p>El OPERADOR no responde por interrupciones atribuibles a fuerza mayor, caso fortuito o hechos de terceros (cortes prolongados de energía, roturas de fibra por terceros, desastres naturales, ataques informáticos externos), debiendo realizar los esfuerzos razonables para restablecer el Servicio. La responsabilidad del OPERADOR se limita a la normativa aplicable y no cubre daños indirectos o por uso indebido del ABONADO.</p>
+      <h4>CLÁUSULA 12 - PROPIEDAD INTELECTUAL Y SITIO WEB</h4>
+      <p>La página web, su contenido, marcas y sistemas son del OPERADOR o de terceros licenciantes. Queda prohibida su reproducción, copia o explotación no autorizada. El uso del sitio se rige por los Términos y Condiciones publicados en él.</p>
+      <h4>CLÁUSULA 13 - CESIÓN, VIGENCIA Y TERMINACIÓN</h4>
+      <p>Este contrato tiene vigencia mientras se mantenga la relación comercial y no se podrá ceder a terceros sin la aceptación previa y por escrito del OPERADOR, salvo el cambio del titular del título habilitante que la regulación reconozca. Termina por: acuerdo de partes, baja del Servicio, resolución por incumplimiento grave, caducidad de la autorización del OPERADOR o extinción de su personalidad jurídica, sin perjuicio de las obligaciones pendientes.</p>
+      <h4>CLÁUSULA 14 - NOTIFICACIONES, DOMICILIO Y JURISDICCIÓN</h4>
+      <p>Las notificaciones se realizan a los canales registrados por el ABONADO (correo, WhatsApp, teléfono) o al domicilio declarado. Para efectos legales, las partes fijan domicilio en: ABONADO, el señalado al contratar; OPERADOR, su domicilio fiscal en ${esc(c.domicilio_fiscal||c.direccion_oficina||'[DOMICILIO FISCAL]')}. El contrato se rige por la ley peruana; las controversias se someten a la jurisdicción del distrito judicial de ${esc(c.domicilio_fiscal?c.domicilio_fiscal.split(',')[0].trim():'Satipo')}, sin perjuicio de la competencia de OSIPTEL e INDECOPI en los procedimientos de su competencia.</p>
+      <h4>CLÁUSULA 15 - DECLARACIÓN DEL ABONADO</h4>
+      <p>El ABONADO declara: ser mayor de edad y capaz para contratar; que los datos registrados son veraces; que el uso del Servicio será lícito; y que ha leído y aceptado el presente contrato, los Términos y Condiciones y la Política de Privacidad. La contratación, instalación y uso del Servicio implica la aceptación plena de estas cláusulas.</p>
+      <p style="font-size:12.5px;color:var(--muted)"><b>Anexo A (por completar):</b> título habilitante/MTC, número de concesión o autorización, condiciones técnicas, plan contratado y su vigencia. Este modelo debe ser revisado por un abogado y adaptado a la razón social, RUC y autorización reales del OPERADOR antes de su uso oficial.</p>
+      <div style="margin-top:16px"><button class="listen-btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button></div>
+    `
+  },
+  privacidad: {
+    titulo: 'Política de Privacidad y Tratamiento de Datos Personales',
+    gen: c => `
+      <div class="legal-meta"><b>Última actualización:</b> ${new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'})}<br><b>Encargado del tratamiento:</b> ${esc(c.razon_social||c.empresa_nombre||'NetSatipo')} ${c.ruc?'RUC '+esc(c.ruc):''}, ${esc(c.domicilio_fiscal||c.direccion_oficina||'')}</div>
+      <h4>1. Base legal</h4>
+      <p>Tratamos tus datos personales de conformidad con la Ley N° 29733, Ley de Protección de Datos Personales, su Reglamento (D.S. N° 003-2013-JUS) y normas complementarias.</p>
+      <h4>2. Datos que recopilamos</h4>
+      <ul><li>Identidad y contacto: nombres, DNI/CE, teléfono, correo, dirección y distrito.</li><li>Contrato: plan, periodicidad, historial de pagos y solicitudes.</li><li>Navegación: datos técnicos básicos que aporta tu navegador (por motivos de seguridad y mejoras del sitio).</li></ul>
+      <h4>3. Finalidades</h4>
+      <ul><li>Gestionar la contratación, facturación, instalación y soporte del servicio.</li><li>Atender quejas, reclamos, gestiones y sugerencias (Libro de Reclamaciones).</li><li>Comunicar contigo para la coordinación de visitas y avisos de mantenimiento.</li><li>Cumplir obligaciones legales, regulatorias y tributarias.</li></ul>
+      <h4>4. Derechos ARCO</h4>
+      <p>Puedes ejercer los derechos de Acceso, Rectificación, Cancelación y Oposición (y los demás reconocidos por ley) escribiendo a <b>${esc(c.dpo_email||c.correo_contacto||'nuestros canales')}</b> identificándote con tu documento. Atenderemos tu solicitud dentro de los plazos legales.</p>
+      <h4>5. Conservación y seguridad</h4>
+      <p>Tus datos se conservan mientras dure la relación contractual y el tiempo exigido por ley. Aplicamos medidas razonables de seguridad (acceso restringido a la información mediante contraseñas de administración y registro de actividades).</p>
+      <h4>6. Encargados y transferencia</h4>
+      <p>Usamos proveedores de plataforma como Google (formularios y almacenamiento con cifrado) y, si corresponde, pasarelas de pago. No vendemos ni compartimos tus datos con terceros para fines publicitarios.</p>
+      <h4>7. Menores de edad</h4>
+      <p>El servicio se contrata por personas mayores de edad. Quien se registra declara ser capaz para contratar y, en su caso, contar con las autorizaciones requeridas.</p>
+      <h4>8. Cambios</h4>
+      <p>Actualizaremos esta política cuando cambie la normativa o nuestras prácticas, publicando la nueva versión en esta página.</p>
+    `
+  },
+  reclamos: {
+    titulo: 'Libro de Reclamaciones y Atención al Usuario',
+    gen: c => `
+      <div class="legal-meta">De conformidad con el artículo 150.1 de la Ley N° 29571 (Código de Protección y Defensa del Consumidor) y el Reglamento del Libro de Reclamaciones aprobado por D.S. N° 011-2011-PCM.</div>
+      <p>El <b>Libro de Reclamaciones</b> es el mecanismo mediante el cual puedes registrar una <b>queja</b> (malestar por la atención recibida), un <b>reclamo</b> (por una afectación a tus derechos como usuario), una <b>gestión/petición</b> o una <b>sugerencia</b>. Cada registro genera un número de correlativo que podrás usar para dar seguimiento.</p>
+      <h4>Plazos de respuesta</h4>
+      <p>Responderemos tu queja o reclamo en un plazo máximo de <b>15 días hábiles</b>, pudiendo ampliarse excepcionalmente hasta 30 días hábiles cuando la complejidad lo justifique, según el Reglamento del Libro de Reclamaciones.</p>
+      <h4>Segunda instancia: OSIPTEL</h4>
+      <p>Al ser un servicio público de telecomunicaciones, además del Libro de Reclamaciones, se aplican las reglas del OSIPTEL (Res. N° 099-2022-CD/OSIPTEL):</p>
+      <ul>
+        <li>Presenta tu <b>reclamo ante nosotros</b> (por este formulario, por teléfono, WhatsApp o en oficina).</li>
+        <li>Si no estás de acuerdo con nuestra respuesta, puedes interponer <b>apelación ante el TRASU</b> (Tribunal del OSIPTEL) dentro de los <b>15 días hábiles</b> de notificada la respuesta.</li>
+        <li>El <b>silencio administrativo positivo</b> opera a tu favor si no respondemos en el plazo.</li>
+        <li>Los reportes de <b>averías</b> se atienden con máxima celeridad (OSIPTEL establece 1 día calendario en zona urbana).</li>
+      </ul>
+      <h4>¿Cómo registro?</h4>
+      <p>Completa el formulario del Libro de Reclamaciones: identificación, datos del servicio, descripción del hecho y la solución que esperas. Es gratuito y puedes hacerlo en línea ahora mismo.</p>
+      <button class="listen-btn" onclick="closeLegal();openLibro();">📕 Abrir el Libro de Reclamaciones</button>
+      <h4>Tratamiento de datos</h4>
+      <p style="font-size:13px">Los datos que consignes se usan exclusivamente para atender tu gestión, conforme a la Ley N° 29733 y los términos de nuestra Política de Privacidad.</p>
+    `
+  }
+};
+function showLegal(tipo){
+  const doc = LEGAL[tipo];
+  if (!doc) return;
+  L$('legal-title').textContent = doc.titulo;
+  L$('legal-body').innerHTML = doc.gen(S.cfg || {});
+  L$('legal-view').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  window.scrollTo(0,0);
+}
+function closeLegal(){
+  L$('legal-view').classList.remove('show');
+  document.body.style.overflow = '';
+}
+</script>
+</body>
+</html>

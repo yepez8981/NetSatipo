@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Ventas – NetSatipo</title>
+<meta name="robots" content="noindex,nofollow">
+<script>
+const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxZfzGkuA7DGqD2lix5Y0Kw9lXNpX6JWSP56Upd7dJTs2Tt7-l-5vA58xeR8-rZqvg/exec";
+function _api(fn, args){
+  try{
+    args = args || [];
+    if (window.google && google.script && google.script.run) return google.script.run
+      .withSuccessHandler(r=>Promise.resolve(r))
+      .withFailureHandler(e=>Promise.resolve({ ok:false, error:String(e&&e.message||e) }))
+      .__rpc(fn, args, null);
+  }catch(_){}
+  const ctrl = ('AbortController' in window) ? new AbortController() : null;
+  const t = ctrl ? setTimeout(()=>ctrl.abort(), 120000) : null;
+  return fetch(GAS_EXEC, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ fn: fn, args: args }), signal: ctrl ? ctrl.signal : undefined })
+    .then(r=>{ if (t) clearTimeout(t); return r.text(); }, e=>{ if (t) clearTimeout(t); throw e; })
+    .then(txt=>{
+      const f = txt.trim().slice(0,1);
+      if (f === '<' || /<\s*(!doctype|html)/i.test(txt.slice(0,120))){
+        return { ok:false, error:'El Web App no respondió JSON. Revisa en Apps Script: publicar con "Ejecutar como: Yo" y "Quién tiene acceso: Cualquier usuario".' };
+      }
+      try { return JSON.parse(txt); }
+      catch(err){ return { ok:false, error:'Respuesta no válida del servidor ('+String(err&&err.message||err)+')' }; }
+    })
+    .catch(err=>{
+      if (err && (err.name==='AbortError' || /abor/i.test(String(err&&err.message||err)))) return { ok:false, error:'El servidor tardó demasiado. Reintenta en unos segundos.' };
+      return { ok:false, error:String(err&&err.message||err) };
+    });
+}
+async function api(fn, args){
+  try{ return await _api(fn, args||[]); }
+  catch(e){ return { ok:false, error:String(e && e.message || e) }; }
+}
+</script>
+<style>
+:root{
+  --pri:#050b1f; --pri-2:#0d2a55; --acc:#00a2ff; --acc-2:#2ee6ff;
+  --bg:#01030a; --bg-2:#070d1f; --card:#0a1128; --line:#1c2a4d;
+  --tx:#e8eefc; --muted:#8395c4; --ok:#22c55e; --err:#ef4444; --warn:#f59e0b;
+  --r:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:
+  radial-gradient(1000px 500px at 80% -10%,rgba(0,162,255,.14),transparent 60%),
+  radial-gradient(700px 400px at -10% 110%,rgba(46,230,255,.10),transparent 60%),var(--bg);
+  color:var(--tx);min-height:100vh}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 60px}
+a{color:var(--acc);text-decoration:none}
+.top-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:rgba(5,11,31,.75);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.top-bar .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.top-bar .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc-2));box-shadow:0 0 12px var(--acc)}
+.top-bar .links{display:flex;gap:14px;font-size:13px;align-items:center}
+.card{background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:var(--r);padding:22px;margin:20px 0}
+h1,h2,h3{margin:0 0 10px;letter-spacing:.3px}
+h2{font-size:20px}h3{font-size:15px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--tx);font-size:14px;outline:none}
+input:focus,select:focus{border-color:var(--acc)}
+label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.btn{cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--tx);padding:10px 14px;border-radius:10px;font-size:14px;font-family:inherit;transition:.15s}
+.btn:hover{border-color:var(--acc)}
+.btn.ok{background:linear-gradient(135deg,var(--acc),#0077ff);color:#fff;border:none;font-weight:600}
+.btn.gray{background:rgba(255,255,255,.08);border:none;color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.fld{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:600px){.fld{grid-template-columns:1fr}}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tbl th{text-align:left;padding:10px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);background:rgba(255,255,255,.04)}
+.tbl td{padding:9px 12px;border-top:1px solid var(--line)}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:800}
+.badge.PENDIENTE{background:rgba(245,158,11,.15);color:var(--warn)}
+.badge.APROBADA{background:rgba(34,197,94,.15);color:var(--ok)}
+.badge.INSTALADA{background:rgba(0,162,255,.15);color:var(--acc)}
+.badge.RECHAZADA,.badge.CANCELADA{background:rgba(239,68,68,.15);color:var(--err)}
+.msg{font-size:13px;margin-top:10px;min-height:16px}
+.ok-t{color:var(--ok)}.err-t{color:var(--err)}.hidden{display:none}
+.pulsing{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.loading{color:var(--muted);text-align:center;padding:40px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0b1a3a;border:1px solid var(--line);color:var(--tx);padding:10px 18px;border-radius:10px;font-size:14px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+</style>
+</head>
+<body>
+<header class="top-bar">
+  <span class="brand"><span class="dot"></span><span>NetSatipo <span style="color:var(--muted);font-weight:400">· Ventas</span></span></span>
+  <span class="links">
+    <a href="index.html" target="_blank">Página</a>
+    <button class="btn gray" id="logout-btn" style="display:none" onclick="cerrarSesion()">Salir</button>
+  </span>
+</header>
+<div class="wrap">
+
+  <div class="card" id="ven-login" style="max-width:420px;margin:50px auto">
+    <div style="font-size:12px;color:var(--muted)">Acceso restringido</div>
+    <h2>Panel de Ventas</h2>
+    <p class="sub">Registra contratos nuevos de forma rápida.</p>
+    <input type="password" id="ven-clave" placeholder="Clave de ventas" autocomplete="current-password" onkeydown="if(event.key==='Enter')onVentasLogin()">
+    <button class="btn ok" style="width:100%;margin-top:14px" onclick="onVentasLogin()">Ingresar</button>
+    <div class="msg" id="ven-login-msg"></div>
+  </div>
+
+  <div id="ven-dash" class="hidden">
+    <div class="card">
+      <h3>➕ Registrar nuevo contrato</h3>
+      <div class="fld">
+        <div><label>Nombres y apellidos *</label><input id="v-nombres" placeholder="Ej: Juan Pérez"></div>
+        <div><label>DNI</label><input id="v-dni" maxlength="8" inputmode="numeric" placeholder="8 dígitos"></div>
+      </div>
+      <div class="fld">
+        <div><label>Teléfono</label><input id="v-telefono" maxlength="9" inputmode="numeric" placeholder="9 dígitos"></div>
+        <div><label>Email</label><input id="v-email" type="email" placeholder="correo@ejemplo.com"></div>
+      </div>
+      <div class="fld">
+        <div><label>Dirección</label><input id="v-direccion" placeholder="Calle / Jr / Av"></div>
+        <div><label>Distrito</label><input id="v-distrito" placeholder="Satipo"></div>
+      </div>
+      <div class="fld">
+        <div><label>Plan</label><select id="v-plan"><option value="">Selecciona…</option></select></div>
+        <div><label>Medio de pago</label><select id="v-pago"><option value="EFECTIVO">Efectivo</option><option value="YAPE">Yape</option><option value="PLIN">PLIN</option><option value="TRANSFERENCIA">Transferencia</option></select></div>
+      </div>
+      <div class="fld">
+        <div style="grid-column:1/-1"><label>Notas</label><input id="v-notas" placeholder="Referencias"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <button class="btn ok" onclick="ventasRegistrar()">💾 Registrar contrato</button>
+        <button class="btn" onclick="limpiarForm()">Limpiar</button>
+        <span class="msg" style="display:inline;align-self:center" id="v-msg"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📋 Contratos registrados</h3>
+      <div id="v-lista"><div class="loading">Cargando…</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let V = { token:null, planes:[], busy:false };
+function toast(msg, tipo){
+  const d = document.createElement('div');
+  d.className='toast';
+  d.style.borderColor = tipo==='err' ? 'var(--err)' : tipo==='ok' ? 'var(--ok)' : 'var(--line)';
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(()=> d.remove(), 2600);
+}
+function esErrorAuth(err){
+  const m = String(err||'').toLowerCase();
+  return /no autorizado/.test(m) || /expirad/.test(m) || /expir[oó]/.test(m) || /no iniciada/.test(m);
+}
+async function onVentasLogin(){
+  const clave = $('ven-clave').value.trim();
+  if (!clave) return toast('Ingresa la clave','err');
+  const r = await api('ventasLogin',[clave]);
+  if (!r.ok){ toast(r.error||'No se pudo ingresar','err'); return; }
+  V.token = r.token;
+  try{ localStorage.setItem('satipo_ventas_token', V.token); }catch(_){}
+  entrada();
+}
+function entrada(){
+  $('ven-login').style.display='none';
+  $('ven-dash').classList.remove('hidden');
+  $('logout-btn').style.display='inline-block';
+  cargarPlanes();
+  cargarRegistros();
+}
+function cerrarSesion(){
+  if (V.token) api('ventasLogout',[V.token]);
+  V.token = null;
+  try{ localStorage.removeItem('satipo_ventas_token'); }catch(_){}
+  $('ven-dash').classList.add('hidden');
+  $('ven-login').style.display='block';
+  $('logout-btn').style.display='none';
+  $('ven-clave').value='';
+}
+async function cargarPlanes(){
+  const r = await api('ventasPlanes',[V.token]);
+  if (!r.ok || !r.planes) return;
+  V.planes = r.planes;
+  $('v-plan').innerHTML = '<option value="">— Selecciona el plan —</option>'+V.planes
+    .filter(p=>String(p.activo).toUpperCase()!=='FALSE')
+    .map(p=>'<option value="'+esc(p.plan_id)+'">'+esc(p.nombre+' · S/ '+p.precio)+'</option>').join('');
+}
+function limpiarForm(){
+  ['v-nombres','v-dni','v-telefono','v-email','v-direccion','v-distrito','v-notas'].forEach(id=>$(id).value='');
+  $('v-pago').selectedIndex=0;
+}
+async function ventasRegistrar(){
+  const p = {
+    nombres: $('v-nombres').value.trim(), dni: $('v-dni').value.trim(), telefono: $('v-telefono').value.trim(),
+    email: $('v-email').value.trim(), direccion: $('v-direccion').value.trim(), distrito: $('v-distrito').value.trim(),
+    plan_id: $('v-plan').value, pago_metodo: $('v-pago').value, notas: $('v-notas').value.trim()
+  };
+  if (!p.nombres){ toast('Indica los nombres','err'); return; }
+  $('v-msg').textContent = 'Guardando…';
+  const r = await api('ventasRegistrar',[p, V.token]);
+  if (!r.ok){
+    $('v-msg').textContent = '';
+    if (esErrorAuth(r.error)){ cerrarSesion(); toast('Tu sesión expiró. Ingresa nuevamente.','err'); return; }
+    toast(r.error||'Error','err');
+    return;
+  }
+  $('v-msg').textContent = '';
+  toast(r.message||'Contrato registrado','ok');
+  limpiarForm();
+  cargarRegistros();
+}
+async function cargarRegistros(){
+  if (!V.token) return;
+  const box = $('v-lista');
+  if (V.busy) return;
+  V.busy = true;
+  const r = await api('ventasLista',[V.token]);
+  V.busy = false;
+  if (!V.token) return;
+  if (!r.ok){
+    if (esErrorAuth(r.error)){ cerrarSesion(); toast('Tu sesión expiró. Ingresa nuevamente.','err'); return; }
+    box.innerHTML = '<div class="loading">'+esc(r.error||'Error')+'</div>';
+    return;
+  }
+  const rows = r.registros || [];
+  if (!rows.length){ box.innerHTML = '<div class="loading">Aún no registras contratos.</div>'; return; }
+  box.innerHTML = '<table class="tbl"><thead><tr><th>Código</th><th>Cliente</th><th>Plan</th><th>Distrito</th><th>Pag.</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>'+
+    rows.map(x=>'<tr><td>'+esc(x.solicitud_id)+'</td><td>'+esc(x.nombres)+'</td><td>'+esc(x.plan_nombre||'—')+'</td><td>'+esc(x.distrito||'—')+'</td><td>'+esc(x.pago_metodo||'—')+'</td><td><span class="badge '+esc(x.estado)+'">'+esc(x.estado)+'</span></td><td>'+esc(x.creado_en)+'</td></tr>').join('')+
+    '</tbody></table>';
+}
+async function start(){
+  try{ const t = localStorage.getItem('satipo_ventas_token'); if (t){ V.token = t; const r = await api('ventasLista',[t]); if (r && (r.ok || !esErrorAuth(r.error))){ entrada(); return; } V.token=null; try{ localStorage.removeItem('satipo_ventas_token'); }catch(_){} } }catch(_){}
+}
+start();
+</script>
+</body>
+</html>

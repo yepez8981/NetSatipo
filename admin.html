@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#04060d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2322d3ee'/%3E%3Cstop offset='1' stop-color='%23818cf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='43' font-family='Arial' font-size='30' font-weight='900' text-anchor='middle' fill='%2304121f'%3EN%3C/text%3E%3C/svg%3E">
+<title>Panel de administración</title>
+<style>
+:root{
+  --pri:#050b1f; --pri-2:#0d2a55; --acc:#00a2ff; --acc-2:#2ee6ff; --acc-3:#4db8ff; --acc-ink:#f4fbff;
+  --bg:#01030a; --bg-2:#070d1f; --card:rgba(255,255,255,.05); --card-2:rgba(255,255,255,.03);
+  --glass:rgba(255,255,255,.06); --ink:#d9e7fa; --head:#ffffff; --muted:#9fb4cf; --line:rgba(148,163,184,.16);
+  --ok:#34d399; --err:#f87171; --glow:rgba(0,162,255,.5); --radius:18px;
+  --shadow:0 10px 30px rgba(0,0,0,.35); --shadow-lg:0 24px 60px rgba(0,0,0,.5);
+}
+body[data-theme="moderno"]{--pri:#030713;--pri-2:#0a1a38;--acc:#0099ff;--acc-2:#33e1ff;--acc-3:#66b8ff;--acc-ink:#f2fbff;--glow:rgba(0,153,255,.5)}
+body[data-theme="corporativo"]{--pri:#081327;--pri-2:#0f2b57;--acc:#ffd166;--acc-2:#ffc300;--acc-3:#2ea8ff;--acc-ink:#241a00;--glow:rgba(255,209,102,.4)}
+body[data-theme="naturaleza"]{--pri:#031a22;--pri-2:#073a4e;--acc:#00d9ff;--acc-2:#57f2c2;--acc-3:#00b8ff;--acc-ink:#032129;--glow:rgba(0,217,255,.5)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  color-scheme:dark;
+  font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+  background:radial-gradient(1200px 600px at 85% -10%,rgba(0,153,255,.16),transparent 60%),
+    radial-gradient(900px 500px at -10% 30%,rgba(46,230,255,.09),transparent 55%),
+    var(--bg);
+  color:var(--ink);line-height:1.55;min-height:100vh;
+}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:15px}
+a{color:var(--acc-2)}
+::selection{background:var(--acc);color:var(--acc-ink)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#05070d}
+::-webkit-scrollbar-thumb{background:#1c2b47;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--acc-2)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+/* BARRA SUPERIOR */
+.adm-bar{position:sticky;top:0;z-index:50;background:rgba(4,6,13,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.adm-bar .ab-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.ab-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--head)}
+.ab-brand .dot{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc-2));display:grid;place-items:center;color:var(--acc-ink);font-size:15px;box-shadow:0 0 18px var(--glow)}
+.ab-brand em{font-style:normal;font-size:12px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.ab-links a{color:var(--muted);text-decoration:none;font-weight:700;font-size:14px;transition:.2s}
+.ab-links a:hover{color:var(--acc)}
+
+/* LOGIN */
+.login-card{max-width:380px;margin:60px auto;background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);text-align:center;backdrop-filter:blur(8px)}
+.login-card h3{color:var(--head);margin-bottom:18px;font-size:22px}
+.login-card h3::after{content:"";display:block;width:56px;height:3px;margin:12px auto 0;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc-2));box-shadow:0 0 16px var(--glow)}
+.login-card input{width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--line);background:var(--card-2);color:var(--ink);margin-bottom:16px}
+.login-card input:focus{outline:none;border-color:var(--acc-2);box-shadow:0 0 0 3px rgba(0,153,255,.2)}
+.sec-tag{display:inline-block;font-weight:800;font-size:12px;letter-spacing:2px;color:var(--acc-2);text-transform:uppercase;margin-bottom:8px}
+.btn-submit{width:100%;padding:13px;border:none;background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border-radius:12px;font-weight:800;font-size:15px;transition:.2s}
+.btn-submit:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:600px){.field-row{grid-template-columns:1fr}}
+#factura-form label,#alta-form label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+#factura-form input,#factura-form select,#alta-form input,#alta-form select{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:var(--ink);font-size:14px}
+#factura-form input:focus,#factura-form select:focus,#alta-form input:focus,#alta-form select:focus{outline:none;border-color:var(--acc-2);box-shadow:0 0 0 3px rgba(0,153,255,.2)}
+#admin-tab-body .field-row label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+#admin-tab-body .field-row input:not([type=checkbox]),#admin-tab-body .field-row select{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:var(--ink);font-size:14px}
+#admin-tab-body .field-row input:focus,#admin-tab-body .field-row select:focus{outline:none;border-color:var(--acc-2);box-shadow:0 0 0 3px rgba(0,153,255,.2)}
+.btn-admin.ok{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.4);color:#86efac}
+
+/* ADMIN */
+.admin-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:26px 0 22px}
+.admin-top h2{color:var(--head);font-size:24px}
+.btn-admin{background:var(--glass);border:1px solid var(--line);padding:8px 14px;border-radius:99px;font-weight:700;font-size:13px;color:var(--ink);transition:.2s}
+.btn-admin:hover{border-color:var(--acc-2);color:var(--acc)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);backdrop-filter:blur(8px);border-top:3px solid var(--acc);transition:.25s}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 12px 30px var(--glow)}
+.kpi b{display:block;font-size:26px;color:var(--acc)}
+.kpi span{font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.admin-tabs button{background:var(--card-2);border:1px solid var(--line);padding:9px 16px;border-radius:99px;font-weight:700;font-size:13px;color:var(--muted);transition:.2s}
+.admin-tabs button:hover{border-color:var(--acc-2);color:var(--ink)}
+.admin-tabs button.on{background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border-color:transparent}
+.tbl{width:100%;border-collapse:collapse;background:var(--card-2);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:13.5px}
+.tbl th{background:rgba(255,255,255,.05);text-align:left;padding:11px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--acc);white-space:nowrap}
+.tbl td{padding:10px 12px;border-top:1px solid var(--line);color:var(--ink);vertical-align:top}
+.tbl .mono{font-family:Consolas,monospace;font-size:12.5px;color:var(--acc)}
+td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-radius:8px;background:var(--card-2);border:1px solid var(--line);color:var(--ink)}
+.tbl-wrap{overflow-x:auto;border-radius:14px}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mini-btn{background:var(--glass);border:1px solid var(--line);padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;color:var(--ink);transition:.2s}
+.mini-btn:hover{border-color:var(--acc-2);color:var(--acc)}
+.mini-btn.danger{color:var(--err);border-color:rgba(248,113,113,.3)}
+.mini-btn.ok{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.4);color:#86efac}
+.export-bar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.export-bar button{background:var(--card-2);border:1px solid var(--line);padding:8px 14px;border-radius:99px;font-weight:700;font-size:12.5px;color:var(--head);transition:.2s}
+.export-bar button:hover{border-color:var(--acc-2);color:var(--acc)}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:800}
+.badge.PENDIENTE,.badge.REGISTRADO,.badge.pendiente{background:#fef3c7;color:#92400e}
+.badge.CONFIRMADO,.badge.CONFIRMADA,.badge.APROBADA,.badge.PAGADO,.badge.ACTIVO{background:#dcfce7;color:#166534}
+.badge.RECHAZADA,.badge.CANCELADA,.badge.CANCELADO{background:#fee2e2;color:#991b1b}
+.badge.REALIZADA,.badge.INSTALADA{background:#dbeafe;color:#1e40af}
+.badge.EN_REVISION{background:#e0e7ff;color:#3730a3}
+.loading{padding:24px;text-align:center;color:var(--muted)}
+.pulsing{animation:logoPulse 1.6s ease-in-out infinite}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(10,16,34,.95);color:#fff;padding:14px 22px;border-radius:99px;font-size:14px;font-weight:600;
+  border:1px solid var(--line);opacity:0;pointer-events:none;transition:.3s;z-index:200;box-shadow:var(--shadow-lg);max-width:90vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:rgba(127,29,29,.95);border-color:rgba(248,113,113,.4)}
+#toast.ok{background:rgba(6,78,59,.95);border-color:rgba(52,211,153,.4)}
+
+@keyframes fadeApp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fadeApp{animation:fadeApp .35s ease}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 16px var(--glow)}50%{box-shadow:0 0 34px var(--glow)}}
+@keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+@media (max-width:760px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .tbl{font-size:12.5px}
+  .tbl th,.tbl td{padding:8px 8px}
+}
+</style>
+</head>
+<body>
+
+<header class="adm-bar">
+  <div class="ab-inner">
+    <span class="ab-brand"><span class="dot">N</span><b id="ab-name">NetSatipo</b><em>panel</em></span>
+    <div class="ab-links"><a href="index.html">← Volver a la página</a></div>
+  </div>
+</header>
+
+<section class="wrap">
+  <div class="login-card fadeApp" id="login-card">
+    <div class="sec-tag">Acceso restringido</div>
+    <h3>Panel de administración</h3>
+    <input type="password" id="adm-pass" placeholder="Contraseña de administrador" onkeydown="if(event.key==='Enter')onAdminLogin()" autocomplete="current-password">
+    <button class="btn-submit" onclick="onAdminLogin()">Ingresar</button>
+    <div id="adm-login-msg" style="margin-top:12px;font-size:13px"></div>
+  </div>
+
+  <div class="admin" id="admin-view" style="display:none">
+    <div class="admin-top">
+      <h2>Panel de administración</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-admin" onclick="loadAdmin(true)">↻ Refrescar</button>
+        <button class="btn-admin" onclick="onAdminLogout()">Cerrar sesión</button>
+      </div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="admin-tabs">
+      <button class="on" data-sec="SOLICITUDES" onclick="setAdminTab(this)">Solicitudes</button>
+      <button data-sec="VISITAS" onclick="setAdminTab(this)">Visitas</button>
+      <button data-sec="CLIENTES" onclick="setAdminTab(this)">Clientes</button>
+      <button data-sec="FACTURAS" onclick="setAdminTab(this)">Facturas</button>
+      <button data-sec="MORA" onclick="setAdminTab(this)">Mora</button>
+      <button data-sec="PAGOS" onclick="setAdminTab(this)">Pagos</button>
+      <button data-sec="PLANES" onclick="setAdminTab(this)">Planes</button>
+      <button data-sec="AJUSTES" onclick="setAdminTab(this)">⚙️ Ajustes web</button>
+    </div>
+    <div class="export-bar">
+      <button onclick="onExport('SOLICITUDES')">Exportar solicitudes (CSV)</button>
+      <button onclick="onExport('VISITAS')">Exportar visitas (CSV)</button>
+      <button onclick="onExport('CLIENTES')">Exportar clientes (CSV)</button>
+      <button onclick="onExport('FACTURAS')">Exportar facturas (CSV)</button>
+      <button onclick="onExport('PAGOS')">Exportar pagos (CSV)</button>
+      <button onclick="onExportPlanNew()">+ Nuevo plan</button>
+      <button class="btn-admin ok" onclick="toggleAltaForm('SOLICITUD')">➕ Nuevo contrato</button>
+      <button class="btn-admin ok" onclick="toggleAltaForm('CLIENTE')">➕ Nuevo cliente</button>
+      <button class="btn-admin" onclick="window.open('tecnico.html','_blank')">🛠 Panel técnico</button>
+      <button class="btn-admin" onclick="window.open('ventas.html','_blank')">💼 Panel ventas</button>
+    </div>
+    <div id="alta-form" style="display:none;background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px">
+      <h3 style="margin-bottom:14px"><span id="alta-title">Nuevo contrato</span></h3>
+      <div class="field-row">
+        <div><label>Nombres y apellidos *</label><input id="alta-nombres" placeholder="Ej: Juan Pérez"></div>
+        <div><label>DNI</label><input id="alta-dni" maxlength="8" inputmode="numeric" placeholder="8 dígitos"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Teléfono</label><input id="alta-telefono" maxlength="9" inputmode="numeric" placeholder="9 dígitos"></div>
+        <div><label>Email</label><input id="alta-email" type="email" placeholder="correo@ejemplo.com"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Dirección</label><input id="alta-direccion" placeholder="Calle / Jr / Av"></div>
+        <div><label>Distrito</label><input id="alta-distrito" placeholder="Satipo"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Plan</label><select id="alta-plan"><option value="">Selecciona…</option></select></div>
+        <div><label>Medio de pago</label><select id="alta-pago"><option value="EFECTIVO">Efectivo</option><option value="YAPE">Yape</option><option value="PLIN">PLIN</option><option value="TRANSFERENCIA">Transferencia</option></select></div>
+      </div>
+      <div class="field-row">
+        <div><label>Estado</label><select id="alta-estado"></select></div>
+        <div><label>Notas</label><input id="alta-notas" placeholder="Referencias de la instalación"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <button class="btn-admin ok" onclick="admNuevoContrato()">💾 Guardar</button>
+        <button class="btn-admin" onclick="toggleAltaForm()">Cancelar</button>
+        <span id="alta-msg" style="font-size:12px;color:var(--muted);align-self:center"></span>
+      </div>
+    </div>
+    <div id="factura-form" style="display:none;background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px">
+      <h3 style="margin-bottom:14px">Nueva factura</h3>
+      <div class="field-row">
+        <div><label>Cliente</label><select id="fact-cliente" onchange="onFactCliente()"><option value="">Selecciona un cliente…</option></select></div>
+        <div><label>Plan</label><input id="fact-plan" placeholder="Ej: Hogar"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Período (AAAA-MM)</label><input id="fact-periodo" placeholder="2026-09" value=""><span id="fact-periodo-def" style="font-size:12px;color:var(--muted)"></span></div>
+        <div><label>Monto S/</label><input id="fact-monto" type="number" step="0.01" placeholder="79"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Vencimiento</label><input id="fact-venc" type="date"></div>
+        <div><label>Estado</label><select id="fact-estado"><option value="PENDIENTE">Pendiente</option><option value="VENCIDA">Vencida</option><option value="PAGADA">Pagada</option></select></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <button class="btn-admin ok" onclick="admNewFactura()">💾 Guardar factura</button>
+        <button class="btn-admin" onclick="toggleFacturaForm()">Cancelar</button>
+      </div>
+    </div>
+    <div id="admin-tab-body"><div class="loading pulsing">Cargando…</div></div>
+  </div>
+</section>
+
+<div id="toast"></div>
+
+<script>
+  /* ===== CONFIG: URL de tu Web App de Apps Script (backend/API) ===== */
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxZfzGkuA7DGqD2lix5Y0Kw9lXNpX6JWSP56Upd7dJTs2Tt7-l-5vA58xeR8-rZqvg/exec";
+
+  function _api(fn, args){
+    args = args || [];
+    const inGAS = !!(window.google && google.script && google.script.run);
+    if (inGAS){
+      return new Promise((resolve)=>{
+        google.script.run
+          .withSuccessHandler((r)=> resolve(r && r.ok===false ? r : (r && r._rpc ? r.result : r)))
+          .withFailureHandler((err)=> resolve({ ok:false, error: String(err && err.message || err) }))
+          .__rpc(fn, args, null);
+      });
+    }
+    const ctrl = ('AbortController' in window) ? new AbortController() : null;
+    const t = ctrl ? setTimeout(()=>ctrl.abort(), 120000) : null;
+    return fetch(GAS_EXEC, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ fn: fn, args: args }),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(r=>{ if (t) clearTimeout(t); return r.text(); }, e=>{ if (t) clearTimeout(t); throw e; })
+      .then(txt=>{
+        const f = txt.trim().slice(0,1);
+        if (f === '<' || /<\s*(!doctype|html)/i.test(txt.slice(0,120))){
+          return { ok:false, error:'El Web App no respondió JSON. Revisa en Apps Script: publica con "Ejecutar como: Yo" y "Quién tiene acceso: Cualquier usuario", y activa la versión más reciente.' };
+        }
+        try { return JSON.parse(txt); }
+        catch(err){ return { ok:false, error:'Respuesta no válida del servidor ('+String(err&&err.message||err)+')' }; }
+      })
+      .catch(err=>{
+        if (err && (err.name==='AbortError' || /abor/i.test(String(err&&err.message||err)))) return { ok:false, error:'El servidor tardó demasiado en responder. Reintenta en unos segundos.' };
+        return { ok:false, error:String(err&&err.message||err) };
+      });
+  }
+</script>
+
+<script>
+let S = { cfg:{}, auth:null, admTab:'SOLICITUDES', admCache:{}, altaModo:'SOLICITUD' };
+const $ = id => document.getElementById(id);
+const esc = (s)=> String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const jsq = (v)=> esc(JSON.stringify(v==null?'':v));
+const badge = (s)=>{ const k=String(s||'').toUpperCase(); return '<span class="badge '+esc(k)+'">'+esc(s||'—')+'</span>'; };
+
+function toast(msg, tipo){
+  const t = $('toast');
+  t.textContent = msg; t.className = 'show '+(tipo||'');
+  clearTimeout(t._h);
+  t._h = setTimeout(()=> t.className='', 3200);
+}
+const __CACHE_TTL = 5*60*1000;
+function cacheGet(k){ try{ const j = JSON.parse(localStorage.getItem('InsatA_'+k)||'null'); if (j && (Date.now()-j.t) < __CACHE_TTL) return j.v; }catch(_){ } return null; }
+function cacheSet(k,v){ try{ localStorage.setItem('InsatA_'+k, JSON.stringify({t:Date.now(), v:v})); }catch(_){ } }
+
+async function api(fn, args){
+  args = args || [];
+  try{
+    const r = await _api(fn, args);
+    if (fn==='getPublicSettings'){
+      if (r && r.ok===false){ return cacheGet(fn) || r; }
+      cacheSet(fn, r);
+    }
+    return r;
+  }catch(e){
+    if (fn==='getPublicSettings'){ const c = cacheGet(fn); if (c) return c; }
+    return { ok:false, error:String(e&&e.message||e) };
+  }
+}
+
+/* ===== SESION ===== */
+function setLogin(showing){
+  $('login-card').style.display = showing ? '' : 'none';
+  $('admin-view').style.display = showing ? 'none' : 'block';
+}
+async function onAdminLogin(){
+  const p = $('adm-pass').value;
+  if (!p){ toast('Ingresa la contraseña','err'); return; }
+  const r = await api('adminLogin', [p]);
+  $('adm-login-msg').innerHTML = '';
+  if (!r.ok){ $('adm-login-msg').innerHTML = '<span style="color:var(--err);font-weight:700">'+esc(r.error)+'</span>'; return; }
+  S.auth = r.token;
+  try{ localStorage.setItem('satipo_admin_token', r.token); }catch(_){}
+  toast('Bienvenido','ok');
+  setLogin(false);
+  loadAdmin(true);
+}
+async function onAdminLogout(){
+  if (S.auth) await api('adminLogout', [S.auth]);
+  S.auth = null;
+  try{ localStorage.removeItem('satipo_admin_token'); }catch(_){}
+  setLogin(true);
+  toast('Sesión cerrada','ok');
+}
+async function restoreAdminSession(){
+  try{
+    const t = localStorage.getItem('satipo_admin_token');
+    if (t){ S.auth = t; setLogin(false); loadAdmin(true); }
+  }catch(_){}
+}
+function esErrorAuth(err){
+  const m = String(err||'').toLowerCase();
+  return /no autorizado/.test(m) || /expirad/.test(m) || /expir[oó]/.test(m) || /no iniciada/.test(m) || /no hay contrase/.test(m);
+}
+
+/* ===== TABLAS ===== */
+function setAdminTab(btn){
+  document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  S.admTab = btn.dataset.sec;
+  loadAdmin();
+}
+async function loadAdmin(force){
+  const body = $('admin-tab-body');
+  const filteredFact = S.admTab==='FACTURAS' && !!S.factFilter;
+  const cached = S.admCache && S.admCache[S.admTab] && !filteredFact;
+  if (!force && cached && (Date.now() - cached.t) < 20000){ body.innerHTML = cached.html; return; }
+  body.innerHTML = '<div class="loading pulsing">Cargando…</div>';
+  const dataP = S.admTab==='MORA' ? api('adminMora',[S.auth]) : S.admTab==='AJUSTES' ? api('adminGetSettings',[S.auth]) : api('adminList',[S.admTab, S.auth]);
+  const [stats, rows] = await Promise.all([ api('adminStats',[S.auth]), dataP ]);
+  if (!S.auth){ return; }
+  if (!stats.ok || (rows && rows.ok===false)){
+    const errMsg = (stats && stats.error) || (rows && rows.error) || '';
+    if (esErrorAuth(errMsg)){
+      await onAdminLogout();
+      toast('Tu sesión expiró. Ingresa nuevamente.','err');
+      return;
+    }
+    if (errMsg) toast(errMsg,'err');
+  }
+  if (stats.ok && stats.stats){
+    const st = stats.stats;
+    $('kpis').innerHTML = `
+      <div class="kpi"><b>${st.solicitudes}</b><span>Solicitudes</span></div>
+      <div class="kpi"><b>${st.pendientes}</b><span>Pendientes</span></div>
+      <div class="kpi"><b>${st.visitas}</b><span>Visitas</span></div>
+      <div class="kpi"><b>${st.visitasPend}</b><span>Visitas pendientes</span></div>
+      <div class="kpi"><b>${st.clientes}</b><span>Clientes</span></div>
+      <div class="kpi"><b>S/ ${st.ingresos}</b><span>Ingresos pagados</span></div>
+      <div class="kpi"><b>${st.facturasPend||0}</b><span>Facturas pend.</span></div>
+      <div class="kpi"><b>${st.morosos||0}</b><span>Morosos</span></div>`;
+  }
+  if (S.admTab==='MORA') renderAdminMora((rows && rows.ok) ? rows : null);
+  else if (S.admTab==='AJUSTES') renderAdminAjustes(rows);
+  else if (S.admTab==='PLANES') renderAdminPlanes(rows);
+  else if (S.admTab==='SOLICITUDES') renderAdminSolicitudes(rows);
+  else if (S.admTab==='VISITAS') renderAdminVisitas(rows);
+  else if (S.admTab==='CLIENTES') renderAdminClientes(rows);
+  else if (S.admTab==='FACTURAS') renderAdminFacturas(rows);
+  else if (S.admTab==='PAGOS') renderAdminPagos(rows);
+  else body.innerHTML = '<div class="loading">Sección no disponible</div>';
+  S.admCache = S.admCache || {};
+  S.admCache[S.admTab] = { t: Date.now(), html: body.innerHTML };
+}
+function renderAdminSolicitudes(rows){
+  const headers = ['Código','Tipo','Plan','Cliente','Tel','Email','Distrito','Pago','Estado pago','Firma','Estado','Creado','Acciones'];
+  const b = $('admin-tab-body');
+  if (!rows || !rows.length){ b.innerHTML = '<div class="loading">Sin solicitudes aún.</div>'; return; }
+  let html = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const d = r.data;
+    html += `<tr>
+      <td class="mono">${esc(d.solicitud_id)}</td>
+      <td>${esc(d.tipo)}</td>
+      <td>${esc(d.plan_nombre)}</td>
+      <td>${esc(d.nombres)}</td>
+      <td>${esc(d.telefono)}</td>
+      <td>${esc(d.email)}</td>
+      <td>${esc(d.distrito)}</td>
+      <td>${esc(d.pago_metodo)}</td>
+      <td>${badge(d.pago_estado)}</td>
+      <td>${d.firmado_en? '✍️ <span title="'+esc(d.firmado_en)+'">'+esc(String(d.firmado_en).slice(0,10))+'</span>' : '—'}</td>
+      <td><select onchange="admRow('SOLICITUDES',${r.__row},'estado',this.value)">
+        ${S_OPTS('SOLICITUDES', d.estado)}
+      </select></td>
+      <td>${esc(String(d.creado_en).slice(0,16))}</td>
+      <td class="row-actions">
+        <button class="mini-btn" onclick="admLink('tel:${esc(d.telefono)}')">Llamar</button>
+        <button class="mini-btn" onclick="admWa(${jsq(d.telefono)},${jsq(d.nombres)})">WA</button>
+        ${String(d.pago_estado).toUpperCase()!=='PAGADO' ? '<button class="mini-btn ok" onclick="admPago('+jsq(d.solicitud_id)+','+jsq(d.nombres)+')">Pago</button>' : ''}
+      </td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  b.innerHTML = html;
+}
+function renderAdminVisitas(rows){
+  const headers = ['Código','Cliente','Tel','Tipo','Fecha','Hora','Dirección','Estado','Técnico','Acciones'];
+  if (!rows || !rows.length){ $('admin-tab-body').innerHTML = '<div class="loading">Sin visitas aún.</div>'; return; }
+  let html = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const d = r.data;
+    html += `<tr>
+      <td class="mono">${esc(d.visita_id)}</td>
+      <td>${esc(d.nombres)}</td>
+      <td>${esc(d.telefono)}</td>
+      <td>${esc(d.tipo_visita)}</td>
+      <td>${esc(d.fecha_propuesta)}</td>
+      <td>${esc(d.hora_propuesta)}</td>
+      <td>${esc(d.direccion)} ${d.distrito?'— '+esc(d.distrito):''}</td>
+      <td><select onchange="admRow('VISITAS',${r.__row},'estado',this.value)">${S_OPTS('VISITAS', d.estado)}</select></td>
+      <td><input class="td" style="width:110px" value="${esc(d.tecnico)}" onchange="admRow('VISITAS',${r.__row},'tecnico',this.value)"></td>
+      <td class="row-actions"><button class="mini-btn" onclick="admLink('tel:${esc(d.telefono)}')">Llamar</button><button class="mini-btn" onclick="admWa(${jsq(d.telefono)},${jsq(d.nombres)})">WA</button></td></tr>`;
+  });
+  $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
+}
+function renderAdminClientes(rows){
+  const headers = ['Código','DNI','Nombres','Tel','Email','Distrito','Plan','Prioridad','Condición','Cuota S/','Saldo S/','Estado','Alta','Acciones'];
+  if (!rows || !rows.length){ $('admin-tab-body').innerHTML = '<div class="loading">Sin clientes aún.</div>'; return; }
+  let html = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const d = r.data;
+    html += `<tr>
+      <td class="mono">${esc(d.cliente_id)}</td>
+      <td>${esc(d.dni)}</td>
+      <td>${esc(d.nombres)}</td>
+      <td>${esc(d.telefono)}</td>
+      <td>${esc(d.email)}</td>
+      <td>${esc(d.distrito)}</td>
+      <td>${esc(d.plan_id)}</td>
+      <td><select onchange="admRow('CLIENTES',${r.__row},'prioridad',this.value)">
+        ${['REGULAR','PREFERENTE','CORPORATIVO'].map(o=>'<option '+(String(d.prioridad||'REGULAR')===o?'selected':'')+'>'+o+'</option>').join('')}
+      </select></td>
+      <td><input class="td" style="width:140px" value="${esc(d.condicion)}" onchange="admRow('CLIENTES',${r.__row},'condicion',this.value)" placeholder="Ej: jubilado, referido, convenio"></td>
+      <td><input class="td" style="width:66px" type="number" step="0.01" value="${esc(d.cuota_especial||'')}" onchange="admRow('CLIENTES',${r.__row},'cuota_especial',this.value)" placeholder="plan"></td>
+      <td><b style="color:${Number(d.saldo_a_favor||0)>0?'var(--ok)':'inherit'}">${Number(d.saldo_a_favor||0)>0?esc(Number(d.saldo_a_favor).toFixed(2)):'—'}</b> <button class="mini-btn" title="Abonar saldo a favor" onclick="admSaldo(${jsq(d.cliente_id)},${jsq(d.nombres)},${Number(d.saldo_a_favor||0)})">➕</button></td>
+      <td><select onchange="admRow('CLIENTES',${r.__row},'estado',this.value)">
+        ${['ACTIVO','INSTALADO','INSTALADA','APROBADO','APROBADA','PENDIENTE','SUSPENDIDO','CORTADO','BAJA_SOLICITADA'].map(o=>'<option '+(String(d.estado).toUpperCase()===o?'selected':'')+'>'+o+'</option>').join('')}
+      </select></td>
+      <td>${esc(String(d.fecha_alta).slice(0,10))}</td>
+      <td class="row-actions"><button class="mini-btn" onclick="admWa(${jsq(d.telefono)},${jsq(d.nombres)})">WA</button><button class="mini-btn" onclick="verFacturasCliente(${jsq(d.cliente_id)},${jsq(d.nombres)})">Facturas</button></td></tr>`;
+  });
+  $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
+}
+function renderAdminFacturas(rows){
+  if (S.factFilter){
+    const cid = S.factFilter;
+    rows = (rows||[]).filter(r => String(r.data.cliente_id)===cid);
+  }
+  const headers = ['Factura','Cliente','Plan','Período','Monto','Vence','Estado','Pagado','Envío','Acciones'];
+  const wrap = '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">'
+    +'<button class="btn-admin ok" onclick="toggleFacturaForm()">+ Nueva factura</button>'
+    +'<button class="btn-admin" onclick="admBulk()">🔄 Facturar todos los activos (mes)</button>'
+    +(S.factFilter ? '<button class="btn-admin" onclick="S.factFilter=null;loadAdmin(true)">✕ Quitar filtro: '+esc(S.factCliNombre||'cliente')+'</button>' : '')
+    +'</div>';
+  if (!rows || !rows.length){ $('admin-tab-body').innerHTML = wrap + '<div class="loading">Sin facturas aquí.</div>'; return; }
+  let html = wrap + '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
+  rows.slice().reverse().forEach(r=>{
+    const d = r.data;
+    const envCell = (d.enviado_email||d.enviado_wa) ? '<span style="font-size:12px">'+(d.enviado_email?'<span title="Email: '+esc(d.enviado_email)+'">📧</span> ':'')+(d.enviado_wa?'<span title="WhatsApp: '+esc(d.enviado_wa)+'">🟢</span>':'')+'</span>' : '<span style="color:var(--muted)">—</span>';
+    html += `<tr>
+      <td class="mono">${esc(d.factura_id)}</td>
+      <td>${esc(d.cliente_nombre)}</td>
+      <td>${esc(d.plan_nombre||'—')}</td>
+      <td>${esc(d.periodo)}</td>
+      <td><b>S/ ${esc(d.monto)}</b></td>
+      <td>${esc(d.vencimiento||'—')}</td>
+      <td><select onchange="admRow('FACTURAS',${r.__row},'estado',this.value)">${S_OPTS('FACTURAS', d.estado)}</select></td>
+      <td>${d.pagado_en?esc(String(d.pagado_en).slice(0,16)):'—'}</td>
+      <td>${envCell}</td>
+      <td class="row-actions">
+        ${String(d.estado).toUpperCase()!=='PAGADA' ? '<button class="mini-btn ok" title="Marcar PAGADA" onclick="admConfirmFactura(\''+esc(d.factura_id)+'\')">Confirmar</button>' : ''}
+        <button class="mini-btn" title="Enviar recordatorio por WhatsApp" onclick="admEnviarFactura(${jsq(d.factura_id)},'wa')">🟢</button>
+        <button class="mini-btn" title="Enviar factura por correo" onclick="admEnviarFactura(${jsq(d.factura_id)},'email')">📧</button>
+      </td></tr>`;
+  });
+  $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
+}
+async function toggleFacturaForm(){
+  const f = $('factura-form');
+  f.style.display = f.style.display==='none' ? 'block' : 'none';
+  if (f.style.display!=='block') return;
+  const d = new Date();
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0');
+  $('fact-periodo-def').textContent = 'Mes actual: '+y+'-'+m;
+  if (!$('fact-periodo').value) $('fact-periodo').value = y+'-'+m;
+  if (!$('fact-venc').value){
+    const last = new Date(y, d.getMonth()+1, 0);
+    $('fact-venc').value = y+'-'+m+'-'+String(last.getDate()).padStart(2,'0');
+  }
+  const sel = $('fact-cliente');
+  const r = await api('adminList',['CLIENTES',S.auth]);
+  S.admClientes = (r.ok && r.rows) ? r.rows.map(x=>x.data) : [];
+  if (!S.admClientes.length){ toast('No se pudieron cargar los clientes','err'); }
+  sel.innerHTML = '<option value="">Selecciona un cliente…</option>'
+    + S.admClientes.map(c => {
+      const flag = String(c.prioridad||'')==='PREFERENTE' ? ' ★' : '';
+      const sp = (c.cuota_especial>0) ? ' · S/ '+c.cuota_especial+'/mes' : '';
+      const est = String(c.estado||'').toUpperCase();
+      const eta = ['ACTIVO','INSTALADO','INSTALADA','APROBADA','APROBADO'].indexOf(est)>=0 ? '' : ' · ('+esc(c.estado)+')';
+      return '<option value="'+esc(c.cliente_id)+'" data-cuota="'+esc(c.cuota_especial||'0')+'">'+esc(c.nombres+' — '+c.dni+flag+sp+eta)+'</option>';
+    }).join('');
+}
+function onFactCliente(){
+  const sel = $('fact-cliente');
+  const c = (S.admClientes||[]).find(x => String(x.cliente_id)===sel.value);
+  if (!c) return;
+  const monto = $('fact-monto');
+  if (c.cuota_especial>0){
+    if (!monto.value || Number(monto.value)<=0) monto.value = c.cuota_especial;
+  }
+}
+function admNewFactura(){
+  const sel = $('fact-cliente');
+  const cid = sel.value;
+  if (!cid){ toast('Selecciona un cliente','err'); return; }
+  const c = (S.admClientes||[]).find(x => String(x.cliente_id)===cid);
+  const nom = c ? c.nombres : '';
+  const monto = $('fact-monto').value;
+  if (!monto){ toast('Indica el monto (autocompleta con la cuota del cliente)','err'); return; }
+  const p = { cliente_id: cid, cliente_nombre: nom, plan_id: c?(c.plan_id||''):'', plan_nombre: $('fact-plan').value.trim(), periodo: ($('fact-periodo').value.trim()||(()=>{ const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0'); })()), monto: monto, vencimiento: $('fact-venc').value, estado: $('fact-estado').value };
+  api('adminRegisterFactura', [p, S.auth]).then(r=>{
+    if (!r.ok){ toast(r.error||'Error','err'); return; }
+    toast('Factura '+r.factura_id+' creada','ok');
+    toggleFacturaForm();
+    $('fact-cliente').value=''; $('fact-plan').value=''; $('fact-monto').value='';
+    loadAdmin(true);
+  });
+}
+function admBulk(){
+  const d = new Date();
+  const actual = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  const periodo = window.prompt('Facturar todos los clientes ACTIVOS/INSTALADOS/APROBADOS.\nPeríodo (AAAA-MM):', actual);
+  if (!periodo) return;
+  if (!/^\d{4}-\d{2}$/.test(periodo.trim())){ toast('Formato AAAA-MM','err'); return; }
+  api('adminBulkFacturas', [{ periodo: periodo.trim() }, S.auth]).then(r=>{
+    if (!r.ok){ toast(r.error||'Error','err'); return; }
+    window.alert('Cobro masivo '+r.periodo+'\n✔ Creadas: '+r.creadas+'\nYa existían: '+r.duplicados+'\nNo aptos (no activos): '+r.ignorados);
+    loadAdmin(true);
+  });
+}
+function admSaldo(cliente_id, nombre, actual){
+  const monto = window.prompt('Abonar saldo a favor a '+nombre+'\nSaldo actual: S/ '+(actual||0)+'\nMonto a acreditar (S/):');
+  if (monto === null) return;
+  const m = Number(String(monto).trim());
+  if (!(m>0)){ toast('Monto inválido','err'); return; }
+  api('adminSaldo', [{ cliente_id: cliente_id, monto: m, op: 'agregar' }, S.auth]).then(r=>{
+    if (!r.ok){ toast(r.error||'Error','err'); return; }
+    toast(nombre+': saldo a favor S/ '+r.saldo_a_favor+' (se aplicó a facturas pendientes)','ok');
+    loadAdmin(true);
+  });
+}
+function renderAdminMora(data){
+  S.admMoraData = data;
+  const body = $('admin-tab-body');
+  const ktop = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">'
+    +'<div style="background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:10px 16px"><b style="font-size:20px;color:var(--err)">'+(data?data.total:0)+'</b> <span style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase">Clientes en mora</span></div>'
+    +'<div style="background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:10px 16px"><b style="font-size:20px;color:var(--warn)">S/ '+(data?data.deuda_total:0)+'</b> <span style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase">Deuda total</span></div>'
+    +'<button class="btn-admin" onclick="admMoraClip()">📋 Copiar lista para WhatsApp</button>'
+    +'</div>';
+  if (!data || !data.lista || !data.lista.length){ body.innerHTML = ktop + '<div class="loading">¡Sin clientes en mora! 🎉</div>'; return; }
+  let html = ktop + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Cliente</th><th>DNI</th><th>Distrito</th><th>Estado</th><th>Prioridad</th><th>Condición</th><th># Pend.</th><th>Venc.</th><th>Días</th><th>Deuda</th><th>Acciones</th></tr></thead><tbody>';
+  data.lista.forEach(m=>{
+    const diasColor = m.dias_mora>=30 ? 'var(--err)' : (m.dias_mora>=7 ? 'var(--warn)' : 'var(--ink)');
+    html += `<tr>
+      <td>${esc(m.nombres)}</td>
+      <td class="mono">${esc(m.dni)}</td>
+      <td>${esc(m.distrito)}</td>
+      <td>${badge(m.estado)}</td>
+      <td>${esc(m.prioridad||'REGULAR')}</td>
+      <td>${esc(m.condicion||'—')}</td>
+      <td>${m.facturas_pend}</td>
+      <td>${m.vencidas}</td>
+      <td>${m.dias_mora ? '<b style="color:'+diasColor+'">'+m.dias_mora+'</b>' : '—'}</td>
+      <td><b>S/ ${m.total_deuda}</b></td>
+      <td class="row-actions">
+        <button class="mini-btn" onclick="admWa(${jsq(m.telefono)},${jsq(m.nombres)})">WA</button>
+        <button class="mini-btn" onclick="admLink('tel:${esc(m.telefono)}')">Llamar</button>
+        ${String(m.estado).toUpperCase()!=='CORTADO' ? '<button class="mini-btn danger" onclick="admRow(\'CLIENTES\','+m.__row+',\'estado\',\'CORTADO\')">Cortar</button>' : ''}
+        <button class="mini-btn" onclick="verFacturasCliente(${jsq(m.cliente_id)},${jsq(m.nombres)})">Facturas</button>
+      </td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  body.innerHTML = html;
+}
+function admMoraClip(){
+  try {
+    const data = S.admMoraData;
+    if (!data || !data.lista || !data.lista.length){ toast('No hay datos de mora','err'); return; }
+    const txt = data.lista.map(m => m.nombres+' - '+m.dni+' - '+m.distrito+' - S/ '+m.total_deuda+(m.condicion? ' ('+m.condicion+')':'')).join('\n');
+    navigator.clipboard.writeText(txt).then(()=> toast('Lista de morosos copiada','ok')).catch(()=> toast('No se pudo copiar','err'));
+  } catch(_){ toast('No se pudo copiar','err'); }
+}
+function verFacturasCliente(cid, nombre){
+  S.factFilter = cid; S.factCliNombre = nombre;
+  const btn = document.querySelector('.admin-tabs button[data-sec="FACTURAS"]');
+  if (btn) setAdminTab(btn);
+}
+function admConfirmFactura(fid){
+  if (!confirm('¿Marcar la factura '+fid+' como PAGADA?')) return;
+  api('adminConfirmFactura', [fid, S.auth]).then(r=>{
+    if (!r.ok) toast(r.error||'Error','err'); else { toast('Factura pagada','ok'); loadAdmin(true); }
+  });
+}
+function admEnviarFactura(fid, modo){
+  api('adminEnviarFactura', [{ factura_id: fid, modo: modo }, S.auth]).then(r=>{
+    if (!r.ok){ toast(r.error||'Error','err'); return; }
+    if (modo==='wa'){
+      const u = r.url;
+      if (u){ try{ window.open(u,'_blank','noopener'); }catch(_){ location.href = u; } }
+      toast('Recordatorio WhatsApp listo y marcado como enviado','ok');
+    } else {
+      toast('Factura enviada por correo a '+esc(r.email||''),'ok');
+    }
+    loadAdmin(true);
+  });
+}
+function renderAdminPagos(rows){
+  const headers = ['Código','Cliente','Monto','Método','Ref.','Estado','Creado','Acciones'];
+  if (!rows || !rows.length){ $('admin-tab-body').innerHTML = '<div class="loading">Sin pagos aún.</div>'; return; }
+  let html = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const d = r.data;
+    html += `<tr>
+      <td class="mono">${esc(d.pago_id)}</td>
+      <td>${esc(d.cliente_nombre)}</td>
+      <td><b>S/ ${esc(d.monto)}</b></td>
+      <td>${esc(d.metodo)}</td>
+      <td>${esc(d.referencia)}</td>
+      <td>${badge(d.estado)}</td>
+      <td>${esc(String(d.creado_en).slice(0,16))}</td>
+      <td class="row-actions">${String(d.estado).toUpperCase()!=='CONFIRMADO' ? '<button class="mini-btn ok" onclick="admConfirmPago(\''+esc(d.pago_id)+'\')">Confirmar</button>' : ''}
+      <button class="mini-btn" onclick="admNewPagoRow()">+ Nuevo</button></td></tr>`;
+  });
+  $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
+}
+function renderAdminPlanes(rows){
+  const headers = ['ID','Nombre','Velocidad','Precio S/','Período','Extras','Recom','Activo','Orden','Acciones'];
+  if (!rows || !rows.length){ $('admin-tab-body').innerHTML = '<div class="loading">Sin planes.</div>'; return; }
+  let html = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const d = r.data;
+    const sel = d.activo===true || String(d.activo).toUpperCase()==='TRUE' ? 'checked' : '';
+    const recom = d.recomendado===true || String(d.recomendado).toUpperCase()==='TRUE' ? 'checked' : '';
+    html += `<tr>
+      <td class="mono">${esc(d.plan_id)}</td>
+      <td><input class="td" style="width:110px" value="${esc(d.nombre)}" onchange="admPlan('${esc(d.plan_id)}','nombre',this.value)"></td>
+      <td><input class="td" style="width:80px" value="${esc(d.velocidad)}" onchange="admPlan('${esc(d.plan_id)}','velocidad',this.value)"></td>
+      <td><input class="td" style="width:70px" type="number" value="${esc(d.precio)}" onchange="admPlan('${esc(d.plan_id)}','precio',this.value)"></td>
+      <td><select class="td" onchange="admPlan('${esc(d.plan_id)}','periodicidad',this.value)">${['MENSUAL','TRIMESTRAL','SEMESTRAL','ANUAL'].map(o=>'<option '+(String(d.periodicidad).toUpperCase()===o?'selected':'')+'>'+o+'</option>').join('')}</select></td>
+      <td><input class="td" style="width:140px" value="${esc(d.extras)}" onchange="admPlan('${esc(d.plan_id)}','extras',this.value)" placeholder="A|B|C"></td>
+      <td><input type="checkbox" ${recom} onchange="admPlan('${esc(d.plan_id)}','recomendado',this.checked)"></td>
+      <td><input type="checkbox" ${sel} onchange="admPlan('${esc(d.plan_id)}','activo',this.checked)"></td>
+      <td><input class="td" style="width:50px" type="number" value="${esc(d.orden)}" onchange="admPlan('${esc(d.plan_id)}','orden',this.value)"></td>
+      <td class="row-actions"><button class="mini-btn danger" onclick="admDelPlan('${esc(d.plan_id)}')">Eliminar</button></td></tr>`;
+  });
+  $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
+}
+function S_OPTS(sec, cur){
+  return DB_EST[sec].map(o=>'<option '+(String(cur||'').toUpperCase()===o?'selected':'')+' value="'+o+'">'+o+'</option>').join('');
+}
+const DB_EST = {
+  SOLICITUDES: ['PENDIENTE','EN_REVISION','APROBADA','INSTALADA','RECHAZADA','CANCELADA'],
+  VISITAS: ['PENDIENTE','CONFIRMADA','REALIZADA','CANCELADA'],
+  FACTURAS: ['PENDIENTE','PAGADA','VENCIDA']
+};
+async function admRow(sec, rowNum, field, val){
+  const r = await api('adminUpdateRow', [sec, rowNum, field, val, S.auth]);
+  if (!r.ok){ toast(r.error||'Error','err'); } else { toast('Actualizado','ok'); if (sec==='PAGOS'||field==='estado') loadAdmin(true); }
+}
+function admLink(url){ window.open(url,'_blank'); }
+function admWa(phone, name){
+  const p = String(phone||'').replace(/\D/g,'');
+  if (p) window.open('https://wa.me/'+p+(name?'?text=Hola%20'+encodeURIComponent(name)+',%20te%20escribimos%20de%20'+encodeURIComponent(S.cfg.empresa_nombre||'')+'%20(Satipo)':''),'_blank');
+}
+async function admPago(solId, nombre){
+  const w = window.prompt('Registrar pago de S/ para '+nombre+'\nMontos sugeridos al lado de la solicitud.','');
+  if (!w) return;
+  const r = await api('adminRegisterPago', [{ solicitud_id:solId, cliente_id:'', cliente_nombre:nombre, monto:w, metodo:'EFECTIVO', referencia:solId }, S.auth]);
+  if (!r.ok) toast(r.error||'Error','err'); else { toast('Pago registrado','ok'); loadAdmin(true); }
+}
+async function admConfirmPago(pid){
+  const r = await api('adminConfirmPago', [pid, S.auth]);
+  if (!r.ok) toast(r.error||'Error','err'); else { toast('Pago confirmado','ok'); loadAdmin(true); }
+}
+function admNewPagoRow(){
+  const d = window.prompt('Ingresa: Cliente | Monto | Método (YAPE/PLIN/TRANSFERENCIA/EFECTIVO) | Referencia');
+  if (!d) return;
+  const parts = d.split('|').map(s=>s.trim());
+  const p = { solicitud_id:'', cliente_id:'', cliente_nombre:parts[0]||'—', monto:parts[1], metodo:(parts[2]||'EFECTIVO').toUpperCase(), referencia:parts[3]||'' };
+  api('adminRegisterPago', [p, S.auth]).then(r=>{ if (!r.ok) toast(r.error||'Error','err'); else { toast('Pago registrado','ok'); loadAdmin(true); } });
+}
+function onExportPlanNew(){
+  const n = window.prompt('Nombre del nuevo plan:','Hogar');
+  if (!n || !n.trim()) return;
+  api('adminSavePlan', [{ nombre:n.trim(), velocidad:'50 megas', precio:79, periodicidad:'MENSUAL', extras:'WiFi|Router|Soporte todo el día', recomendado:false, activo:true, orden:99 }, S.auth]).then(r=>{
+    if (!r.ok) toast(r.error||'Error','err'); else { toast('Plan creado','ok'); loadAdmin(true); }
+  });
+}
+function toggleAltaForm(modo){
+  if (modo) S.altaModo = modo;
+  const f = $('alta-form');
+  if (!f) return;
+  if (f.style.display==='block'){ f.style.display='none'; $('alta-msg').textContent=''; return; }
+  $('alta-title').textContent = S.altaModo==='CLIENTE' ? 'Nuevo cliente' : 'Nuevo contrato';
+  $('alta-estado').innerHTML = S.altaModo==='CLIENTE'
+    ? '<option value="INSTALADO">Instalado</option><option value="ACTIVO">Activo</option><option value="PENDIENTE">Pendiente</option>'
+    : '<option value="PENDIENTE">Pendiente</option><option value="APROBADA">Aprobada</option><option value="INSTALADA">Instalada</option>';
+  f.style.display='block';
+  if (!$('alta-plan').options.length) cargarPlanesAlta();
+  $('alta-nombres').focus();
+}
+async function cargarPlanesAlta(){
+  const r = await api('adminList',['PLANES',S.auth]);
+  const planes = (r && r.ok && r.rows) ? r.rows.map(x=>x.data) : [];
+  $('alta-plan').innerHTML = '<option value="">— Selecciona el plan —</option>'+planes
+    .filter(p=>String(p.activo).toUpperCase()!=='FALSE')
+    .map(p=>'<option value="'+esc(p.plan_id)+'">'+esc(p.nombre+' · S/ '+p.precio)+'</option>').join('');
+}
+function admNuevoContrato(){
+  const tipo = S.altaModo==='CLIENTE' ? 'CLIENTE' : 'SOLICITUD';
+  const p = {
+    tipo, nombres: $('alta-nombres').value.trim(), dni: $('alta-dni').value.trim(),
+    telefono: $('alta-telefono').value.trim(), email: $('alta-email').value.trim(),
+    direccion: $('alta-direccion').value.trim(), distrito: $('alta-distrito').value.trim(),
+    plan_id: $('alta-plan').value, pago_metodo: $('alta-pago').value,
+    estado: $('alta-estado').value, notas: $('alta-notas').value.trim()
+  };
+  if (!p.nombres){ toast('Indica los nombres','err'); return; }
+  $('alta-msg').textContent='Guardando…';
+  api('adminNuevoContrato', [p, S.auth]).then(r=>{
+    if (!r || !r.ok){ $('alta-msg').textContent=''; toast((r&&r.error)||'Error','err'); return; }
+    $('alta-msg').textContent='';
+    toast(r.message||'Guardado','ok');
+    S.admTab = S.altaModo==='CLIENTE' ? 'CLIENTES' : 'SOLICITUDES';
+    document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.toggle('on', b.dataset.sec===S.admTab));
+    toggleAltaForm('SOLICITUD');
+    loadAdmin(true);
+  });
+}
+function admPlan(id, field, val){
+  const patch = {};
+  if (field==='precio') val = Number(val);
+  if (field==='activo'||field==='recomendado') val = !!val;
+  patch[field] = val;
+  const plan = { plan_id:id, ...patch };
+  api('adminSavePlan', [plan, S.auth]).then(r=>{ if (!r.ok) toast(r.error||'Error','err'); else toast('Plan guardado','ok'); });
+}
+function admDelPlan(id){
+  if (!confirm('¿Eliminar este plan?')) return;
+  api('adminDeletePlan', [id, S.auth]).then(r=>{ if (!r.ok) toast(r.error||'Error','err'); else { toast('Plan eliminado','ok'); loadAdmin(true); } });
+}
+/* ===== AJUSTES WEB ===== */
+const WEB_FIELDS = [
+  { k:'empresa_nombre', l:'Nombre de la empresa' },
+  { k:'lema', l:'Lema / frase principal' },
+  { k:'whatsapp', l:'WhatsApp (con código de país)' },
+  { k:'telefono', l:'Teléfono fijo' },
+  { k:'correo_contacto', l:'Correo de contacto' },
+  { k:'direccion_oficina', l:'Dirección de oficina' },
+  { k:'horario', l:'Horario' },
+  { k:'tema', l:'Tema (confianza | moderna | clasico)' },
+  { k:'sitio_web', l:'URL de la página (GitHub Pages)' },
+  { k:'razon_social', l:'Razón social' },
+  { k:'ruc', l:'RUC' },
+  { k:'domicilio_fiscal', l:'Domicilio fiscal' },
+  { k:'dpo_email', l:'Correo DPO' },
+  { k:'cuota_instalacion', l:'Cuota de instalación (S/)' },
+  { k:'estado_red', l:'Estado de la red', ta:true },
+  { k:'aviso_activo', l:'Aviso de mantenimiento - activar (SI o NO)' },
+  { k:'aviso_texto', l:'Aviso de mantenimiento - texto', ta:true },
+  { k:'licencias', l:'Licencias' },
+  { k:'zona_wifi_text', l:'Texto zonas WiFi', ta:true },
+  { k:'factura_auto', l:'Factura automática al cliente (SI o NO)' },
+  { k:'distritos', l:'Distritos (separados por coma)' },
+  { k:'yape_telefono', l:'Yape - teléfono' },
+  { k:'yape_nombre', l:'Yape - nombre' },
+  { k:'plin_telefono', l:'PLIN - teléfono' },
+  { k:'plin_nombre', l:'PLIN - nombre' },
+  { k:'banco_nombre', l:'Banco - nombre' },
+  { k:'banco_cuenta', l:'Banco - cuenta' },
+  { k:'banco_titular', l:'Banco - titular' },
+  { k:'promo_titulo', l:'Promo - título' },
+  { k:'promo_texto', l:'Promo - texto', ta:true },
+  { k:'promo_price', l:'Promo - precio' },
+  { k:'promo_fin', l:'Promo - fecha fin' },
+  { k:'admin_pass', l:'Contraseña del admin (clave)', pass:true },
+  { k:'tecnico_clave', l:'Clave del panel técnico', pass:true },
+  { k:'ventas_clave', l:'Clave del panel de ventas', pass:true }
+];
+function renderAdminAjustes(r){
+  const b = $('admin-tab-body');
+  if (!r || !r.settings){ b.innerHTML = '<div class="loading">Sin datos de configuración.</div>'; return; }
+  const s = r.settings;
+  const fld = (f)=>{
+    const val = esc(s[f.k]||'');
+    const inp = f.pass
+      ? '<input type="password" id="aj-'+f.k+'" value="'+val+'" placeholder="Déjalo vacío para no cambiar">'
+      : (f.ta ? '<textarea id="aj-'+f.k+'" rows="2" style="width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:var(--ink);font-size:14px;font-family:inherit">'+val+'</textarea>'
+        : '<input id="aj-'+f.k+'" value="'+val+'">');
+    return '<div><label>'+esc(f.l)+'</label>'+inp+'</div>';
+  };
+  b.innerHTML = '<div style="background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:14px;padding:22px">'+
+    '<h3 style="margin-bottom:6px">Ajustes de la web</h3>'+
+    '<p style="font-size:12.5px;color:var(--muted);margin-bottom:18px">Estos valores se reflejan de inmediato en tu página, portal y paneles. Los campos de clave vacíos se mantienen sin cambios.</p>'+
+    '<div class="field-row" style="grid-template-columns:1fr 1fr;display:grid">'+WEB_FIELDS.map(fld).join('')+'</div>'+
+    '<button class="btn-admin ok" onclick="admSaveAjustes()">💾 Guardar ajustes</button> '+
+    '<button class="btn-admin" onclick="loadAdmin(true)">Descartar</button> '+
+    '<span id="aj-msg" style="font-size:12.5px;color:var(--muted)"></span></div>';
+}
+function admSaveAjustes(){
+  const pairs = {};
+  WEB_FIELDS.forEach(f => {
+    const el = $('aj-'+f.k);
+    if (el) pairs[f.k] = el.value;
+  });
+  $('aj-msg').textContent = 'Guardando…';
+  api('adminSaveSettings', [pairs, S.auth]).then(r=>{
+    if (!r.ok){ $('aj-msg').textContent=''; toast(r.error||'Error','err'); return; }
+    $('aj-msg').textContent='';
+    toast(r.message||'Ajustes guardados','ok');
+  });
+}
+async function onExport(sec){
+  const r = await api('adminExportCsv', [sec, S.auth]);
+  if (!r.ok){ toast(r.error||'Error','err'); return; }
+  download('netsatipo_'+sec.toLowerCase()+'.csv', r.csv);
+}
+function download(name, content){
+  const blob = new Blob([content], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },300);
+}
+
+/* ===== ARRANQUE ===== */
+async function start(){
+  const cfg = await api('getPublicSettings');
+  S.cfg = cfg.ok===false ? {} : cfg;
+  document.body.dataset.theme = (S.cfg.tema||'confianza').trim() || 'confianza';
+  const nm = S.cfg.empresa_nombre || 'NetSatipo';
+  $('ab-name').textContent = nm;
+  document.title = 'Panel de administración – '+nm;
+  restoreAdminSession();
+}
+start();
+</script>
+</body>
+</html>

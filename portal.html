@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Cuenta · Portal del Cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxZfzGkuA7DGqD2lix5Y0Kw9lXNpX6JWSP56Upd7dJTs2Tt7-l-5vA58xeR8-rZqvg/exec";
+  function _api(fn, args){
+    args = args || [];
+    const inGAS = !!(window.google && google.script && google.script.run);
+    if (inGAS){
+      return new Promise((resolve)=>{
+        google.script.run
+          .withSuccessHandler((r)=> resolve(r && r.ok===false ? r : (r && r._rpc ? r.result : r)))
+          .withFailureHandler((err)=> resolve({ ok:false, error: String(err && err.message || err) }))
+          .__rpc(fn, args, null);
+      });
+    }
+    const ctrl = ('AbortController' in window) ? new AbortController() : null;
+    const t = ctrl ? setTimeout(()=>ctrl.abort(), 120000) : null;
+    return fetch(GAS_EXEC, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ fn: fn, args: args }), signal: ctrl ? ctrl.signal : undefined })
+      .then(r=>{ if (t) clearTimeout(t); return r.text(); }, e=>{ if (t) clearTimeout(t); throw e; })
+      .then(txt=>{
+        const f = txt.trim().slice(0,1);
+        if (f === '<' || /<\s*(!doctype|html)/i.test(txt.slice(0,120))){
+          return { ok:false, error:'El Web App no respondió JSON. Revisa en Apps Script: publica con "Ejecutar como: Yo" y "Quién tiene acceso: Cualquier usuario", y activa la versión más reciente.' };
+        }
+        try { return JSON.parse(txt); }
+        catch(err){ return { ok:false, error:'Respuesta no válida del servidor ('+String(err&&err.message||err)+')' }; }
+      })
+      .catch(err=>{
+        if (err && (err.name==='AbortError' || /abor/i.test(String(err&&err.message||err)))) return { ok:false, error:'El servidor tardó demasiado en responder. Reintenta en unos segundos.' };
+        return { ok:false, error:String(err&&err.message||err) };
+      });
+  }
+  const __CACHE_TTL = 5*60*1000;
+  function cacheGet(k){ try{ const j = JSON.parse(localStorage.getItem('InsatP_'+k)||'null'); if (j && (Date.now()-j.t) < __CACHE_TTL) return j.v; }catch(_){ } return null; }
+  function cacheSet(k,v){ try{ localStorage.setItem('InsatP_'+k, JSON.stringify({t:Date.now(), v:v})); }catch(_){ } }
+
+  async function api(fn, args){
+    args = args || [];
+    try{
+      const r = await _api(fn, args);
+      if (fn==='getPublicSettings'){
+        if (r && r.ok===false){ return cacheGet(fn) || r; }
+        cacheSet(fn, r);
+      }
+      return r;
+    }catch(e){
+      if (fn==='getPublicSettings'){ const c = cacheGet(fn); if (c) return c; }
+      return { ok:false, error:String(e && e.message || e) };
+    }
+  }
+</script>
+<style>
+:root{
+  --pri:#050b1f; --pri-2:#0d2a55; --acc:#00a2ff; --acc-2:#2ee6ff; --acc-3:#4db8ff;
+  --acc-ink:#f4fbff; --bg:#01030a; --bg-2:#070d1f;
+  --card:rgba(255,255,255,.05); --card-2:rgba(255,255,255,.03); --glass:rgba(255,255,255,.06);
+  --ink:#d9e7fa; --head:#ffffff; --muted:#9fb4cf; --line:rgba(148,163,184,.16);
+  --ok:#34d399; --err:#f87171; --warn:#fbbf24; --hero-soft:#bfe0ff; --hero-glow:#00a2ff;
+  --glow:rgba(0,162,255,.5); --radius:18px;
+  --shadow:0 10px 30px rgba(0,0,0,.35); --shadow-lg:0 24px 60px rgba(0,0,0,.5);
+  --font-d:'Space Grotesk','Segoe UI',system-ui,Arial,sans-serif;
+  --font-b:'Manrope','Segoe UI',system-ui,Arial,sans-serif;
+}
+body[data-theme="moderno"]{ --pri:#030713; --pri-2:#0a1a38; --acc:#0099ff; --acc-2:#33e1ff; --acc-3:#66b8ff; --acc-ink:#f2fbff; --hero-soft:#c6e5ff; --hero-glow:#0099ff; --glow:rgba(0,153,255,.5); }
+body[data-theme="corporativo"]{ --pri:#081327; --pri-2:#0f2b57; --acc:#ffd166; --acc-2:#ffc300; --acc-3:#2ea8ff; --acc-ink:#241a00; --hero-soft:#cfdfff; --hero-glow:#ffd166; --glow:rgba(255,209,102,.4); }
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(1100px 700px at 75% -10%,rgba(46,230,255,.09),transparent 60%),radial-gradient(900px 600px at 0% 110%,rgba(0,162,255,.08),transparent 55%),var(--bg);color:var(--ink);font-family:var(--font-b);min-height:100vh}
+p{text-wrap:pretty}
+abbr{border-bottom:1px dotted var(--line)}
+a{color:var(--acc-2);text-decoration:none}
+a:hover{text-decoration:underline}
+.mono{font-family:Consolas,monospace;font-size:12.5px;color:var(--acc)}
+body.modal-open{overflow:hidden}
+
+.topbar{background:rgba(7,13,31,.82);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-weight:700;color:var(--head)}
+.brand .dot{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--acc),var(--acc-2));display:grid;place-items:center;color:var(--acc-ink);font-size:16px;box-shadow:0 0 18px var(--glow)}
+.brand em{font-style:normal;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;display:block}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap}
+.link-pill{background:var(--glass);border:1px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:99px;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;text-decoration:none}
+.link-pill:hover{text-decoration:none;border-color:var(--acc-2);color:var(--acc)}
+.link-pill.solid{background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border-color:transparent}
+
+.wrap{max-width:980px;margin:34px auto;padding:0 18px}
+
+.sec-tag{display:inline-block;font-weight:800;font-size:12px;letter-spacing:2px;color:var(--acc-2);text-transform:uppercase;margin-bottom:8px}
+h1,h2,h3,h4{font-family:var(--font-d);color:var(--head)}
+.cab{margin-bottom:26px}
+.cab h1{font-size:28px;margin-bottom:8px}
+.cab p{color:var(--muted);font-size:14.5px;max-width:640px}
+
+.login-card{max-width:440px;margin:46px auto;background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+.login-card h2{text-align:center;font-size:22px;margin-bottom:6px}
+.login-card h2::after{content:"";display:block;width:56px;height:3px;margin:12px auto 0;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc-2));box-shadow:0 0 16px var(--glow)}
+.login-card .sub{font-size:13.5px;color:var(--muted);text-align:center;margin:10px 0 22px;line-height:1.55}
+label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin:14px 0 6px;letter-spacing:.4px;text-transform:uppercase}
+input,textarea,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card-2);color:var(--ink);font-family:var(--font-b);font-size:14.5px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc-2);box-shadow:0 0 0 3px rgba(0,153,255,.2)}
+.btn-main{width:100%;padding:14px;border:none;background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border-radius:12px;font-weight:800;font-size:15px;font-family:var(--font-d);cursor:pointer;transition:.2s;margin-top:20px}
+.btn-main:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.6}
+.kpibox{padding:6px 14px;border-radius:99px;font-size:12px;color:var(--muted);font-weight:700}
+
+.cuenta-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.cuenta-head b{font-size:20px;font-family:var(--font-d);color:var(--head)}
+.cut-banner{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-radius:14px;margin-bottom:22px;font-size:14px;border:1px solid;line-height:1.5}
+.cut-banner.ok{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.4);color:#86efac}
+.cut-banner.warn{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.4);color:#fcd34d}
+.cut-banner.danger{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.4);color:#fca5a5}
+.cut-banner.info{background:rgba(0,162,255,.1);border-color:rgba(0,162,255,.4);color:#9fd8ff}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:16px;margin-bottom:22px}
+.kpi-card{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi-card b{display:block;font-size:23px;margin:4px 0 2px;background:linear-gradient(120deg,#fff,var(--acc-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums}
+.kpi-card span{color:var(--muted);font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;font-family:var(--font-d)}
+.kpi-card::after{content:"";position:absolute;top:0;left:18px;right:18px;height:2px;border-radius:99px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.6}
+.cuenta-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:860px){.cuenta-grid{grid-template-columns:1fr}}
+.cuenta-panel{background:linear-gradient(170deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+.cuenta-panel h4{font-size:16px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.profile-row{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+@media(max-width:520px){.profile-row{grid-template-columns:1fr}}
+.profile-item label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700;margin:0}
+.profile-item b{display:block;font-size:14.5px;color:var(--ink);margin-top:2px;word-break:break-word}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn-ghost{background:var(--glass);color:var(--ink);border:1px solid var(--line);padding:11px 16px;border-radius:12px;font-weight:700;font-size:13.5px;cursor:pointer;transition:.2s;font-family:var(--font-b)}
+.btn-ghost:hover{border-color:var(--acc-2);color:var(--acc)}
+.btn-danger{background:linear-gradient(120deg,#ef4444,#f97316);color:#fff;border:none;padding:13px 20px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:.2s;width:100%;margin-top:10px;font-family:var(--font-b)}
+.btn-danger:hover{filter:brightness(1.1);box-shadow:0 0 22px rgba(239,68,68,.4)}
+.mini-btn{background:var(--glass);border:1px solid var(--line);padding:7px 11px;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;transition:.2s;font-family:var(--font-b)}
+.mini-btn:hover{border-color:var(--acc-2);color:var(--acc)}
+.mini-btn.ok{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.4);color:#86efac}
+.mini-btn.info{background:rgba(0,162,255,.12);border-color:rgba(0,162,255,.4);color:#9fd8ff}
+.fact-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(170deg,var(--card),var(--card-2))}
+table.fact{width:100%;border-collapse:collapse;min-width:640px}
+table.fact th{font-family:var(--font-d);text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line)}
+table.fact td{padding:12px 14px;border-bottom:1px solid rgba(148,163,184,.08);font-size:13.5px;color:var(--ink)}
+table.fact tr:last-child td{border-bottom:none}
+table.fact tr:hover td{background:rgba(255,255,255,.02)}
+.fact-monto{font-weight:800;color:var(--head)}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:800}
+.badge.PENDIENTE,.badge.pendiente{background:#fef3c7;color:#92400e}
+.badge.ACTIVO,.badge.APROBADA,.badge.PAGADA,.badge.INSTALADA{background:#dcfce7;color:#166534}
+.badge.VENCIDA,.badge.RECHAZADA{background:#fee2e2;color:#991b1b}
+.badge.BAJA_SOLICITADA,.badge.EN_BAJA{background:#e0e7ff;color:#3730a3}
+.loading{text-align:center;padding:44px 0;color:var(--muted);font-weight:700;letter-spacing:.3px}
+.loading.pulsing{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:520px){.field-grid{grid-template-columns:1fr}}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
+.toast{background:rgba(10,18,38,.96);border:1px solid var(--line);color:var(--ink);padding:12px 18px;border-radius:12px;font-size:14px;font-weight:700;box-shadow:var(--shadow-lg);animation:tIn .25s ease}
+.toast.ok{border-color:rgba(52,211,153,.5)}
+.toast.err{border-color:rgba(248,113,113,.5)}
+@keyframes tIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.modal{position:fixed;inset:0;background:rgba(1,3,10,.72);backdrop-filter:blur(6px);z-index:200;display:grid;place-items:center;padding:18px}
+.modal-card{width:100%;max-width:460px;max-height:86vh;overflow:auto;background:linear-gradient(170deg,#0a1326,#070d1f);border:1px solid rgba(46,230,255,.25);border-radius:18px;padding:26px;box-shadow:0 24px 70px rgba(0,0,0,.6);animation:pu .25s ease}
+@keyframes pu{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-card h3{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:18px;margin-bottom:10px}
+.modal-card h3 button{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+.modal-card .sub{font-size:13.5px;color:var(--muted);margin:4px 0 10px}
+.big-code{text-align:center;font-family:Consolas,monospace;font-size:24px;color:var(--acc-2);padding:16px 0 4px;letter-spacing:.5px}
+.note{font-size:13px;color:var(--muted);line-height:1.6;margin-top:10px}
+footer{padding:26px;text-align:center;color:var(--muted);font-size:12.5px}
+footer a{color:var(--acc-2)}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="dot">N</span><span>NetSatipo <em>Portal del cliente</em></span></a>
+  <div class="top-actions">
+    <a class="link-pill" href="index.html">↩ Volver a la web</a>
+    <button class="link-pill" id="btn-logout" style="display:none" onclick="onClientLogout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="login-view">
+    <div class="login-card">
+      <h2>Acceso al portal</h2>
+      <div class="sub">Solo clientes registrados. Ingresa tu DNI y el correo o WhatsApp con el que contrataste.</div>
+      <label>DNI *</label>
+      <input id="m-dni" maxlength="8" inputmode="numeric" placeholder="8 dígitos" onkeydown="if(event.key==='Enter')onClientLogin()">
+      <label>Correo o WhatsApp *</label>
+      <input id="m-contacto" placeholder="tucorreo@x.com o 9xx xxx xxx" onkeydown="if(event.key==='Enter')onClientLogin()">
+      <button class="btn-main" id="btn-login" type="button" onclick="onClientLogin()">Ingresar / Registrarme</button>
+      <p class="hint" style="margin-top:16px">¿Aún no contratas? <a href="index.html">Visita nuestra web</a> y agenda tu instalación. Si algo falla, escríbenos por <a href="index.html#contacto">WhatsApp</a>.</p>
+    </div>
+  </div>
+
+  <div id="dashboard" style="display:none"></div>
+</main>
+
+<footer>© <span id="year"></span> <b id="f-name">NetSatipo</b> · Internet residencial Satipo · <a href="index.html#reclamos">Libro de Reclamaciones</a></footer>
+
+<div id="modal" style="display:none"></div>
+<div id="toast"></div>
+
+<script>
+/* ===== HELPERS ===== */
+const $ = (id)=> document.getElementById(id);
+const esc = (s)=> String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const jsq = (v)=> esc(JSON.stringify(v==null?'':v));
+const badge = (s)=>{ const k=String(s||'').toUpperCase(); return '<span class="badge '+esc(k)+'">'+esc(s||'—')+'</span>'; };
+const fmtS = (s)=> String(s||'').replace('T',' ').slice(0,10);
+function toast(msg, tipo){
+  const t = document.createElement('div');
+  t.className = 'toast '+(tipo||'');
+  t.textContent = msg;
+  $('toast').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; }, 2600);
+  setTimeout(()=> t.remove(), 3000);
+}
+function openModal(title, sub, body){
+  const m = $('modal');
+  m.innerHTML = '<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modal-card"><h3>'+esc(title)+'<button onclick="closeModal()">×</button></h3>'+(sub?'<div class="sub">'+esc(sub)+'</div>':'')+body+'</div></div>';
+  m.style.display = 'grid';
+  document.body.classList.add('modal-open');
+}
+function closeModal(){
+  $('modal').style.display = 'none';
+  $('modal').innerHTML = '';
+  document.body.classList.remove('modal-open');
+}
+function popWindow(doc){
+  const w = window.open('', '_blank');
+  if (w){ w.document.write(doc); w.document.close(); }
+  else toast('Permite ventanas emergentes para abrir el documento.','err');
+}
+function estadoLabel(e){
+  return { ACTIVO:'Activo', INSTALADO:'Instalado', INSTALADA:'Instalado', APROBADO:'Aprobado', APROBADA:'Aprobado', CORTADO:'Cortado', SUSPENDIDO:'Suspendido', PENDIENTE:'Pendiente', BAJA_SOLICITADA:'Baja en proceso', RECHAZADA:'Rechazado' }[String(e||'')] || String(e||'');
+}
+
+/* ===== SESIÓN ===== */
+let CT = { token: sessionStorage.getItem('ct_token')||'', data:null };
+let CFG = {};
+function render(){
+  const dv = $('dashboard'), lv = $('login-view'), bo = $('btn-logout');
+  if (CT.token){
+    lv.style.display='none'; dv.style.display='block'; bo.style.display='';
+    if (!CT.data) loadProfile();
+  } else {
+    lv.style.display='block'; dv.style.display='none'; bo.style.display='none';
+  }
+}
+async function onClientLogin(){
+  const dni = $('m-dni').value.trim().replace(/\D/g,'');
+  const contacto = $('m-contacto').value.trim();
+  if (!/^\d{8}$/.test(dni)){ toast('Ingresa un DNI válido de 8 dígitos','err'); return; }
+  if (!contacto){ toast('Ingresa tu correo o WhatsApp','err'); return; }
+  const btn = $('btn-login');
+  btn.disabled = true; btn.textContent = 'Verificando…';
+  const r = await api('clientLogin', [{ dni: dni, contacto: contacto }]);
+  btn.disabled = false; btn.textContent = 'Ingresar / Registrarme';
+  if (!r.ok){ toast(r.error||'No se pudo iniciar sesión','err'); return; }
+  CT.token = r.token; sessionStorage.setItem('ct_token', r.token);
+  toast('Bienvenido, '+(r.nombre||'')+' 👋','ok');
+  render();
+}
+function onClientLogout(){
+  const t = CT.token; CT.token=''; CT.data=null; sessionStorage.removeItem('ct_token');
+  if (t){ try{ api('clientLogout',[t]); }catch(_){} }
+  render();
+  toast('Sesión cerrada. ¡Hasta pronto!','ok');
+}
+async function loadProfile(){
+  const dv = $('dashboard');
+  dv.innerHTML = '<div class="loading pulsing">Cargando tu información…</div>';
+  const r = await api('clientProfile', [CT.token]);
+  if (!r.ok){
+    const m = String(r.error||'').toLowerCase();
+    const isAuth = /no autorizado/.test(m) || /expirad/.test(m) || /expir[oó]/.test(m) || /no iniciada/.test(m) || /no encontrado/.test(m);
+    if (isAuth){
+      CT.token=''; CT.data=null; sessionStorage.removeItem('ct_token');
+      render();
+      toast(r.error||'Tu sesión expiró','err');
+      return;
+    }
+    dv.innerHTML = '<div class="loading">'+esc(r.error||'No se pudo cargar tu información.')+'<br><button class="btn-submit" style="margin-top:14px" onclick="loadProfile()">Reintentar</button></div>';
+    return;
+  }
+  CT.data = r;
+  dv.innerHTML = buildProfile(r);
+}
+
+/* ===== DASHBOARD ===== */
+function buildProfile(r){
+  const c = r.cliente||{};
+  const plan = r.plan||{};
+  const ct = r.contrato||null;
+  const facs = Array.isArray(r.facturas)?r.facturas:[];
+  const cfg = r.config||{};
+  const corte = r.corte||{};
+  const cutCls = { ACTIVO:'ok', EN_RIESGO:'warn', CORTADO:'danger', EN_BAJA:'info' }[corte.estado]||'info';
+  const cutIco = { ACTIVO:'✅', EN_RIESGO:'⚠️', CORTADO:'⛔', EN_BAJA:'📋' }[corte.estado]||'ℹ️';
+  const cuotaReal = (Number(c.cuota_especial||0)>0) ? Number(c.cuota_especial) : Number(plan.precio||0);
+  const planHtml = (plan && plan.nombre)
+    ? '<div class="kpi-card"><span>Tu plan</span><b>'+esc(plan.nombre)+'</b><div style="color:var(--muted);font-size:13px">'+esc(plan.velocidad||'')+'</div><div style="color:var(--acc);font-weight:800;font-size:14px;margin-top:4px">S/ '+cuotaReal.toFixed(2)+' /mes'+(Number(c.cuota_especial||0)>0?' <span class="kpibox">Cuota preferencial</span>':'')+'</div></div>'
+    : '<div class="kpi-card"><span>Tu plan</span><b>—</b><div style="color:var(--muted);font-size:13px">Consultar por WhatsApp</div></div>';
+  const facRows = facs.length ? facs.map(f=>{
+    const acc = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'
+      +'<button class="mini-btn info" onclick="reciboFactura('+jsq(f)+')">🧾 Recibo PDF</button>'
+      +(f.estado!=='PAGADA' ? '<button class="mini-btn ok" onclick="pagarFactura('+jsq(f)+')">Pagar</button>' : '')
+      +'</div>';
+    return '<tr><td class="mono">'+esc(f.factura_id)+'</td><td>'+esc(f.periodo)+'</td><td class="fact-monto">S/ '+Number(f.monto||0).toFixed(2)+'</td><td>'+esc(f.vencimiento||'—')+'</td><td>'+badge(f.estado)+'</td><td>'+acc+'</td></tr>';
+  }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted)">Aún no tienes facturas emitidas.</td></tr>';
+  const factHtml = '<div class="cuenta-panel" style="grid-column:1/-1"><h4>🧾 Mis facturas</h4>'
+    +((r.balance_pendiente>0)
+      ? '<div class="cut-banner warn" style="margin-bottom:16px"><span>⚠️ Saldo pendiente: <b style="color:var(--warn)">S/ '+Number(r.balance_pendiente||0).toFixed(2)+'</b>. Paga con Yape/Plin desde cada factura o escríbenos por WhatsApp.</span></div>'
+      : '<div class="cut-banner ok" style="margin-bottom:16px">✅ No tienes saldo pendiente. ¡Todo al día!</div>')
+    +'<div class="fact-wrap"><table class="fact"><thead><tr><th>Factura</th><th>Período</th><th>Monto</th><th>Vence</th><th>Estado</th><th>Acción</th></tr></thead><tbody>'+facRows+'</tbody></table></div></div>';
+  const contBtn = '<div class="btn-row">'
+    +'<button class="btn-ghost" onclick="contratoPDF()">📄 Ver mi contrato (PDF)</button>'
+    +(ct && !ct.firmado ? '<button class="btn-ghost" onclick="abrirFirma()">✍️ Firmar mi contrato</button>' : '')
+    +'<button class="btn-ghost" onclick="abrirBaja()">📋 Solicitar baja</button></div>';
+  const firmadoHtml = (ct && ct.firmado)
+    ? '<div class="profile-item"><label>Firma del contrato</label><b style="color:var(--acc-2)">Firmado el '+esc(fmtS(ct.firmado_en)||'—')+'</b></div>'
+    : '';
+  const contHtml = '<div class="cuenta-panel"><h4>📄 Mi contrato</h4>'
+    +(ct
+      ? '<div class="profile-row"><div class="profile-item"><label>Código</label><b class="mono">'+esc(ct.codigo)+'</b></div><div class="profile-item"><label>Plan</label><b>'+esc(ct.plan_nombre||'—')+'</b></div><div class="profile-item"><label>Fecha de contrato</label><b>'+esc(fmtS(ct.fecha)||'—')+'</b></div><div class="profile-item"><label>Estado</label><b>'+esc(ct.estado||'—')+'</b></div><div class="profile-item"><label>Dirección instalada</label><b>'+esc(ct.direccion||'—')+'</b></div><div class="profile-item"><label>Distrito</label><b>'+esc(ct.distrito||'—')+'</b></div>'+firmadoHtml+'</div>'
+      : '<p class="hint">Aún no tenemos registrado tu contrato formal. Si ya estás instalado y no lo ves, contáctanos para regularizarlo.</p>')
+    +contBtn+'</div>';
+  const wa = String(cfg.whatsapp||'').replace(/\D/g,'');
+  const waLink = wa ? 'https://wa.me/'+wa+'?text='+encodeURIComponent('Hola, soy '+c.nombres+' (DNI '+c.dni+'). Quiero información sobre mi servicio.') : 'index.html#contacto';
+  const srvHtml = '<div class="cuenta-panel"><h4>📋 Estado del servicio</h4><div class="profile-row"><div class="profile-item"><label>Estado actual</label><b>'+esc(estadoLabel(c.estado))+'</b></div><div class="profile-item"><label>Balance pendiente</label><b>S/ '+Number(r.balance_pendiente||0).toFixed(2)+'</b></div><div class="profile-item"><label>Saldo a favor</label><b style="color:var(--acc-2)">S/ '+Number(c.saldo_a_favor||0).toFixed(2)+'</b></div></div><div class="btn-row"><a class="btn-ghost" style="text-decoration:none" href="'+waLink+'" target="_blank" rel="noopener">💬 Contactar soporte</a><button class="btn-ghost" onclick="abrirSaldo()">💰 Abonar por adelantado</button></div></div>';
+  const perfilHtml = '<div class="cuenta-panel"><h4>👤 Mis datos</h4><div class="profile-row">'
+    +'<div class="profile-item"><label>Nombres</label><b>'+esc(c.nombres||'—')+'</b></div>'
+    +'<div class="profile-item"><label>DNI</label><b>'+esc(c.dni||'—')+'</b></div>'
+    +'<div class="profile-item"><label>Correo</label><b>'+esc(c.email||'—')+'</b></div>'
+    +'<div class="profile-item"><label>WhatsApp</label><b>'+esc(c.telefono||'—')+'</b></div>'
+    +'<div class="profile-item"><label>Dirección</label><b>'+esc(c.direccion||'—')+'</b></div>'
+    +'<div class="profile-item"><label>Distrito</label><b>'+esc(c.distrito||'—')+'</b></div>'
+    +((Number(c.cuota_especial||0)>0) ? '<div class="profile-item"><label>Cuota mensual pactada</label><b>S/ '+Number(c.cuota_especial).toFixed(2)+'/mes</b></div>' : '')
+    +((c.condicion) ? '<div class="profile-item" style="grid-column:1/-1"><label>Condición especial</label><b>'+esc(c.condicion)+'</b></div>' : '')
+    +'</div><div class="btn-row"><button class="btn-ghost" onclick="toggleEditar()">✏️ Editar mis datos</button></div>'
+    +'<div id="editar" style="display:none;margin-top:16px;border-top:1px solid var(--line);padding-top:12px">'
+    +'<div class="field-grid"><div><label>Correo</label><input id="e-email" value="'+esc(c.email||'')+'"></div><div><label>WhatsApp</label><input id="e-telefono" value="'+esc(c.telefono||'')+'"></div></div>'
+    +'<div class="field-grid"><div><label>Dirección</label><input id="e-direccion" value="'+esc(c.direccion||'')+'"></div><div><label>Distrito</label><input id="e-distrito" value="'+esc(c.distrito||'')+'"></div></div>'
+    +'<button class="btn-main" style="margin-top:12px" onclick="guardarDatos()">Guardar cambios</button></div></div>';
+  return '<div class="cab"><div class="sec-tag">Portal del cliente</div><h1>Hola, '+esc(c.nombres||'')+' 👋</h1><p>Cliente desde '+esc(fmtS(c.fecha_alta)||'—')+' · Documento '+esc(c.dni||'—')+'</p></div>'
+    +'<div class="cuenta-head"><span class="cut-banner '+cutCls+'" style="margin-bottom:0">'+cutIco+' '+esc(corte.mensaje||'')+'</span></div>'
+    +'<div class="kpi-grid">'+planHtml
+    +'<div class="kpi-card"><span>Estado del servicio</span><b>'+esc(estadoLabel(c.estado))+'</b></div>'
+    +'<div class="kpi-card"><span>Saldo pendiente</span><b>S/ '+Number(r.balance_pendiente||0).toFixed(2)+'</b></div>'
+    +'<div class="kpi-card"><span>Saldo a favor</span><b style="color:var(--acc-2)">S/ '+Number(c.saldo_a_favor||0).toFixed(2)+'</b></div>'
+    +'<div class="kpi-card"><span>Facturas</span><b>'+facs.length+'</b></div></div>'
+    +'<div class="cuenta-grid" style="margin-top:20px">'+srvHtml+perfilHtml+'</div>'
+    +'<div class="cuenta-grid" style="margin-top:20px">'+contHtml+'</div>'
+    +'<div style="margin-top:20px">'+factHtml+'</div>';
+}
+function pagarFactura(f){
+  const wa = (CFG.whatsapp||'').replace(/\D/g,'') || (CT.data&&CT.data.config&&CT.data.config.whatsapp||'').replace(/\D/g,'');
+  const msg = 'Hola, soy cliente de '+(CFG.empresa_nombre||'NetSatipo')+' y ya pagué la factura '+f.factura_id+' ('+f.periodo+') por S/ '+Number(f.monto||0).toFixed(2)+'. Aquí va mi comprobante.';
+  if (wa){ window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank','noopener'); }
+  else toast('Configura el WhatsApp en la hoja CONFIG','err');
+}
+function toggleEditar(){
+  const el = $('editar');
+  if (el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+async function guardarDatos(){
+  const p = { email:$('e-email').value.trim(), telefono:$('e-telefono').value.trim(), direccion:$('e-direccion').value.trim(), distrito:$('e-distrito').value.trim() };
+  const r = await api('clientUpdateProfile', [CT.token, p]);
+  if (!r.ok){ toast(r.error||'No se pudieron guardar los datos','err'); return; }
+  toast(r.message||'Datos guardados','ok');
+  CT.data = null; loadProfile();
+}
+function abrirBaja(){
+  const html = '<label>Motivo de la baja</label><select id="b-motivo">'
+    +'<option value="ECONOMICO">Motivos económicos</option>'
+    +'<option value="CAMBIO_PROVEEDOR">Cambié de proveedor</option>'
+    +'<option value="MAL_SERVICIO">Mal servicio</option>'
+    +'<option value="MUDANZA">Me mudé de zona</option>'
+    +'<option value="OTRO">Otro</option></select>'
+    +'<label>Cuéntanos con más detalle (opcional)</label><textarea id="b-detalle" placeholder="Ej: me mudo a Pichanaqui el próximo mes"></textarea>'
+    +'<p class="hint">Tu plan se marcará como "baja en proceso". Un asesor te contactará para confirmarla según el contrato.</p>';
+  openModal('Solicitar baja del servicio', '¿Seguro que quieres darte de baja?', html
+    +'<button class="btn-danger" onclick="confirmarBaja()">Confirmar solicitud de baja</button>');
+}
+async function confirmarBaja(){
+  const motivo = $('b-motivo').value;
+  const detalle = $('b-detalle').value.trim();
+  const r = await api('clientCancelService', [CT.token, { motivo: motivo, detalle: detalle }]);
+  closeModal();
+  if (!r.ok){ toast(r.error||'No se pudo registrar la baja','err'); return; }
+  openModal('Solicitud de baja enviada', '', '<div class="big-code">'+esc(r.baja_id||'')+'</div><div class="note">'+esc(r.message||'')+'</div>');
+  CT.data = null;
+  setTimeout(loadProfile, 900);
+}
+
+/* ===== SALDO A FAVOR / PAGO ADELANTADO ===== */
+function abrirSaldo(){
+  const c = (CT.data&&CT.data.cliente)||{};
+  const cfg = (CT.data&&CT.data.config)||CFG;
+  const saldo = Number(c.saldo_a_favor||0);
+  const yape = cfg.yape_telefono||CFG.yape_telefono||'';
+  const yapen = cfg.yape_nombre||CFG.yape_nombre||'';
+  const plin = cfg.plin_telefono||CFG.plin_telefono||'';
+  const plinn = cfg.plin_nombre||CFG.plin_nombre||'';
+  const html = '<div class="note" style="margin-bottom:10px">Saldo a favor actual: <b style="color:var(--acc-2)">S/ '+saldo.toFixed(2)+'</b>. Abónalo y se aplicará automáticamente a tus facturas pendientes más antiguas.</div>'
+    +'<label>Monto a abonar (S/)</label>'
+    +'<input id="s-monto" type="number" min="1" step="0.5" placeholder="Ej: 120">'
+    +'<div class="note" style="margin-top:10px">Paga por:<br>'
+    +(yape? '• <b>Yape:</b> '+esc(yape)+(yapen? ' ('+esc(yapen)+')':'')+'<br>' : '')
+    +(plin? '• <b>Plin:</b> '+esc(plin)+(plinn? ' ('+esc(plinn)+')':'')+'<br>' : '')
+    +'• Efectivo / transferencia (consultar)<br>'
+    +'Luego toca el botón y envía tu comprobante por WhatsApp; lo acreditamos como saldo a favor al momento.</div>'
+    +'<button class="btn-main" style="margin-top:12px" onclick="enviarSaldo()">📲 Enviar comprobante por WhatsApp</button>';
+  openModal('Abonar por adelantado', 'Paga tus meses con anticipación', html);
+}
+function enviarSaldo(){
+  const monto = Number(($('s-monto')&&$('s-monto').value)||0);
+  if (!(monto>0)){ toast('Indica el monto a abonar','err'); return; }
+  const c = (CT.data&&CT.data.cliente)||{};
+  const cfg = (CT.data&&CT.data.config)||CFG;
+  const wa = String(cfg.whatsapp||'').replace(/\D/g,'');
+  if (!wa){ toast('Configura el WhatsApp en la hoja CONFIG','err'); return; }
+  const msg = 'Hola, soy '+c.nombres+' (DNI '+c.dni+'). Acabo de abonar S/ '+monto.toFixed(2)+' por adelantado. Aquí va mi comprobante.';
+  window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank','noopener');
+  closeModal();
+  CT.data = null;
+  setTimeout(loadProfile, 900);
+}
+
+/* ===== FIRMA DE CONTRATO ===== */
+function abrirFirma(){
+  const html = '<p class="hint">Firma sobre el recuadro con el dedo o el mouse. Tu firma quedará incrustada en tu contrato PDF y registrada.</p>'
+    +'<div style="border:2px dashed rgba(46,230,255,.5);border-radius:12px;overflow:hidden;background:#fff;touch-action:none"><canvas id="f-canvas" width="400" height="140" style="width:100%;display:block"></canvas></div>'
+    +'<div style="display:flex;gap:10px;margin-top:12px"><button class="btn-ghost" onclick="limpiarFirma()">Limpiar</button><button class="btn-main" style="flex:1" onclick="guardarFirma()">✍️ Firmar contrato</button></div>';
+  openModal('Firma de tu contrato', 'Contrato de servicio de internet', html);
+  setTimeout(initFirmaCanvas, 40);
+}
+function initFirmaCanvas(){
+  const cv = $('f-canvas'); if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const dpr = Math.min(2, window.devicePixelRatio||1);
+  cv.width = 400*dpr; cv.height = 140*dpr;
+  ctx.scale(dpr, dpr);
+  ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0b1c33';
+  let drawing = false, last = null;
+  const pos = e => {
+    const r = cv.getBoundingClientRect();
+    return { x: (e.clientX - r.left)*(400/r.width), y: (e.clientY - r.top)*(140/r.height) };
+  };
+  cv.onpointerdown = e => { drawing = true; last = pos(e); if (cv.setPointerCapture) cv.setPointerCapture(e.pointerId); };
+  cv.onpointermove = e => { if (!drawing) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last = p; };
+  cv.onpointerup = ()=>{ drawing = false; last = null; };
+  cv.onpointerleave = ()=>{ drawing = false; };
+}
+function limpiarFirma(){
+  const cv = $('f-canvas'); if (cv){ const ctx = cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); }
+}
+function guardarFirma(){
+  const cv = $('f-canvas');
+  if (!cv){ toast('Espera a que cargue el recuadro de firma','err'); return; }
+  const ctx = cv.getContext('2d');
+  const d = ctx.getImageData(0,0,cv.width,cv.height).data;
+  let vacia = true;
+  for (let i=3;i<d.length;i+=4){ if (d[i]>0){ vacia = false; break; } }
+  if (vacia){ toast('Firma sobre el recuadro primero','err'); return; }
+  let data = cv.toDataURL('image/png');
+  let factor = 1;
+  while (data.length > 44000 && factor < 8){
+    factor++;
+    const c2 = document.createElement('canvas');
+    c2.width = Math.round(cv.width/factor); c2.height = Math.round(cv.height/factor);
+    c2.getContext('2d').drawImage(cv,0,0,c2.width,c2.height);
+    data = c2.toDataURL('image/png');
+  }
+  const cid = (CT.data&&CT.data.cliente&&CT.data.cliente.cliente_id)||'';
+  api('clientFirmaContrato', [CT.token, { firma: data }]).then(r=>{
+    if (!r.ok){ toast(r.error||'No se pudo guardar la firma','err'); return; }
+    try{
+      localStorage.setItem('ns_firma_'+cid, data);
+      localStorage.setItem('ns_firma_fecha_'+cid, new Date().toISOString());
+    }catch(_){}
+    closeModal();
+    toast(r.message||'Contrato firmado ✓','ok');
+    CT.data = null;
+    loadProfile();
+  });
+}
+
+/* ===== DOCUMENTOS PDF (imprimibles) ===== */
+function docStyles(marg){
+  return '.h{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #003399;padding-bottom:12px;margin-bottom:6px}'
+    +'.h b{font-size:16px;color:#003399;font-family:Arial}.mono{font-family:Consolas,monospace;font-size:11.5px;margin:2px 0}'
+    +'table{width:100%;border-collapse:collapse;margin:8px 0}td{padding:6px 4px;border-bottom:1px solid #ddd;font-size:12.5px}'
+    +'td:first-child{color:#555;width:40%}.total{background:#f0f5ff;font-weight:800;font-size:14px}'
+    +'h1{font-family:Arial;font-size:13px;letter-spacing:2px;color:#003399;text-transform:uppercase}'
+    +'h2{font-family:Arial;font-size:12px;margin-top:14px;margin-bottom:4px;color:#222;border-bottom:1px solid #999;padding-bottom:2px}'
+    +'p,.li{font-size:11.5px;line-height:1.5;color:#333;text-align:justify;margin:4px 0}'
+    +'.cap{font-style:italic;color:#555;margin-bottom:14px}'
+    +'.firm{margin-top:26px;text-align:center;font-size:11.5px;color:#333}'
+    +'.firm .line{display:inline-block;border-top:1px solid #333;width:230px;margin-top:40px}'
+    +'.nota{font-size:10px;color:#666;margin-top:14px;text-align:justify}'
+    +'.btn{display:block;width:100%;text-align:center;background:#003399;color:#fff;border:none;padding:13px;border-radius:8px;font-weight:800;font-size:15px;cursor:pointer;margin-top:16px}'
+    +'@media print{.btn{display:none}}';
+}
+function docOpen(inner, title){
+  popWindow('<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>'+esc(title||'Documento')+'</title><style>'
+    +'body{font-family:Arial,Segoe UI,sans-serif;padding:32px 40px;color:#111;max-width:760px;margin:auto}'+docStyles()+'</style></head><body>'
+    +inner+'<button class="btn" onclick="window.print()">Imprimir / Guardar como PDF</button></body></html>');
+}
+function empHeader(cfg, docTipo, numero){
+  const c = cfg||{};
+  return '<div class="h"><div><b>'+esc(c.empresa_nombre||'NetSatipo')+'</b><br><span class="mono">'+(c.razon_social?'Razón social: '+esc(c.razon_social)+'<br>':'')+(c.ruc?'RUC: '+esc(c.ruc)+'<br>':'')+(c.domicilio_fiscal?'Domicilio fiscal: '+esc(c.domicilio_fiscal)+'<br>':'')+'Tel / WA: '+esc(c.whatsapp||'')+(c.yape_telefono?' · Yape: '+esc(c.yape_telefono)+(c.yape_nombre?' ('+esc(c.yape_nombre)+')':''):'')+'</span></div><div style="text-align:right"><h1>'+esc(docTipo||'')+'</h1><div class="mono">'+esc(numero||'')+'</div></div></div>';
+}
+function reciboFactura(f){
+  const c = (CT.data&&CT.data.config)||CFG;
+  const cli = (CT.data&&CT.data.cliente)||{};
+  const per = String(f.periodo||'');
+  const partes = per.split('-').map(Number);
+  const y = partes[0], m = partes[1];
+  const pad = n => String(n||0).padStart(2,'0');
+  const dd = s => { const q = String(s||'').split('-').map(Number); return (q.length===3) ? pad(q[2])+'/'+pad(q[1])+'/'+q[0] : '—'; };
+  const dim = (y && m) ? new Date(y, m, 0).getDate() : 31;
+  const diaIni = cli.fecha_alta ? Number(String(cli.fecha_alta).slice(8,10)) : 1;
+  const inicio = (y && m) ? pad(Math.min(diaIni||1, dim))+'/'+pad(m)+'/'+y : '—';
+  const corte  = (y && m) ? pad(dim)+'/'+pad(m)+'/'+y : '—';
+  const generado = new Intl.DateTimeFormat('es-PE', { dateStyle:'long', timeStyle:'short', timeZone:'America/Lima' }).format(new Date());
+  const rucNote = c.ruc
+    ? 'Comprobante de pago emitido conforme al RUC inscrito. El presente recibo no reemplaza la boleta ni factura SUNAT que se emiten a solicitud del cliente.'
+    : 'Recibo interno de pago. No constituye boleta ni factura SUNAT; para efectos fiscales se emitirá el comprobante correspondiente a solicitud del cliente.';
+  const inner = empHeader(c, 'Recibo por servicios de internet', f.factura_id)
+    +'<table>'
+    +'<tr><td>Cliente</td><td>'+esc(cli.nombres||f.cliente_nombre||'')+'</td></tr>'
+    +'<tr><td>Dirección del servicio</td><td>'+esc(cli.direccion||'')+(cli.distrito?' — '+esc(cli.distrito):'')+'</td></tr>'
+    +'<tr><td>Concepto</td><td>Servicio de acceso a internet — '+esc(f.plan_nombre||'Plan contratado')+' · Período '+esc(per)+'</td></tr>'
+    +'<tr><td>Fecha de inicio del ciclo</td><td>'+esc(inicio)+'</td></tr>'
+    +'<tr><td>Fecha de corte</td><td>'+esc(corte)+'</td></tr>'
+    +'<tr><td>Fecha límite de pago (antes de mora)</td><td>'+dd(f.vencimiento)+'</td></tr>'
+    +'<tr><td>Generado el (hora de Perú)</td><td>'+esc(generado)+'</td></tr>'
+    +'<tr class="total"><td>Importe</td><td>S/ '+Number(f.monto||0).toFixed(2)+'</td></tr></table>'
+    +'<p class="nota">'+rucNote+' En caso de reclamos, presente su solicitud en nuestro Libro de Reclamaciones (Ley 29571, Código de Protección y Defensa del Consumidor).</p>';
+  docOpen(inner, 'Recibo '+f.factura_id);
+}
+function contratoPDF(){
+  const d = CT.data||{};
+  const c = d.cliente||{};
+  const cfg = d.config||{};
+  const ct = d.contrato||null;
+  const plan = d.plan||{};
+  const hoy = new Date();
+  const hoyS = fmtS(hoy.toISOString());
+  const numContrato = ct ? ct.codigo : String(c.cliente_id||'CTO-');
+  const fechaFirma = ct ? fmtS(ct.fecha) : hoyS;
+  const direccion = c.direccion||(ct&&ct.direccion||'');
+  const distrito = c.distrito||(ct&&ct.distrito||'');
+  const periodo = (hoy.getMonth()+1)+' / '+(hoy.getFullYear()+1);
+  const renueva = '01 / '+(hoy.getFullYear()+1);
+  function P(t, k){ return String(t||'').replace(/\{NOMBRE\}/g, esc(c.nombres||'EL USUARIO')).replace(/\{DNI\}/g, esc(c.dni||'—')).replace(/\{DIRECCION\}/g, esc(direccion||'—')).replace(/\{DISTRITO\}/g, esc(distrito||'—')).replace(/\{PLAN\}/g, esc(plan.nombre||(ct&&ct.plan_nombre)||'Plan contratado')).replace(/\{VELOCIDAD\}/g, esc(plan.velocidad||'—')).replace(/\{CUOTA\}/g, Number(plan.precio||0).toFixed(2)).replace(/\{FECHA\}/g, fechaFirma).replace(/\{PERIODO\}/g, periodo).replace(/\{RENUEVA\}/g, renueva); }
+  const clausulas = [
+    ['CLÁUSULA PRIMERA · PARTES', 'Intervienen por una parte, como PROVEEDOR DEL SERVICIO, '+esc(cfg.empresa_nombre||'NetSatipo')+(cfg.razon_social?' ('+esc(cfg.razon_social)+')':'')+(cfg.ruc?' con RUC '+esc(cfg.ruc):'')+' con domicilio en '+esc(cfg.domicilio_fiscal||'—')+', en adelante EL OPERADOR; y por otra parte el (la) USUARIO(A): {NOMBRE}, identificado(a) con DNI {DNI}, con domicilio en {DIRECCION}, distrito de {DISTRITO}, en adelante EL USUARIO.'],
+    ['CLÁUSULA SEGUNDA · OBJETO', 'EL OPERADOR se obliga a prestar a EL USUARIO el servicio de acceso público a internet residencial, bajo el plan "{PLAN}" con velocidad de {VELOCIDAD}, en el domicilio indicado, conforme a las Condiciones de Uso de los Servicios Públicos de Telecomunicaciones emitidas por el OSIPTEL, al Código de Protección y Defensa del Consumidor (Ley 29571) y demás normas de telecomunicaciones vigentes.'],
+    ['CLÁUSULA TERCERA · INSTALACIÓN, EQUIPO Y PUESTA EN SERVICIO', 'EL OPERADOR ejecutará la instalación de la acometida, el equipo (router/modem CPE) y la configuración necesaria. EL USUARIO facilitará el acceso físico y las condiciones adecuadas. El equipo entregado en cesión de uso es propiedad de EL OPERADOR y deberá ser devuelto en caso de baja, salvo pacto distinto de venta a plazo.'],
+    ['CLÁUSULA CUARTA · VIGENCIA Y RENOVACIÓN', 'El presente contrato entra en vigencia el {FECHA} y se celebra por plazo indeterminado. Se considerará renovado tácitamente de manera mensual mientras EL USUARIO mantenga el pago de la contraprestación. Cualquier parte puede terminar el contrato con el aviso que se indica en la cláusula de baja.'],
+    ['CLÁUSULA QUINTA · PRECIO, PAGO Y FACTURACIÓN', 'EL USUARIO pagará una mensualidad de S/ {CUOTA} (el precio vigente de su plan), facturada por períodos mensuales. Las cuotas se pagan por adelantado (mes corriente) mediante Yape, Plin, transferencia o efectivo contra entrega de recibo. El primer ciclo de facturación comprende desde la fecha de instalación hasta el último día del mes calendario. EL OPERADOR entregará recibo por cada pago; se emitirá boleta o factura SUNAT a solicitud del usuario cuando corresponda.'],
+    ['CLÁUSULA SEXTA · COMPROMISO DE PERMANENCIA', 'No se pacta compromiso de permanencia. De entregarse un equipo con beneficio de subvención o promoción de descuento, podrá pactarse un compromiso máximo de DOCE (12) meses conforme a las normas aplicables del OSIPTEL, el que se documentará por escrito de manera clara y resaltada, sin afectar el derecho de reclamar.'],
+    ['CLÁUSULA SÉPTIMA · DERECHO DE ARREPENTIMIENTO', 'Si el contrato fue celebrado fuera del establecimiento de EL OPERADOR (visita a domicilio, teléfono u otro medio a distancia), EL USUARIO podrá ejercer el derecho de arrepentimiento dentro de los siete (7) días calendario de celebrado, conforme al artículo 57 del Código de Protección y Defensa del Consumidor (Ley 29571), comunicándolo por escrito o por cualquier medio de constancia.'],
+    ['CLÁUSULA OCTAVA · SUSPENSIÓN Y CORTE DEL SERVICIO', 'Ante el impago de una cuota, EL OPERADOR informará a EL USUARIO por mensaje y/o llamada, y podrá proceder a la suspensión temporal o el corte definitivo del servicio, sin perjuicio de la vigencia de las cuotas adeudadas. La reconexión por corte por deuda implicará el pago de los montos adeudados y, de ser aplicable, un concepto de reconexión previamente comunicado y de común acuerdo. No se aplicará corte por causas ajenas al servicio sin previo aviso.'],
+    ['CLÁUSULA NOVENA · RECLAMOS Y LIBRO DE RECLAMACIONES', 'EL USUARIO podrá presentar reclamos y quejas sobre facturación, calidad o cobertura mediante nuestro Libro de Reclamaciones (Ley 29571 y su Reglamento) y los canales del OSIPTEL. Todo reclamo será respondido en el plazo legal vigente. EL USUARIO conserva su derecho a acudir al OSIPTEL y al Instituto Nacional de Defensa de la Competencia y de la Protección de la Propiedad Intelectual (INDECOPI).'],
+    ['CLÁUSULA DÉCIMA · OBLIGACIONES DEL USUARIO', 'Son obligaciones de EL USUARIO: (i) usar el servicio de manera lícita y responsable; (ii) no revender ni compartir la conexión con fines comerciales; (iii) no incurrir en actividades ilícitas, tráfico ilegal de contenidos, ataques a redes de terceros, correo no deseado masivo (spam) u otras conductas que afecten la red; (iv) no alterar, manipular ni dañar los equipos del OPERADOR; (v) permitir el acceso para el mantenimiento programado; y (vi) comunicar oportunamente el traslado, cambio de datos o la baja del servicio.'],
+    ['CLÁUSULA DÉCIMO PRIMERA · OBLIGACIONES DEL OPERADOR', 'Son obligaciones de EL OPERADOR: (i) prestar el servicio de forma continua, regular y con la calidad pactada; (ii) realizar el mantenimiento preventivo y correctivo; (iii) atender oportunamente los reclamos; (iv) informar previamente sobre mantenimientos programados, cortes por interrupción o cambios tarifarios; (v) proteger los datos personales de EL USUARIO; y (vi) emitir los recibos y comprobantes que correspondan.'],
+    ['CLÁUSULA DÉCIMO SEGUNDA · CAMBIOS EN EL SERVICIO', 'Los cambios de plan (migraciones, mejoras o reducciones) se acordarán por escrito o por mensaje con acuse de recibo y no modificarán las demás cláusulas de este contrato. Los cambios tarifarios se regirán por las normas del OSIPTEL y se comunicarán con la debida anticipación.'],
+    ['CLÁUSULA DÉCIMO TERCERA · DATOS PERSONALES', 'Los datos personales de EL USUARIO se tratarán conforme a la Ley N° 29733 (Protección de Datos Personales) y su reglamento, con la finalidad de ejecutar el contrato, facturar, atender reclamos y comunicaciones comerciales, pudiendo EL USUARIO ejercer sus derechos de acceso, rectificación, cancelación y oposición ante el operador o la Autoridad Nacional de Protección de Datos Personales.'],
+    ['CLÁUSULA DÉCIMO CUARTA · CALIDAD Y DISPONIBILIDAD', 'La velocidad es de {VELOCIDAD} en condiciones normales de operación ("mejor esfuerzo"), sujeta a factores fuera del control de EL OPERADOR (redes de tránsito, sitios de destino, condiciones climáticas, cortes de energía eléctrica). Se garantiza el correcto funcionamiento de la red de acceso propia de EL OPERADOR.'],
+    ['CLÁUSULA DÉCIMO QUINTA · FUERZA MAYOR', 'Ninguna de las partes será responsable por el incumplimiento derivado de caso fortuito o fuerza mayor debidamente acreditado, en tanto dure dicha circunstancia, conforme al artículo 1315 del Código Civil.'],
+    ['CLÁUSULA DÉCIMO SEXTA · BAJA O RESOLUCIÓN DEL SERVICIO', 'EL USUARIO podrá solicitar la baja en cualquier momento, sin penalidad, salvo el compromiso de permanencia pactado conforme a la cláusula sexta en cuyo caso se aplicará el procedimiento y límites legales. La baja se hará efectiva en la fecha que EL USUARIO indique o, en su defecto, a la conclusión del período facturado pagado. EL OPERADOR podrá resolver el contrato ante incumplimiento grave del usuario, previa comunicación. A la terminación, EL USUARIO devolverá los equipos cedidos en buen estado, salvo desgaste por uso normal.'],
+    ['CLÁUSULA DÉCIMO SÉPTIMA · COMUNICACIONES Y DOMICILIO', 'Las notificaciones entre las partes se realizarán por correo electrónico, WhatsApp o mensajería telefónica a los datos registrados, o por escrito al domicilio del servicio, y se considerarán válidas las cursadas con acuse o constancia de entrega. EL USUARIO se obliga a mantener actualizados sus datos de contacto.'],
+    ['CLÁUSULA DÉCIMO OCTAVA · LEGISLACIÓN APLICABLE Y JURISDICCIÓN', 'El presente contrato se rige por las leyes de la República del Perú: el Texto Único Ordenado de la Ley de Telecomunicaciones (D.S. N° 013-93-TCC), el Reglamento del TUO de las Condiciones de Uso de los Servicios Públicos de Telecomunicaciones, el Código de Protección y Defensa del Consumidor (Ley 29571) y la Ley de Protección de Datos Personales (Ley 29733). Las controversias se ventilarán ante el INDECOPI, la vía legal correspondiente del OSIPTEL o, en su defecto, ante los Juzgados Civiles o de Paz de la ciudad de Satipo, según corresponda. En caso de contradicción, primará lo dispuesto por las normas imperativas de orden público.'],
+    ['CLÁUSULA DÉCIMO NOVENA · ACEPTACIÓN Y FIRMAS', 'Las partes declaran haber leído, entendido y aceptado las cláusulas precedentes, incluyendo las Condiciones de Uso y la Política de Privacidad citadas como anexos, y firman el contrato en señal de conformidad. La firma electrónica, el acuse de WhatsApp o el pago de la primera cuota equivalen a la aceptación del servicio y del presente contrato.']
+  ];
+  const body = clausulas.map(([t, tx]) => {
+    return '<h2>'+esc(t)+'</h2><p>'+P(tx)+'</p>';
+  }).join('');
+  let firImg = ''; let firFecha = '';
+  try { firImg = localStorage.getItem('ns_firma_'+String(c.cliente_id||''))||''; }catch(_){}
+  try { firFecha = localStorage.getItem('ns_firma_fecha_'+String(c.cliente_id||''))||''; }catch(_){}
+  let usuFirm = '<div class="firm"><div class="line">EL USUARIO</div><br><small>'+esc(c.nombres||'')+' · DNI '+esc(c.dni||'')+'</small>';
+  if (firImg && firImg.indexOf('data:image')===0){
+    usuFirm += '<br><img src="'+firImg+'" style="max-width:220px;max-height:96px;margin-top:8px;border:1px solid #ccc;border-radius:6px;padding:4px;background:#fff">'
+      +'<div style="margin:6px auto 0;color:#222;background:#f0f5ff;display:inline-block;padding:3px 10px;font-weight:bold">Firmado electrónicamente el '+esc((firFecha||'').slice(0,10))+'</div>';
+  }
+  usuFirm += '</div><div class="firm"><small>Contrato aceptado y firmado por EL USUARIO mediante el portal del cliente (firma electrónica).</small></div>';
+  const inner = empHeader(cfg, 'Contrato de servicio de internet', numContrato)
+    +'<p class="mono">Cliente: '+esc(c.nombres||'—')+' · DNI '+esc(c.dni||'—')+' · Tel '+esc(c.telefono||'—')+'<br>Domicilio del servicio: '+esc(direccion||'—')+', '+esc(distrito||'—')+'</p>'
+    +'<div style="margin-top:2px"><b style="font-size:12px;color:#003399">CONTRATO DE PRESTACIÓN DEL SERVICIO DE ACCESO A INTERNET</b></div>'
+    +'<p class="cap">Contrato celebrado el {FECHA}, para el servicio de internet residencial en el domicilio indicado, entre EL OPERADOR y EL USUARIO, de conformidad con las cláusulas siguientes:</p>'
+    +body
+    +'<p class="nota">ANEXOS: (1) Condiciones de Uso del Servicio; (2) Política de Tratamiento de Datos Personales; (3) Ficha del plan/velocidad y precio vigente. Los anexos están disponibles en la página web y en la oficina de EL OPERADOR.</p>'
+    +'<div class="firm"><div class="line">EL OPERADOR</div><br><small>'+esc(cfg.empresa_nombre||'NetSatipo')+'<br>'+esc(cfg.razon_social||'')+' '+(cfg.ruc?'· RUC '+esc(cfg.ruc):'')+'</small></div>'
+    +usuFirm;
+  docOpen(P(inner), 'Contrato de servicio');
+}
+
+/* ===== ARRANQUE ===== */
+(async function(){
+  $('year').textContent = new Date().getFullYear();
+  const cfg = await api('getPublicSettings');
+  CFG = cfg.ok===false ? {} : cfg;
+  $('f-name').textContent = CFG.empresa_nombre||'NetSatipo';
+  document.body.dataset.theme = (CFG.tema||'confianza').trim() || 'confianza';
+  if (CFG.empresa_nombre) document.title = 'Mi Cuenta · '+CFG.empresa_nombre;
+  render();
+})();
+</script>
+</body>
+</html>

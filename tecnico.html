@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Técnico – NetSatipo</title>
+<meta name="robots" content="noindex,nofollow">
+<script>
+const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxZfzGkuA7DGqD2lix5Y0Kw9lXNpX6JWSP56Upd7dJTs2Tt7-l-5vA58xeR8-rZqvg/exec";
+function _api(fn, args){
+  try{
+    args = args || [];
+    if (window.google && google.script && google.script.run) return google.script.run
+      .withSuccessHandler(r=>Promise.resolve(r))
+      .withFailureHandler(e=>Promise.resolve({ ok:false, error:String(e&&e.message||e) }))
+      .__rpc(fn, args, null);
+  }catch(_){}
+  const ctrl = ('AbortController' in window) ? new AbortController() : null;
+  const t = ctrl ? setTimeout(()=>ctrl.abort(), 180000) : null;
+  return fetch(GAS_EXEC, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ fn: fn, args: args }), signal: ctrl ? ctrl.signal : undefined })
+    .then(r=>{ if (t) clearTimeout(t); return r.text(); }, e=>{ if (t) clearTimeout(t); throw e; })
+    .then(txt=>{
+      const f = txt.trim().slice(0,1);
+      if (f === '<' || /<\s*(!doctype|html)/i.test(txt.slice(0,120))){
+        return { ok:false, error:'El Web App no respondió JSON. Revisa en Apps Script: publicar con "Ejecutar como: Yo" y "Quién tiene acceso: Cualquier usuario".' };
+      }
+      try { return JSON.parse(txt); }
+      catch(err){ return { ok:false, error:'Respuesta no válida del servidor ('+String(err&&err.message||err)+')' }; }
+    })
+    .catch(err=>{
+      if (err && (err.name==='AbortError' || /abor/i.test(String(err&&err.message||err)))) return { ok:false, error:'El servidor tardó demasiado. Reintenta en unos segundos.' };
+      return { ok:false, error:String(err&&err.message||err) };
+    });
+}
+async function api(fn, args){
+  try{ return await _api(fn, args||[]); }
+  catch(e){ return { ok:false, error:String(e && e.message || e) }; }
+}
+</script>
+<style>
+:root{
+  --pri:#050b1f; --pri-2:#0d2a55; --acc:#00a2ff; --acc-2:#2ee6ff;
+  --bg:#01030a; --bg-2:#070d1f; --card:#0a1128; --line:#1c2a4d;
+  --tx:#e8eefc; --muted:#8395c4; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+  --r:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:
+  radial-gradient(1000px 500px at 80% -10%,rgba(0,162,255,.14),transparent 60%),
+  radial-gradient(700px 400px at -10% 110%,rgba(46,230,255,.10),transparent 60%),var(--bg);
+  color:var(--tx);min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding:22px 18px 60px}
+a{color:var(--acc);text-decoration:none}
+.top-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:rgba(5,11,31,.75);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.top-bar .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.top-bar .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc-2));box-shadow:0 0 12px var(--acc)}
+.top-bar .links{display:flex;gap:14px;font-size:13px;align-items:center}
+.card{background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:var(--r);padding:22px;margin:20px 0}
+h1,h2,h3{margin:0 0 10px;font-weight:700;letter-spacing:.3px}
+h2{font-size:20px}h3{font-size:15px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--tx);font-size:14px;outline:none}
+input:focus,select:focus{border-color:var(--acc)}
+.btn{cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--tx);padding:10px 14px;border-radius:10px;font-size:14px;font-family:inherit;transition:.15s}
+.btn:hover{border-color:var(--acc)}
+.btn.ok{background:linear-gradient(135deg,var(--acc),#0077ff);color:#fff;border:none;font-weight:600}
+.btn.wa{background:#25d366;color:#03340f;border:none;font-weight:600}
+.btn.gray{background:rgba(255,255,255,.08);border:none;color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.ta{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px}
+.tarea{background:linear-gradient(170deg,rgba(255,255,255,.045),rgba(255,255,255,.01));border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.tarea .head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.tarea .code{font-size:12px;color:var(--muted);font-family:Consolas,monospace}
+.tarea .nombre{font-size:17px;font-weight:700}
+.tarea .plan-badge{font-size:12px;color:#bfe3ff;background:rgba(0,162,255,.12);border:1px solid rgba(0,162,255,.35);padding:3px 9px;border-radius:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:13px;color:var(--tx);margin:12px 0}
+.grid .lbl{color:var(--muted)}
+.notas{font-size:12.5px;color:var(--muted);background:rgba(255,255,255,.03);border-left:2px solid var(--line);padding:6px 10px;border-radius:6px;margin:10px 0}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.acciones .btn{flex:1;min-width:120px}
+.fotos{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+.fotos input[type=file]{font-size:12px}
+.preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.preview img{width:62px;height:62px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.kpis{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 18px;min-width:130px}
+.kpi b{display:block;font-size:22px}
+.kpi span{font-size:12px;color:var(--muted)}
+.msg{font-size:13px;margin-top:10px;min-height:16px}
+.ok-t{color:var(--ok)}
+.err-t{color:var(--err)}
+.hidden{display:none}
+.pulsing{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.loading{color:var(--muted);text-align:center;padding:40px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0b1a3a;border:1px solid var(--line);color:var(--tx);padding:10px 18px;border-radius:10px;font-size:14px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+@media (max-width:640px){.ta{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top-bar">
+  <span class="brand"><span class="dot"></span><span>NetSatipo <span style="color:var(--muted);font-weight:400">· Panel técnico</span></span></span>
+  <span class="links">
+    <a href="index.html" target="_blank">Página</a>
+    <button class="btn gray" id="logout-btn" style="display:none" onclick="cerrarSesion()">Salir</button>
+  </span>
+</header>
+<div class="wrap">
+
+  <div class="card" id="tec-login" style="max-width:420px;margin:50px auto">
+    <div class="sec-tag" style="font-size:12px;color:var(--muted)">Acceso restringido</div>
+    <h2>Panel Técnico</h2>
+    <p class="sub">Ingresa la clave asignada a los técnicos.</p>
+    <input type="password" id="tec-clave" placeholder="Clave de técnico" autocomplete="current-password" onkeydown="if(event.key==='Enter')onTecnicoLogin()">
+    <button class="btn ok" style="width:100%;margin-top:14px" onclick="onTecnicoLogin()">Ingresar</button>
+    <div class="msg" id="tec-login-msg"></div>
+  </div>
+
+  <div id="tec-dash" class="hidden">
+    <div class="kpis">
+      <div class="kpi"><b id="k-total">0</b><span>Instalaciones</span></div>
+    </div>
+    <div class="ta" id="tec-lista"></div>
+    <div id="tec-vacio" class="loading hidden">No hay instalaciones pendientes por ahora.</div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let T = { token:null, planes:[], busy:false, uploading:false };
+
+function toast(msg, tipo){
+  const d = document.createElement('div');
+  d.className='toast';
+  d.style.borderColor = tipo==='err' ? 'var(--err)' : tipo==='ok' ? 'var(--ok)' : 'var(--line)';
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(()=>{ d.remove(); }, 2600);
+}
+function setMsg(id, txt, ok){
+  const m = $(id);
+  if (!m) return;
+  m.textContent = txt;
+  m.className = 'msg ' + (ok ? 'ok-t' : 'err-t');
+}
+
+async function onTecnicoLogin(){
+  const clave = $('tec-clave').value.trim();
+  if (!clave) return setMsg('tec-login-msg','Ingresa la clave', false);
+  setMsg('tec-login-msg','Verificando…');
+  const r = await api('tecnicoLogin',[clave]);
+  if (!r.ok){ setMsg('tec-login-msg', r.error||'No se pudo ingresar', false); return; }
+  T.token = r.token;
+  try{ localStorage.setItem('satipo_tec_token', T.token); }catch(_){}
+  enterPanel();
+}
+function esErrorAuth(err){
+  const m = String(err||'').toLowerCase();
+  return /no autorizado/.test(m) || /expirad/.test(m) || /expir[oó]/.test(m) || /no iniciada/.test(m);
+}
+function cerrarSesion(msg){
+  if (T_AUTO_REFRESH){ clearInterval(T_AUTO_REFRESH); T_AUTO_REFRESH = null; }
+  if (T.token) api('tecnicoLogout',[T.token]);
+  T.token = null;
+  try{ localStorage.removeItem('satipo_tec_token'); }catch(_){}
+  $('tec-dash').classList.add('hidden');
+  $('tec-login').style.display='block';
+  $('logout-btn').style.display='none';
+  $('tec-clave').value='';
+  if (msg) toast(msg,'err');
+}
+function enterPanel(){
+  $('tec-login').style.display='none';
+  $('tec-dash').classList.remove('hidden');
+  $('logout-btn').style.display='inline-block';
+  startAutoRefresh();
+  loadPanel();
+}
+var T_AUTO_REFRESH = null;
+function startAutoRefresh(){
+  if (T_AUTO_REFRESH) clearInterval(T_AUTO_REFRESH);
+  T_AUTO_REFRESH = setInterval(()=>{
+    if (!T.token) return;
+    if (T.busy || T.uploading) return;
+    if (document.visibilityState === 'hidden') return;
+    loadPanel();
+  }, 30000);
+}
+async function loadPanel(){
+  if (T.busy) return;
+  T.busy = true;
+  $('tec-lista').innerHTML = '<div class="loading pulsing">Cargando instalaciones…</div>';
+  const [tar, pl] = await Promise.all([ api('tecnicoTareas',[T.token]), api('tecnicoPlanes',[T.token]) ]);
+  T.busy = false;
+  if (!T.token) return;
+  if (!tar || !tar.ok){
+    const errMsg = (tar && tar.error) || '';
+    if (esErrorAuth(errMsg)){ cerrarSesion('Tu sesión expiró. Ingresa nuevamente.'); return; }
+    toast(errMsg||'Error al cargar.','err');
+    $('tec-lista').innerHTML = '<div class="loading">'+esc(errMsg||'Error al cargar.')+'<br><button class="btn ok" style="margin-top:14px" onclick="loadPanel()">Reintentar</button></div>';
+    return;
+  }
+  T.planes = (pl && pl.ok && pl.planes) ? pl.planes : [];
+  const tareas = tar.tareas || [];
+  $('k-total').textContent = tareas.length;
+  $('tec-vacio').classList.toggle('hidden', tareas.length>0);
+  $('tec-lista').innerHTML = tareas.length
+    ? tareas.map(renderTarea).join('')
+    : '<div class="loading">Sin instalaciones pendientes.</div>';
+}
+function renderTarea(t){
+  const planOpts = '<option value="">— Plan —</option>' + T.planes
+    .map(p=>'<option value="'+esc(p.plan_id)+'"'+(String(p.plan_id)===String(t.plan_id)?' selected':'')+'>'+esc(p.nombre)+' · S/ '+p.precio+'</option>').join('');
+  const tel = t.telefono.replace(/\D/g,'');
+  const wa = 'https://wa.me/'+(tel[0]==='9'?'51'+tel:tel);
+  const maps = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((t.direccion||'')+' '+(t.distrito||'')+' Satipo');
+  return `<div class="tarea">
+    <div class="head">
+      <div><div class="nombre">${esc(t.nombres)}</div><div class="code">${esc(t.solicitud_id)}</div></div>
+      <span class="plan-badge">${esc(t.plan_nombre||t.plan_id||'Sin plan')}</span>
+    </div>
+    <div class="grid">
+      <div><span class="lbl">DNI:</span> ${esc(t.dni||'—')}</div>
+      <div><span class="lbl">Tel:</span> ${esc(t.telefono||'—')}</div>
+      <div style="grid-column:1/-1"><span class="lbl">Dirección:</span> ${esc(t.direccion||'—')}${esc(t.distrito?' · '+t.distrito:'')}</div>
+      <div><span class="lbl">Pago:</span> ${esc(t.pago_metodo||'—')}</div>
+      <div><span class="lbl">Desde:</span> ${esc(t.creado_en||'—')}</div>
+    </div>
+    ${t.observaciones ? '<div class="notas">📝 '+esc(t.observaciones)+'</div>' : ''}
+    <div class="acciones">
+      <a class="btn wa" href="${wa}" target="_blank">WhatsApp</a>
+      <a class="btn" href="tel:${tel||'+51999999999'}" style="text-align:center">Llamar</a>
+      <a class="btn" href="${maps}" target="_blank" style="text-align:center">Ubicación</a>
+    </div>
+    <div style="margin-top:14px">
+      <label style="font-size:12px;color:var(--muted)">Plan a instalar</label>
+      <select id="pl-${esc(t.solicitud_id)}" onchange="guardarPlan('${esc(t.solicitud_id)}')">${planOpts}</select>
+    </div>
+    <div class="acciones">
+      <button class="btn ok" onclick="marcarInstalada('${esc(t.solicitud_id)}')">✅ Instalado</button>
+      <button class="btn" onclick="noEncontrado('${esc(t.solicitud_id)}')">🚫 No estaba</button>
+    </div>
+    <div class="fotos">
+      <label style="font-size:12px;color:var(--muted)">Fotos de la instalación (máx 5)</label>
+      <input type="file" id="ph-${esc(t.solicitud_id)}" accept="image/*" multiple onchange="previewFotos('${esc(t.solicitud_id)}')">
+      <div class="preview" id="pv-${esc(t.solicitud_id)}"></div>
+      <div style="margin-top:10px"><button class="btn" onclick="subirFotos('${esc(t.solicitud_id)}')">📷 Subir fotos</button><span class="msg" style="display:inline;margin-left:10px" id="fmsg-${esc(t.solicitud_id)}"></span></div>
+    </div>
+  </div>`;
+}
+async function accion(sid, accion, extra){
+  $('tec-lista').style.opacity = '.5';
+  const r = await api('tecnicoAccion',[T.token, { solicitud_id:sid, accion:accion, ...(extra||{}) }]);
+  $('tec-lista').style.opacity = '1';
+  if (!r.ok){
+    if (esErrorAuth(r.error)){ cerrarSesion('Tu sesión expiró. Ingresa nuevamente.'); return; }
+    toast(r.error||'Error','err');
+    return;
+  }
+  toast(r.message||'Listo','ok');
+  loadPanel();
+}
+function guardarPlan(sid){
+  const sel = $('pl-'+sid);
+  if (!sel.value) return;
+  accion(sid, 'PLAN', { plan_id: sel.value });
+}
+function marcarInstalada(sid){
+  if (!confirm('¿Confirmas que la instalación se completó?')) return;
+  const sel = $('pl-'+sid);
+  accion(sid, 'INSTALADA', { plan_id: sel ? sel.value : '' });
+}
+function noEncontrado(sid){
+  const nota = prompt('¿Alguna observación? (opcional)','');
+  if (nota===null) return;
+  accion(sid, 'NO_ENCONTRADO', { nota: nota });
+}
+function fileToDataURL(file){
+  return new Promise((res,rej)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> res(fr.result);
+    fr.onerror = rej;
+    fr.readAsDataURL(file);
+  });
+}
+async function previewFotos(sid){
+  const box = $('pv-'+sid);
+  box.innerHTML='';
+  const files = ($('ph-'+sid).files||[]).slice ? Array.prototype.slice.call($('ph-'+sid).files).slice(0,5) : [];
+  files.forEach(f=>{
+    const im = new Image();
+    im.src = URL.createObjectURL(f);
+    im.onload = ()=> box.appendChild(im);
+  });
+}
+async function subirFotos(sid){
+  const input = $('ph-'+sid);
+  const files = input && input.files ? Array.prototype.slice.call(input.files).slice(0,5) : [];
+  if (!files.length){ toast('Selecciona fotos primero','err'); return; }
+  const msg = $('fmsg-'+sid);
+  if (msg) msg.textContent='Subiendo…';
+  T.uploading = true;
+  try{
+    const fotos = await Promise.all(files.map(f=>fileToDataURL(f).then(data=>({ data:data, nota:f.name }))));
+    const r = await api('tecnicoFotos',[T.token, { solicitud_id:sid, fotos:fotos }]);
+    T.uploading = false;
+    if (!r.ok){
+      if (msg) msg.textContent='';
+      if (esErrorAuth(r.error)){ cerrarSesion('Tu sesión expiró. Ingresa nuevamente.'); return; }
+      toast(r.error||'Error','err');
+      return;
+    }
+    toast('Se subieron '+r.fotos.length+' foto(s)','ok');
+    input.value='';
+    const box = $('pv-'+sid); if (box) box.innerHTML='';
+    if (msg) msg.textContent='';
+  }catch(e){
+    T.uploading = false;
+    if (msg) msg.textContent='';
+    toast(String(e&&e.message||e),'err');
+  }
+}
+async function start(){
+  const cfg = await api('getPublicSettings');
+  const nm = (cfg && cfg.empresa_nombre) || 'NetSatipo';
+  document.title = 'Panel Técnico – '+nm;
+  try{
+    const t = localStorage.getItem('satipo_tec_token');
+    if (t){
+      T.token = t;
+      const r = await api('tecnicoTareas',[t]);
+      if (r && (r.ok || !esErrorAuth(r.error))){ enterPanel(); return; }
+      T.token = null;
+      try{ localStorage.removeItem('satipo_tec_token'); }catch(_){}
+    }
+  }catch(_){}
+}
+start();
+</script>
+</body>
+</html>
