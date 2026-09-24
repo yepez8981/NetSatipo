@@ -229,7 +229,7 @@ td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-
 
 <script>
   /* ===== CONFIG: URL de tu Web App de Apps Script (backend/API) ===== */
-  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxZfzGkuA7DGqD2lix5Y0Kw9lXNpX6JWSP56Upd7dJTs2Tt7-l-5vA58xeR8-rZqvg/exec";
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxnyJAl-UVRcM5a7nmSwVqZFgYSlma3uNZ3SIE7mwebXDDNW32bbIouDndo4AW8HEM0/exec";
 
   function _api(fn, args){
     args = args || [];
@@ -508,7 +508,8 @@ async function toggleFacturaForm(){
   }
   const sel = $('fact-cliente');
   const r = await api('adminList',['CLIENTES',S.auth]);
-  S.admClientes = (r.ok && r.rows) ? r.rows.map(x=>x.data) : [];
+  const lista = Array.isArray(r) ? r : (r && r.rows) ? r.rows : [];
+  S.admClientes = lista.map(x=>x.data);
   if (!S.admClientes.length){ toast('No se pudieron cargar los clientes','err'); }
   sel.innerHTML = '<option value="">Selecciona un cliente…</option>'
     + S.admClientes.map(c => {
@@ -730,7 +731,8 @@ function toggleAltaForm(modo){
 }
 async function cargarPlanesAlta(){
   const r = await api('adminList',['PLANES',S.auth]);
-  const planes = (r && r.ok && r.rows) ? r.rows.map(x=>x.data) : [];
+  const lista = Array.isArray(r) ? r : (r && r.rows) ? r.rows : [];
+  const planes = lista.map(x=>x.data);
   $('alta-plan').innerHTML = '<option value="">— Selecciona el plan —</option>'+planes
     .filter(p=>String(p.activo).toUpperCase()!=='FALSE')
     .map(p=>'<option value="'+esc(p.plan_id)+'">'+esc(p.nombre+' · S/ '+p.precio)+'</option>').join('');

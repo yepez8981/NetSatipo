@@ -21,7 +21,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <script>
   /* ===== CONFIG: URL de tu Web App de Apps Script (backend/API) ===== */
-  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxZfzGkuA7DGqD2lix5Y0Kw9lXNpX6JWSP56Upd7dJTs2Tt7-l-5vA58xeR8-rZqvg/exec";
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxnyJAl-UVRcM5a7nmSwVqZFgYSlma3uNZ3SIE7mwebXDDNW32bbIouDndo4AW8HEM0/exec";
 
   function _api(fn, args){
     args = args || [];
@@ -1375,7 +1375,7 @@ function faqToggle(btn){
   if (!open) it.classList.add('on');
 }
 function selectPlan(id){
-  document.getElementById('contratar').scrollIntoView({behavior:'smooth'});
+  go('contratar');
   $('c-plan').value = id;
   if (id) toast('Plan seleccionado. Completa tus datos.','ok');
 }

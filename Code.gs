@@ -2,7 +2,7 @@
  *  CONFIG
  ***********************/
 const DB = {
-  SS_ID: '',  // <-- PON AQUI EL ID DE TU HOJA DE CALCULO
+  SS_ID: '1IyjENTHiG8uyF2jwH-Ub1u1C_Xz9Pn2rmjxD8MQ7Ex0',  // <-- PON AQUI EL ID DE TU HOJA DE CALCULO
   TABS: {
     CONFIG: 'CONFIG',
     PLANES: 'PLANES',
@@ -39,6 +39,24 @@ function codeNum_(p, n){ return p+String(n||'').padStart(6,'0'); }
 function fmtNum_(n){ return Math.round(Number(n||0)*100)/100; }
 function escH_(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function normText_(s){ return String(s||'').trim().toLowerCase(); }
+function withLock_(fn){
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try { return fn(); } finally { lock.releaseLock(); }
+}
+function publicLimit_(key, tel, max, hours){
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const k = 'lim_'+key+'_'+String(tel||'x').replace(/\D/g,'').slice(-9);
+    const now = Date.now();
+    let cur = null;
+    try { const j = JSON.parse(p.getProperty(k)||'null'); if (j && j.window > now) cur = j; } catch(_){}
+    const cnt = (cur && Number(cur.cnt)) || 0;
+    if (cnt >= max) return false;
+    p.setProperty(k, JSON.stringify({ cnt: cnt+1, window: now + (hours||24)*3600000 }));
+    return true;
+  } catch(_){ return true; }
+}
 
 function getHeadIndex_(sh){
   const head = sh.getRange(1,1,1,Math.max(1,sh.getLastColumn())).getValues()[0].map(x=>String(x||''));
@@ -116,7 +134,7 @@ function notifyWa_(telefono, mensaje){
 }
 function notifyEstadoCliente_(tabName, rowNum, field, value){
   try {
-    const { fIdx, rows } = readSheetData_(tabName);
+    const { idx: fIdx, rows } = readSheetData_(tabName);
     const r = rows[Number(rowNum)-2];
     if (!r) return;
     const email = ('email' in fIdx) ? r[fIdx.email] : '';
@@ -179,7 +197,7 @@ function initDB(){
     ruc: '',
     domicilio_fiscal: '',
     dpo_email: '',
-    sitio_web: 'https://TUUSUARIO.github.io/netsatipo/',
+    sitio_web: 'https://yepez8981.github.io/NetSatipo/',
     cuota_instalacion: '49',
     estado_red: 'Sin incidencias: red operativa de día y de noche.',
     licencias: 'Autorizado por el MTC · Supervisado por OSIPTEL',
@@ -269,17 +287,13 @@ function doGet(e){
   }
   const sitio = getConfig_('sitio_web','');
   const nom = getConfig_('empresa_nombre','NetSatipo');
-  if (sitio){
-    return HtmlService.createHtmlOutput(
-      '<html><head><meta http-equiv="refresh" content="0; url='+sitio+'"></head>'
-      +'<body style="font-family:Arial,sans-serif;text-align:center;padding:40px">'
-      +'<p>Redirigiendo a <b>'+nom+'</b>... <a href="'+sitio+'">Haz clic aquí</a></p></body></html>'
-    ).setTitle(nom);
-  }
   return HtmlService.createHtmlOutput(
-    '<html><body style="font-family:Arial,sans-serif;text-align:center;padding:40px">'
-    +'<p><b>'+nom+'</b> — servicio (API de Apps Script) activo.</p>'
-    +'<p>La tienda web está en GitHub Pages. Configura la clave <code>sitio_web</code> en la hoja CONFIG para redirigir aquí.</p></body></html>'
+    '<html><body style="font-family:Arial,Helvetica,sans-serif;text-align:center;padding:40px;line-height:1.7">'
+    +'<h2>'+nom+' — API activo</h2>'
+    +'<p>Este endpoint es el backend (API) del sistema, no una página web pública.</p>'
+    +(sitio ? '<p>Web oficial: <a href="'+sitio+'">'+sitio+'</a></p>' : '')
+    +'<p>Para verificar el servicio usa: <code>'+'?'+'json=1</code></p>'
+    +'</body></html>'
   ).setTitle(nom);
 }
 
@@ -328,7 +342,7 @@ function sesPut_(prefix, token, value, ttlMs){
       const props = p.getProperties();
       const now = Date.now();
       Object.keys(props).forEach(k => {
-        if (['adm_','cli_','tec_'].some(x => k.indexOf(x)===0)){
+        if (['adm_','cli_','tec_','ven_'].some(x => k.indexOf(x)===0)){
           try { const j = JSON.parse(props[k]); if (!j || !j.exp || j.exp < now) p.deleteProperty(k); } catch(_){ p.deleteProperty(k); }
         }
       });
@@ -377,9 +391,13 @@ function requireAdmin_(token){
  *  PUBLICO: CONFIG Y PLANES
  ***********************/
 function getPublicSettings(){
-  const keys = ['empresa_nombre','lema','whatsapp','telefono','correo_contacto','direccion_oficina','horario','yape_telefono','yape_nombre','plin_telefono','plin_nombre','banco_nombre','banco_cuenta','banco_titular','pasarela_on','pasarela_nombre','distritos','tema','razon_social','ruc','domicilio_fiscal','dpo_email','sitio_web'];
   const res = {};
-  keys.forEach(k => res[k] = getConfig_(k,''));
+  WEB_SETTING_KEYS.forEach(k => {
+    if (WEB_PASSWORD_KEYS.indexOf(k)>=0) return;
+    res[k] = getConfig_(k,'');
+  });
+  res.pasarela_on = getConfig_('pasarela_on','');
+  res.pasarela_nombre = getConfig_('pasarela_nombre','');
   res.moneda = DB.MONEDA;
   res.ok = true;
   return res;
@@ -457,12 +475,14 @@ function submitContract(p){
   if (!('plan_id' in idx)) throw new Error('No hay planes registrados');
   const plan = rows.find(r => r[idx.plan_id]===p.plan_id && String(r[idx.activo]).toUpperCase()!=='FALSE');
   if (!plan) throw new Error('El plan seleccionado no existe');
-  const pagoEstado = ['YAPE','PLIN','TRANSFERENCIA','TARJETA','EFECTIVO'].includes(p.pago_metodo) ? 'PENDIENTE' : 'PENDIENTE';
-  const sh = tab(DB.TABS.SOLICITUDES);
-  const { idx: sIdx } = getHeadIndex_(sh);
-  const num = (sh.getLastRow()||0);
-  const sid = 'SOL-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
-  const data = {
+  const pagoEstado = 'PENDIENTE';
+  if (!publicLimit_('sol', p.telefono, 5, 24)) throw new Error('Has llegado al límite de solicitudes desde este número hoy. Escríbenos por WhatsApp.');
+  const creado = withLock_(() => {
+    const sh = tab(DB.TABS.SOLICITUDES);
+    const { idx: sIdx } = getHeadIndex_(sh);
+    const num = (sh.getLastRow()||0);
+    const sid = 'SOL-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
+    const data = {
     solicitud_id: sid,
     tipo: tipo,
     plan_id: p.plan_id,
@@ -483,10 +503,12 @@ function submitContract(p){
   writeRow_(sh, sIdx, data);
   // Guardar como cliente si aún no existe
   upsertClienteByPhone_(p.telefono, { dni:p.dni, nombres:data.nombres, telefono:p.telefono, email:data.email, direccion:data.direccion, distrito:data.distrito, plan_id:p.plan_id, estado:'PENDIENTE' });
-  audit_('public', 'solicitud', 'Nueva solicitud '+sid+' plan '+data.plan_nombre);
-  notifyAdmin_('Nueva solicitud de contratación '+sid,
-    'Plan: '+data.plan_nombre+'\nCliente: '+data.nombres+'\nDNI: '+data.dni+'\nTel: '+data.telefono+'\nPago: '+p.pago_metodo+'\n'+data.direccion+', '+data.distrito);
-  return { ok:true, solicitud_id: sid, message: '¡Solicitud enviada! Guarda tu código: '+sid+' para dar seguimiento.' };
+    return { sid: sid, data: data };
+  });
+  audit_('public', 'solicitud', 'Nueva solicitud '+creado.sid+' plan '+creado.data.plan_nombre);
+  notifyAdmin_('Nueva solicitud de contratación '+creado.sid,
+    'Plan: '+creado.data.plan_nombre+'\nCliente: '+creado.data.nombres+'\nDNI: '+creado.data.dni+'\nTel: '+creado.data.telefono+'\nPago: '+p.pago_metodo+'\n'+creado.data.direccion+', '+creado.data.distrito);
+  return { ok:true, solicitud_id: creado.sid, message: '¡Solicitud enviada! Guarda tu código: '+creado.sid+' para dar seguimiento.' };
 }
 
 function verificarDuplicado(dato){
@@ -602,10 +624,12 @@ function scheduleVisit(p){
   const verif = verifyClient({ query: dniDig || String(p.telefono||'') || String(p.email||'') || '' });
   if (!verif.ok) throw new Error(verif.error);
   const tipo = DB.VISITA_TIPOS.includes(p.tipo_visita) ? p.tipo_visita : 'MANTENIMIENTO';
-  const sh = tab(DB.TABS.VISITAS);
-  const { idx } = getHeadIndex_(sh);
-  const num = (sh.getLastRow()||0);
-  const vid = 'VIS-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
+  if (!publicLimit_('vis', p.telefono, 5, 24)) throw new Error('Has llegado al límite de visitas desde este número hoy. Escríbenos por WhatsApp.');
+  const vid = withLock_(() => {
+    const sh = tab(DB.TABS.VISITAS);
+    const { idx } = getHeadIndex_(sh);
+    const num = (sh.getLastRow()||0);
+    const vid = 'VIS-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
   const data = {
     visita_id: vid,
     cliente_id: verif.cliente.cliente_id||'',
@@ -625,11 +649,13 @@ function scheduleVisit(p){
     adjunto: String(p.adjunto||'')
   };
   writeRow_(sh, idx, data);
-  audit_('public', 'visita', 'Nueva visita '+vid+' tipo '+tipo+' cliente '+data.nombres+((data.adjunto)?' [con adjunto]':''));
-  notifyAdmin_('Nueva visita agendada '+vid,
-    'Tipo: '+tipo+'\nCliente: '+data.nombres+'\nTel: '+data.telefono+'\nFecha: '+p.fecha_propuesta+' '+(p.hora_propuesta||'')+'\n'+data.direccion+', '+data.distrito);
-  notifyWa_(data.telefono, 'Hola '+data.nombres+'! Agendamos tu visita ('+tipo+') para el '+p.fecha_propuesta+' '+(p.hora_propuesta||'')+'. Tu código: '+vid+'. Te avisaremos cuando esté confirmado.');
-  return { ok:true, visita_id: vid, message: '¡Visita agendada! tu código: '+vid };
+    return { vid: vid, data: data };
+  });
+  audit_('public', 'visita', 'Nueva visita '+vid.vid+' tipo '+vid.data.tipo+' cliente '+vid.data.nombres+((vid.data.adjunto)?' [con adjunto]':''));
+  notifyAdmin_('Nueva visita agendada '+vid.vid,
+    'Tipo: '+vid.data.tipo+'\nCliente: '+vid.data.nombres+'\nTel: '+vid.data.telefono+'\nFecha: '+p.fecha_propuesta+' '+(p.hora_propuesta||'')+'\n'+vid.data.direccion+', '+vid.data.distrito);
+  notifyWa_(vid.data.telefono, 'Hola '+vid.data.nombres+'! Agendamos tu visita ('+vid.data.tipo+') para el '+p.fecha_propuesta+' '+(p.hora_propuesta||'')+'. Tu código: '+vid.vid+'. Te avisaremos cuando esté confirmado.');
+  return { ok:true, visita_id: vid.vid, message: '¡Visita agendada! tu código: '+vid.vid };
 }
 
 function getVisitaStatus(p){
@@ -757,31 +783,40 @@ function vencDefault_(periodo, dias){
   }
   return Utilities.formatDate(d, tz(), 'yyyy-MM-dd');
 }
-function _crearFacturaMes_(cid, row, idx, periodo){
+function _crearFacturaMes_(cid, row, idx, periodo, opts){
+  opts = opts || {};
+  const cache = opts.cache || {};
   const d = new Date();
   periodo = periodo || Utilities.formatDate(d, tz(), 'yyyy-MM');
   const fSh = tab(DB.TABS.FACTURAS);
-  const { idx: fIdx, rows: fRows } = readSheetData_(DB.TABS.FACTURAS);
+  const fData = cache.f || readSheetData_(DB.TABS.FACTURAS);
+  const fIdx = fData.idx; const fRows = fData.rows;
   if (!('factura_id' in fIdx)) throw new Error('Hoja FACTURAS mal formada');
-  const exists = fRows.some(r => String(r[fIdx.cliente_id]||'') === String(cid) && String(r[fIdx.periodo]||'') === periodo);
-  if (exists) return { creada:false };
   let plan_nombre = '';
-  try {
-    const { idx: pIdx, rows: pRows } = readSheetData_(DB.TABS.PLANES);
-    const pl = ('plan_id' in pIdx) ? pRows.find(x => x[pIdx.plan_id]===row[idx.plan_id]) : null;
-    if (pl) plan_nombre = String(pl[pIdx.nombre]||'');
-  } catch(_){}
+  const pData = cache.p || (function(){ try { return readSheetData_(DB.TABS.PLANES); } catch(_){ return null; } })();
+  if (pData && 'plan_id' in pData.idx){
+    try {
+      const pl = pData.rows.find(x => x[pData.idx.plan_id]===row[idx.plan_id]);
+      if (pl) plan_nombre = String(pl[pData.idx.nombre]||'');
+    } catch(_){}
+  }
   const monto = cuotaClienteRow_(row, idx);
-  const num = (fSh.getLastRow()||0);
-  const fid = 'FAC-'+String(periodo).replace(/-/g,'')+'-'+String(num+1).padStart(3,'0');
-  writeRow_(fSh, fIdx, {
-    factura_id: fid, cliente_id: String(cid), cliente_nombre: String(row[idx.nombres]||''),
-    plan_id: String(row[idx.plan_id]||''), plan_nombre: plan_nombre, periodo: periodo,
-    monto: monto, vencimiento: vencDefault_(periodo),
-    estado: 'PENDIENTE', metodo: '', referencia: '', pagado_en: '',
-    creado_en: nowISO(), actualizado_en: nowISO()
+  const fid = withLock_(() => {
+    const yaExiste = fRows.some(r => String(r[fIdx.cliente_id]||'') === String(cid) && String(r[fIdx.periodo]||'') === periodo);
+    if (yaExiste) return false;
+    const num = (fSh.getLastRow()||0);
+    const fid = 'FAC-'+String(periodo).replace(/-/g,'')+'-'+String(num+1).padStart(3,'0');
+    writeRow_(fSh, fIdx, {
+      factura_id: fid, cliente_id: String(cid), cliente_nombre: String(row[idx.nombres]||''),
+      plan_id: String(row[idx.plan_id]||''), plan_nombre: plan_nombre, periodo: periodo,
+      monto: monto, vencimiento: vencDefault_(periodo),
+      estado: 'PENDIENTE', metodo: '', referencia: '', pagado_en: '',
+      creado_en: nowISO(), actualizado_en: nowISO()
+    });
+    return fid;
   });
-  try { autoAplicarSaldo_(String(cid)); } catch(_){}
+  if (fid === false) return { creada:false };
+  if (!opts.skipAuto){ try { autoAplicarSaldo_(String(cid)); } catch(_){} }
   return { creada:true, factura_id: fid, monto: monto };
 }
 function ensureFacturaMes_(cid, row, idx){
@@ -981,6 +1016,8 @@ function adminBulkFacturas(p, token){
   if (Array.isArray(p.cliente_ids) && p.cliente_ids.length) filtro = p.cliente_ids.map(String);
   const r = readSheetData_(DB.TABS.CLIENTES);
   if (!('cliente_id' in r.idx)) throw new Error('Hoja CLIENTES mal formada');
+  const cache = { f: readSheetData_(DB.TABS.FACTURAS), p: null };
+  try { cache.p = readSheetData_(DB.TABS.PLANES); } catch(_){}
   const creadas = [];
   let duplicados = 0, ignorados = 0;
   r.rows.forEach(row => {
@@ -988,8 +1025,11 @@ function adminBulkFacturas(p, token){
     if (filtro && filtro.indexOf(cid)<0) return;
     if (!esActivoFacturable_(row[r.idx.estado])){ ignorados++; return; }
     try {
-      const res = _crearFacturaMes_(cid, row, r.idx, periodo);
-      if (res.creada) creadas.push({ factura_id: res.factura_id, cliente_nombre: String(row[r.idx.nombres]||''), monto: res.monto });
+      const res = _crearFacturaMes_(cid, row, r.idx, periodo, { cache: cache, skipAuto: true });
+      if (res.creada){
+        creadas.push({ factura_id: res.factura_id, cliente_nombre: String(row[r.idx.nombres]||''), monto: res.monto });
+        if (Number(row[r.idx.saldo_a_favor]||0) > 0){ try { autoAplicarSaldo_(cid); } catch(_){} }
+      }
       else duplicados++;
     } catch(_){ ignorados++; }
   });
@@ -1199,6 +1239,38 @@ function autoAplicarSaldo_(cid){
   return saldo;
 }
 
+function marcarFacturaPagada_(cid, nombre, metodo, referencia){
+  const cidS = String(cid||'');
+  const nom = normText_(nombre||'');
+  try {
+    const { idx: fIdx, rows: fRows } = readSheetData_(DB.TABS.FACTURAS);
+    if (!('cliente_id' in fIdx) || !('factura_id' in fIdx) || !('estado' in fIdx)) return null;
+    const sh = tab(DB.TABS.FACTURAS);
+    const shRows = sh.getDataRange().getValues();
+    const posMap = {};
+    for (let i=1;i<shRows.length;i++) posMap[String(shRows[i][fIdx.factura_id]||'')] = i+1;
+    const cand = fRows
+      .filter(r => {
+        if (String(r[fIdx.estado]||'').toUpperCase()==='PAGADA') return false;
+        if (cidS) return String(r[fIdx.cliente_id]||'')===cidS;
+        return nom && normText_(String(r[fIdx.cliente_nombre]||''))===nom;
+      })
+      .sort((a,b)=> String(a[fIdx.periodo]||'').localeCompare(String(b[fIdx.periodo]||'')) || String(a[fIdx.factura_id]||'').localeCompare(String(b[fIdx.factura_id]||'')));
+    for (const f of cand){
+      const rp = posMap[String(f[fIdx.factura_id]||'')];
+      if (!rp) continue;
+      sh.getRange(rp, fIdx.estado+1).setValue('PAGADA');
+      if ('metodo' in fIdx) sh.getRange(rp, fIdx.metodo+1).setValue(metodo||'EFECTIVO');
+      if ('referencia' in fIdx) sh.getRange(rp, fIdx.referencia+1).setValue(referencia||'');
+      if ('pagado_en' in fIdx) sh.getRange(rp, fIdx.pagado_en+1).setValue(nowISO());
+      if ('actualizado_en' in fIdx) sh.getRange(rp, fIdx.actualizado_en+1).setValue(nowISO());
+      audit_('admin', 'pago', 'Factura '+String(f[fIdx.factura_id]||'')+' marcada PAGADA por pago confirmado');
+      return String(f[fIdx.factura_id]||'');
+    }
+  } catch(_){}
+  return null;
+}
+
 function adminSaldo(p, token){
   requireAdmin_(token);
   p = p || {};
@@ -1295,18 +1367,21 @@ function adminNuevoContrato(p, token){
     audit_('admin', 'cliente', 'Nuevo cliente '+cid+' ('+nombres+')');
     return { ok:true, tipo:'CLIENTE', cliente_id: cid, message:'Cliente creado: '+nombres };
   }
-  const ssh = tab(DB.TABS.SOLICITUDES);
-  const sidx = getHeadIndex_(ssh).idx;
-  const num = (ssh.getLastRow()||0);
-  const sid = 'SOL-'+Utilities.formatDate(new Date(), tz(), 'yyyyMM')+'-'+String(num+1).padStart(3,'0');
-  const estIn = String(p.estado||'PENDIENTE').toUpperCase();
-  writeRow_(ssh, sidx, {
-    solicitud_id: sid, tipo: 'NUEVO_CONTRATO', plan_id: plan_id, plan_nombre: plan_nombre,
-    nombres: nombres, dni: dni, telefono: telefono, email: String(p.email||''),
-    direccion: String(p.direccion||''), distrito: String(p.distrito||''),
-    pago_metodo: String(p.pago_metodo||'EFECTIVO'), pago_estado: 'NO_PAGADO',
-    estado: ['INSTALADA','APROBADA'].indexOf(estIn)>=0 ? estIn : 'PENDIENTE',
-    observaciones: String(p.notas||''), creado_en: now, actualizado_en: now, creado_por: 'admin'
+  const sid = withLock_(() => {
+    const ssh = tab(DB.TABS.SOLICITUDES);
+    const sidx = getHeadIndex_(ssh).idx;
+    const num = (ssh.getLastRow()||0);
+    const sid = 'SOL-'+Utilities.formatDate(new Date(), tz(), 'yyyyMM')+'-'+String(num+1).padStart(3,'0');
+    const estIn = String(p.estado||'PENDIENTE').toUpperCase();
+    writeRow_(ssh, sidx, {
+      solicitud_id: sid, tipo: 'NUEVO_CONTRATO', plan_id: plan_id, plan_nombre: plan_nombre,
+      nombres: nombres, dni: dni, telefono: telefono, email: String(p.email||''),
+      direccion: String(p.direccion||''), distrito: String(p.distrito||''),
+      pago_metodo: String(p.pago_metodo||'EFECTIVO'), pago_estado: 'NO_PAGADO',
+      estado: ['INSTALADA','APROBADA'].indexOf(estIn)>=0 ? estIn : 'PENDIENTE',
+      observaciones: String(p.notas||''), creado_en: now, actualizado_en: now, creado_por: 'admin'
+    });
+    return sid;
   });
   audit_('admin', 'solicitud', 'Nueva solicitud '+sid+' ('+nombres+')');
   return { ok:true, tipo:'SOLICITUD', solicitud_id: sid, message:'Contrato registrado: '+sid };
@@ -1520,17 +1595,20 @@ function ventasRegistrar(p, token){
       if (pl) plan_nombre = String(pl[pr.idx.nombre]||'');
     } catch(_){}
   }
-  const ssh = tab(DB.TABS.SOLICITUDES);
-  const sidx = getHeadIndex_(ssh).idx;
-  const num = (ssh.getLastRow()||0);
-  const sid = 'SOL-'+Utilities.formatDate(new Date(), tz(), 'yyyyMM')+'-'+String(num+1).padStart(3,'0');
-  const now = nowISO();
-  writeRow_(ssh, sidx, {
-    solicitud_id: sid, tipo: 'NUEVO_CONTRATO', plan_id: plan_id, plan_nombre: plan_nombre,
-    nombres: nombres, dni: dni, telefono: telefono, email: String(p.email||''),
-    direccion: String(p.direccion||''), distrito: String(p.distrito||''),
-    pago_metodo: String(p.pago_metodo||'EFECTIVO'), pago_estado: 'NO_PAGADO', estado: 'PENDIENTE',
-    observaciones: String(p.notas||''), creado_en: now, actualizado_en: now, creado_por: 'ventas'
+  const sid = withLock_(() => {
+    const ssh = tab(DB.TABS.SOLICITUDES);
+    const sidx = getHeadIndex_(ssh).idx;
+    const num = (ssh.getLastRow()||0);
+    const sid = 'SOL-'+Utilities.formatDate(new Date(), tz(), 'yyyyMM')+'-'+String(num+1).padStart(3,'0');
+    const now = nowISO();
+    writeRow_(ssh, sidx, {
+      solicitud_id: sid, tipo: 'NUEVO_CONTRATO', plan_id: plan_id, plan_nombre: plan_nombre,
+      nombres: nombres, dni: dni, telefono: telefono, email: String(p.email||''),
+      direccion: String(p.direccion||''), distrito: String(p.distrito||''),
+      pago_metodo: String(p.pago_metodo||'EFECTIVO'), pago_estado: 'NO_PAGADO', estado: 'PENDIENTE',
+      observaciones: String(p.notas||''), creado_en: now, actualizado_en: now, creado_por: 'ventas'
+    });
+    return sid;
   });
   audit_('ventas', 'solicitud', 'Nuevo contrato '+sid+' ('+nombres+')');
   return { ok:true, solicitud_id: sid, message: 'Contrato registrado: '+sid };
@@ -1564,34 +1642,39 @@ function saveReclamo(p){
   ['nombres','documento','telefono','tipo','descripcion','pedido'].forEach(c => { if (!p[c]) throw new Error('Falta el campo: '+c); });
   const tipo = ['QUEJA','RECLAMO','GESTION','SUGERENCIA'].includes(String(p.tipo).toUpperCase()) ? String(p.tipo).toUpperCase() : 'RECLAMO';
   const pref = tipo==='QUEJA' ? 'QUE' : tipo==='RECLAMO' ? 'RCL' : 'GES';
-  const sh = tab(DB.TABS.SOLICITUDES);
-  const { idx } = getHeadIndex_(sh);
-  const num = (sh.getLastRow()||0);
-  const rid = pref+'-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
-  const obs = 'HECHO: '+String(p.descripcion||'')+'\nPEDIDO/SOLUCION: '+String(p.pedido||'')
-    +'\nN° SERVICIO/CONTRATO: '+String(p.num_servicio||'—')+'\nTIPO DOC: '+String(p.tipo_doc||'DNI')
-    +'\nREGISTRO: '+nowISO();
-  const data = {
-    solicitud_id: rid,
-    tipo: tipo,
-    plan_id: '', plan_nombre: '',
-    nombres: String(p.nombres||'').toUpperCase().replace(/\s+/g,' ').trim(),
-    dni: String(p.documento||'').replace(/[^0-9]/g,''),
-    telefono: String(p.telefono||''),
-    email: String(p.email||'').toLowerCase(),
-    direccion: String(p.direccion||''),
-    distrito: String(p.distrito||''),
-    pago_metodo: '', pago_estado: '',
-    estado: 'PENDIENTE',
-    observaciones: obs,
-    creado_en: nowISO(),
-    actualizado_en: nowISO()
-  };
-  writeRow_(sh, idx, data);
-  audit_('public', 'reclamo', 'Nuevo '+tipo+' '+rid+' de '+data.nombres);
-  notifyAdmin_('Nuevo '+tipo+' en Libro de Reclamaciones '+rid,
-    'Registro: '+rid+'\nCliente: '+data.nombres+'\nDoc: '+data.documento+'\nTel: '+data.telefono+'\nTipo: '+tipo+'\nHecho: '+p.descripcion+'\nPedido: '+p.pedido+'\n\nResponde en máximo 15 días hábiles (D.S. 011-2011-PCM).');
-  return { ok:true, reclamo_id: rid, message: 'Registro enviado. Resolveremos dentro del plazo legal (15 días hábiles).' };
+  if (!/^\d{9}$/.test(String(p.telefono||'').replace(/\D/g,''))) throw new Error('Teléfono inválido (9 dígitos)');
+  if (!publicLimit_('rcl', p.telefono, 5, 24)) throw new Error('Has llegado al límite de registros desde este número hoy. Escríbenos directamente.');
+  const rid = withLock_(() => {
+    const sh = tab(DB.TABS.SOLICITUDES);
+    const { idx } = getHeadIndex_(sh);
+    const num = (sh.getLastRow()||0);
+    const rid = pref+'-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
+    const obs = 'HECHO: '+String(p.descripcion||'')+'\nPEDIDO/SOLUCION: '+String(p.pedido||'')
+      +'\nN° SERVICIO/CONTRATO: '+String(p.num_servicio||'—')+'\nTIPO DOC: '+String(p.tipo_doc||'DNI')
+      +'\nREGISTRO: '+nowISO();
+    const data = {
+      solicitud_id: rid,
+      tipo: tipo,
+      plan_id: '', plan_nombre: '',
+      nombres: String(p.nombres||'').toUpperCase().replace(/\s+/g,' ').trim(),
+      dni: String(p.documento||'').replace(/[^0-9]/g,''),
+      telefono: String(p.telefono||''),
+      email: String(p.email||'').toLowerCase(),
+      direccion: String(p.direccion||''),
+      distrito: String(p.distrito||''),
+      pago_metodo: '', pago_estado: '',
+      estado: 'PENDIENTE',
+      observaciones: obs,
+      creado_en: nowISO(),
+      actualizado_en: nowISO()
+    };
+    writeRow_(sh, idx, data);
+    return { rid: rid, data: data };
+  });
+  audit_('public', 'reclamo', 'Nuevo '+tipo+' '+rid.rid+' de '+rid.data.nombres);
+  notifyAdmin_('Nuevo '+tipo+' en Libro de Reclamaciones '+rid.rid,
+    'Registro: '+rid.rid+'\nCliente: '+rid.data.nombres+'\nDoc: '+rid.data.dni+'\nTel: '+rid.data.telefono+'\nTipo: '+tipo+'\nHecho: '+p.descripcion+'\nPedido: '+p.pedido+'\n\nResponde en máximo 15 días hábiles (D.S. 011-2011-PCM).');
+  return { ok:true, reclamo_id: rid.rid, message: 'Registro enviado. Resolveremos dentro del plazo legal (15 días hábiles).' };
 }
 
 /***********************
@@ -1600,16 +1683,21 @@ function saveReclamo(p){
 function sendContactMessage(p){
   p = p || {};
   if (!p.nombres || !p.telefono || !p.mensaje) throw new Error('Completa todos los campos');
-  const sh = tab(DB.TABS.SOLICITUDES);
-  const { idx } = getHeadIndex_(sh);
-  const num = (sh.getLastRow()||0);
-  const sid = 'CON-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
-  writeRow_(sh, idx, {
-    solicitud_id: sid, tipo: 'CONTACTO', plan_id:'', plan_nombre:'',
-    nombres: String(p.nombres||'').toUpperCase(), dni:'', telefono: String(p.telefono||''),
-    email: String(p.email||'').toLowerCase(), direccion:'', distrito:'',
-    pago_metodo:'', pago_estado:'', estado:'PENDIENTE',
-    observaciones: String(p.mensaje||''), creado_en: nowISO(), actualizado_en: nowISO()
+  if (!/^\d{9}$/.test(String(p.telefono||'').replace(/\D/g,''))) throw new Error('Teléfono inválido (9 dígitos)');
+  if (!publicLimit_('con', p.telefono, 5, 24)) throw new Error('Has llegado al límite de mensajes desde este número hoy. Llámanos directamente.');
+  const sid = withLock_(() => {
+    const sh = tab(DB.TABS.SOLICITUDES);
+    const { idx } = getHeadIndex_(sh);
+    const num = (sh.getLastRow()||0);
+    const sid = 'CON-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
+    writeRow_(sh, idx, {
+      solicitud_id: sid, tipo: 'CONTACTO', plan_id:'', plan_nombre:'',
+      nombres: String(p.nombres||'').toUpperCase(), dni:'', telefono: String(p.telefono||''),
+      email: String(p.email||'').toLowerCase(), direccion:'', distrito:'',
+      pago_metodo:'', pago_estado:'', estado:'PENDIENTE',
+      observaciones: String(p.mensaje||''), creado_en: nowISO(), actualizado_en: nowISO()
+    });
+    return sid;
   });
   audit_('public', 'contacto', 'Mensaje de contacto '+p.nombres);
   notifyAdmin_('Mensaje de contacto', p.nombres+'\nTel: '+p.telefono+'\nEmail: '+p.email+'\n\n'+p.mensaje);
@@ -1739,16 +1827,18 @@ function adminRegisterPago(p, token){
   if (!p.monto || !p.cliente_nombre) throw new Error('Monto y cliente requeridos');
   const sh = tab(DB.TABS.PAGOS);
   const { idx } = getHeadIndex_(sh);
-  const num = (sh.getLastRow()||0);
-  const pid = 'PAG-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
-  const data = {
-    pago_id: pid, solicitud_id: p.solicitud_id||'', cliente_id: p.cliente_id||'',
-    cliente_nombre: p.cliente_nombre, monto: Number(p.monto||0),
-    metodo: p.metodo||'EFECTIVO', referencia: p.referencia||'',
-    estado: 'REGISTRADO', registrado_por: 'admin', creado_en: nowISO(), confirmado_en: ''
-  };
-  writeRow_(sh, idx, data);
-  audit_('admin', 'pago', 'Registrado pago '+pid+' de '+data.cliente_nombre);
+  const pid = withLock_(() => {
+    const num = (sh.getLastRow()||0);
+    const pid = 'PAG-'+Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd')+'-'+String(num+1).padStart(3,'0');
+    writeRow_(sh, idx, {
+      pago_id: pid, solicitud_id: p.solicitud_id||'', cliente_id: p.cliente_id||'',
+      cliente_nombre: p.cliente_nombre, monto: Number(p.monto||0),
+      metodo: p.metodo||'EFECTIVO', referencia: p.referencia||'',
+      estado: 'REGISTRADO', registrado_por: 'admin', creado_en: nowISO(), confirmado_en: ''
+    });
+    return pid;
+  });
+  audit_('admin', 'pago', 'Registrado pago '+pid+' de '+p.cliente_nombre);
   return { ok:true, pago_id: pid };
 }
 
@@ -1760,8 +1850,7 @@ function adminConfirmPago(pago_id, token){
   if (pos<0) throw new Error('Pago no encontrado');
   sh.getRange(pos+2, idx.estado+1).setValue('CONFIRMADO');
   if ('confirmado_en' in idx) sh.getRange(pos+2, idx.confirmado_en+1).setValue(nowISO());
-  // Si el pago está ligado a una solicitud, actualiza su pago_estado
-  if (rows[pos][idx.solicitud_id]){
+  if ('solicitud_id' in idx && rows[pos][idx.solicitud_id]){
     try {
       const { idx: sIdx, rows: sRows } = readSheetData_(DB.TABS.SOLICITUDES);
       const sSh = tab(DB.TABS.SOLICITUDES);
@@ -1769,7 +1858,14 @@ function adminConfirmPago(pago_id, token){
       if (sp>=0 && 'pago_estado' in sIdx){ sSh.getRange(sp+2, sIdx.pago_estado+1).setValue('PAGADO'); sSh.getRange(sp+2, sIdx.actualizado_en+1).setValue(nowISO()); }
     } catch(_){}
   }
-  audit_('admin', 'pago', 'Confirmado pago '+pago_id);
+  const fid = marcarFacturaPagada_(
+    ('cliente_id' in idx) ? String(rows[pos][idx.cliente_id]||'') : '',
+    ('cliente_nombre' in idx) ? String(rows[pos][idx.cliente_nombre]||'') : '',
+    ('metodo' in idx) ? String(rows[pos][idx.metodo]||'') : '',
+    ('referencia' in idx) ? String(rows[pos][idx.referencia]||'') : ''
+  );
+  if (fid && 'factura_id' in idx){ try { sh.getRange(pos+2, idx.factura_id+1).setValue(fid); } catch(_){} }
+  audit_('admin', 'pago', 'Confirmado pago '+pago_id+(fid? ' -> factura '+fid : ''));
   return { ok:true };
 }
 
