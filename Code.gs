@@ -57,6 +57,37 @@ function publicLimit_(key, tel, max, hours){
     return true;
   } catch(_){ return true; }
 }
+function bruteRemaining_(key, max, winMs){
+  try {
+    const p = PropertiesService.getScriptProperties();
+    let j = null;
+    try { j = JSON.parse(p.getProperty('brt_'+key)||'null'); } catch(_){}
+    const cnt = (j && j.window > Date.now()) ? Number(j.cnt||0) : 0;
+    return Math.max(0, max - cnt);
+  } catch(_){ return max; }
+}
+function bruteFail_(key, max, winMs){
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const now = Date.now();
+    let j = null;
+    try { j = JSON.parse(p.getProperty('brt_'+key)||'null'); } catch(_){}
+    const cnt = (j && j.window > now) ? Number(j.cnt||0) : 0;
+    p.setProperty('brt_'+key, JSON.stringify({ cnt: cnt+1, window: now + winMs }));
+  } catch(_){}
+}
+function bruteReset_(key){
+  try { PropertiesService.getScriptProperties().deleteProperty('brt_'+key); } catch(_){}
+}
+function propGet_(key){
+  try { return PropertiesService.getScriptProperties().getProperty(key)||''; } catch(_){ return ''; }
+}
+function propSet_(key, val){
+  try { PropertiesService.getScriptProperties().setProperty(key, String(val)); } catch(_){}
+}
+function checkBruteforce_(key, max, winMs){
+  if (bruteRemaining_(key, max, winMs) <= 0) throw new Error('Demasiados intentos fallidos. Espera 5 minutos e intenta de nuevo.');
+}
 
 function getHeadIndex_(sh){
   const head = sh.getRange(1,1,1,Math.max(1,sh.getLastColumn())).getValues()[0].map(x=>String(x||''));
@@ -205,7 +236,8 @@ function initDB(){
     promo_titulo: '',
     promo_texto: '',
     promo_price: '',
-    promo_fin: ''
+    promo_fin: '',
+    qr_pago: ''
   };
   const confSh = s.getSheetByName(DB.TABS.CONFIG);
   const { idx: cIdx, rows: cRows } = readSheetData_(DB.TABS.CONFIG);
@@ -227,8 +259,17 @@ function initDB(){
     ];
     defPlanes.forEach(r => plSh.appendRow(r));
   }
+  ensureCobranzaTrigger_();
   audit_('sistema', 'initDB', 'Base de datos inicializada');
   return { ok:true, message:'Base de datos lista' };
+}
+function ensureCobranzaTrigger_(){
+  try {
+    const has = ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction()==='cobranzaAutomatica');
+    if (has) return 'existing';
+    ScriptApp.newTrigger('cobranzaAutomatica').timeBased().everyDays(1).atHour(7).create();
+    return 'created';
+  } catch(_){ return 'skipped'; }
 }
 
 /***********************
@@ -368,9 +409,11 @@ function sesDel_(prefix, token){
  *  ADMIN SESSION
  ***********************/
 function adminLogin(pass){
+  checkBruteforce_('login_admin', 5, 5*60*1000);
   const expected = getConfig_('admin_pass','');
   if (!expected) throw new Error('No hay contraseña admin configurada (Config -> admin_pass)');
-  if (String(pass||'') !== String(expected)) throw new Error('Contraseña incorrecta');
+  if (String(pass||'') !== String(expected)){ bruteFail_('login_admin', 5, 5*60*1000); throw new Error('Contraseña incorrecta'); }
+  bruteReset_('login_admin');
   const token = Utilities.getUuid().replace(/-/g,'');
   sesPut_('adm_', token, nowISO(), 86400*1000);
   audit_('admin', 'login', 'Acceso al panel admin');
@@ -413,7 +456,7 @@ function getSiteData(){
 /***********************
  *  ADMIN: AJUSTES DE LA WEB (editar CONFIG desde el panel)
  ***********************/
-var WEB_SETTING_KEYS = ['empresa_nombre','lema','whatsapp','telefono','correo_contacto','direccion_oficina','horario','yape_telefono','yape_nombre','plin_telefono','plin_nombre','banco_nombre','banco_cuenta','banco_titular','tema','razon_social','ruc','domicilio_fiscal','dpo_email','sitio_web','cuota_instalacion','estado_red','licencias','zona_wifi_text','promo_titulo','promo_texto','promo_price','promo_fin','factura_auto','dias_gracia','aviso_activo','aviso_texto','admin_pass','tecnico_clave','ventas_clave','distritos'];
+var WEB_SETTING_KEYS = ['empresa_nombre','lema','whatsapp','telefono','correo_contacto','direccion_oficina','horario','yape_telefono','yape_nombre','plin_telefono','plin_nombre','banco_nombre','banco_cuenta','banco_titular','tema','razon_social','ruc','domicilio_fiscal','dpo_email','sitio_web','cuota_instalacion','estado_red','licencias','zona_wifi_text','promo_titulo','promo_texto','promo_price','promo_fin','factura_auto','dias_gracia','aviso_activo','aviso_texto','qr_pago','admin_pass','tecnico_clave','ventas_clave','distritos'];
 var WEB_PASSWORD_KEYS = ['admin_pass','tecnico_clave','ventas_clave'];
 function adminGetSettings(token){
   requireAdmin_(token);
@@ -1131,7 +1174,9 @@ function mailFacturaHtml_(f, cfg, metodosHtml){
     + '<tr><td style="padding:8px 10px;background:#f4f7fb;border:1px solid #e3e8ef">Vence el</td><td style="padding:8px 10px;border:1px solid #e3e8ef">'+escH_(f.vencimiento||'—')+'</td></tr>'
     + '</table>'
     + '<div style="margin-top:16px;padding:12px 14px;background:#f4f7fb;border-radius:10px;font-size:13px;line-height:1.6">'
-    + '<b>Medios de pago:</b>'+metodosHtml+'</div>'
+    + '<b>Medios de pago:</b>'+metodosHtml
+    + (cfg.qr ? '<div style="text-align:center;margin-top:14px"><img src="'+escH_(cfg.qr)+'" width="180" height="180" style="border-radius:10px;border:1px solid #e3e8ef" alt="Código QR para pagar"><div style="font-size:12px;color:#5a6b82;margin-top:6px">Escanea para pagar con Yape/Plin</div></div>' : '')
+    + '</div>'
     + (portal ? '<p style="font-size:13px;color:#5a6b82;margin:14px 0 0">También la encuentras en tu panel: <a href="'+escH_(portal)+'">'+escH_(portal)+'</a></p>' : '')
     + '<p style="font-size:12px;color:#8a97aa;margin:18px 0 0">Este es un correo informativo. Si ya realizaste el pago, ignora este mensaje.</p>'
     + '</div></div>';
@@ -1161,7 +1206,8 @@ function adminEnviarFactura(p, token){
   const cfg = {
     empresa: getConfig_('empresa_nombre','NetSatipo'), razon: getConfig_('razon_social',''), ruc: getConfig_('ruc',''),
     whatsapp: getConfig_('whatsapp',''), yape: getConfig_('yape_telefono',''), yape_n: getConfig_('yape_nombre',''),
-    plin: getConfig_('plin_telefono',''), plin_n: getConfig_('plin_nombre',''), sitio: getConfig_('sitio_web','')
+    plin: getConfig_('plin_telefono',''), plin_n: getConfig_('plin_nombre',''), sitio: getConfig_('sitio_web',''),
+    qr: getConfig_('qr_pago','')
   };
   const metodosHtml = []
     + (cfg.yape ? '<p style="margin:6px 0 0"><b>Yape:</b> '+escH_(cfg.yape)+(cfg.yape_n? ' ('+escH_(cfg.yape_n)+')':'')+'</p>' : '')
@@ -1392,9 +1438,11 @@ function adminNuevoContrato(p, token){
  ***********************/
 function tecnicoLogin(clave){
   if (!clave) throw new Error('Ingresa la clave');
+  checkBruteforce_('login_tec', 5, 5*60*1000);
   const c = getConfig_('tecnico_clave','tec2026');
   const a = getConfig_('admin_pass','admin123');
-  if (!(c && String(clave)===String(c)) && !(a && String(clave)===String(a))) throw new Error('Clave incorrecta');
+  if (!(c && String(clave)===String(c)) && !(a && String(clave)===String(a))){ bruteFail_('login_tec', 5, 5*60*1000); throw new Error('Clave incorrecta'); }
+  bruteReset_('login_tec');
   const token = Utilities.getUuid().replace(/-/g,'');
   sesPut_('tec_', token, nowISO(), 28800*1000);
   audit_('tecnico', 'login', 'Acceso al panel técnico');
@@ -1556,9 +1604,11 @@ function tecnicoFotos(token, p){
  ***********************/
 function ventasLogin(clave){
   if (!clave) throw new Error('Ingresa la clave');
+  checkBruteforce_('login_ven', 5, 5*60*1000);
   const c = getConfig_('ventas_clave','ventas2026');
   const a = getConfig_('admin_pass','admin123');
-  if (!(c && String(clave)===String(c)) && !(a && String(clave)===String(a))) throw new Error('Clave incorrecta');
+  if (!(c && String(clave)===String(c)) && !(a && String(clave)===String(a))){ bruteFail_('login_ven', 5, 5*60*1000); throw new Error('Clave incorrecta'); }
+  bruteReset_('login_ven');
   const token = Utilities.getUuid().replace(/-/g,'');
   sesPut_('ven_', token, nowISO(), 28800*1000);
   audit_('ventas', 'login', 'Acceso al panel de ventas');
@@ -1882,4 +1932,109 @@ function adminExportCsv(section, token){
     csv.push(head.map((h,i) => '"'+String(r[i]===undefined?'':r[i]).replace(/"/g,'""')+'"').join(','));
   });
   return { ok:true, csv: csv.join('\n') };
+}
+
+/***********************
+ *  COBRANZA AUTOMATICA (trigger diario a las 7:00)
+ ***********************/
+function cobranzaAutomatica(periodo){
+  periodo = periodo || Utilities.formatDate(new Date(), tz(), 'yyyy-MM');
+  let creadas = 0, existentes = 0, vencidas = 0, recordados = 0;
+  try {
+    const r = readSheetData_(DB.TABS.CLIENTES);
+    if ('cliente_id' in r.idx){
+      const cache = { f: readSheetData_(DB.TABS.FACTURAS), p: null };
+      try { cache.p = readSheetData_(DB.TABS.PLANES); } catch(_){}
+      r.rows.forEach(row => {
+        const cid = String(row[r.idx.cliente_id]||'');
+        if (!cid || !esActivoFacturable_(row[r.idx.estado])) return;
+        try {
+          const res = _crearFacturaMes_(cid, row, r.idx, periodo, { cache: cache, skipAuto: true });
+          if (res.creada){ creadas++; if (Number(row[r.idx.saldo_a_favor]||0) > 0){ try { autoAplicarSaldo_(cid); } catch(_){} } }
+          else existentes++;
+        } catch(_){}
+      });
+    }
+  } catch(_){}
+  const hoy = todayISO();
+  try {
+    const { idx: fIdx, rows: fRows } = readSheetData_(DB.TABS.FACTURAS);
+    if ('estado' in fIdx && 'vencimiento' in fIdx && 'factura_id' in fIdx){
+      const sh = tab(DB.TABS.FACTURAS);
+      const shRows = sh.getDataRange().getValues();
+      const posMap = {};
+      for (let i=1;i<shRows.length;i++) posMap[String(shRows[i][fIdx.factura_id]||'')] = i+1;
+      fRows.forEach(f => {
+        if (String(f[fIdx.estado]||'').toUpperCase()!=='PENDIENTE') return;
+        const venc = String(f[fIdx.vencimiento]||'');
+        if (venc && venc < hoy){
+          const rp = posMap[String(f[fIdx.factura_id]||'')];
+          if (rp){ sh.getRange(rp, fIdx.estado+1).setValue('VENCIDA'); if ('actualizado_en' in fIdx) sh.getRange(rp, fIdx.actualizado_en+1).setValue(nowISO()); vencidas++; }
+        }
+      });
+    }
+  } catch(_){}
+  try {
+    const { idx: fIdx, rows: fRows } = readSheetData_(DB.TABS.FACTURAS);
+    if ('estado' in fIdx && 'cliente_id' in fIdx && 'vencimiento' in fIdx && 'factura_id' in fIdx){
+      const cD = readSheetData_(DB.TABS.CLIENTES);
+      const empresa = getConfig_('empresa_nombre','NetSatipo');
+      const hoyMs = new Date(hoy+'T00:00:00').getTime();
+      fRows.forEach(f => {
+        if (String(f[fIdx.estado]||'').toUpperCase()!=='VENCIDA') return;
+        const venc = String(f[fIdx.vencimiento]||'');
+        if (!venc) return;
+        const dV = new Date(venc+'T00:00:00').getTime();
+        if (!isFinite(dV)) return;
+        if (((hoyMs - dV)/86400000) < 3) return;
+        const fid = String(f[fIdx.factura_id]||'');
+        if (propGet_('rec_'+fid) === hoy) return;
+        const cid = String(f[fIdx.cliente_id]||'');
+        const crow = ('cliente_id' in cD.idx) ? cD.rows.find(x => String(x[cD.idx.cliente_id]||'') === cid) : null;
+        const tel = crow ? String(crow[cD.idx.telefono]||'').replace(/\D/g,'') : '';
+        const nom = crow ? String(crow[cD.idx.nombres]||'') : String(f[fIdx.cliente_nombre]||'');
+        const email = crow ? String(crow[cD.idx.email]||'') : '';
+        const monto = fmtNum_(Number(f[fIdx.monto]||0));
+        const perF = String(f[fIdx.periodo]||'');
+        notifyWa_(tel, 'Hola '+nom+', te recordamos que tu factura '+fid+' ('+perF+') por S/ '+monto+' está vencida. Paga por Yape/Plin o en nuestra oficina para evitar el corte del servicio.');
+        notifyEmail_(email, 'Recordatorio de pago '+fid+' · '+empresa, 'Hola '+nom+',\n\nTu factura '+fid+' ('+perF+') por S/ '+monto+' está vencida desde '+venc+'.\nPaga a tiempo para evitar el corte del servicio.\n\n'+empresa);
+        propSet_('rec_'+fid, hoy);
+        recordados++;
+      });
+    }
+  } catch(_){}
+  if (creadas || vencidas || recordados){
+    try { notifyAdmin_('Cobranza automática '+periodo, 'Facturas creadas: '+creadas+'\nYa existían: '+existentes+'\nMarcadas VENCIDA: '+vencidas+'\nRecordatorios de mora: '+recordados); } catch(_){}
+  }
+  return { ok:true, periodo: periodo, creadas: creadas, existentes: existentes, vencidas: vencidas, recordatorios: recordados };
+}
+function adminCobranza(p, token){
+  requireAdmin_(token);
+  p = p || {};
+  return withLock_(() => cobranzaAutomatica(String(p.periodo||'').trim() || undefined));
+}
+
+/***********************
+ *  ADMIN: BACKUP (copia de la hoja)
+ ***********************/
+function adminBackup(token){
+  requireAdmin_(token);
+  try {
+    const s = ss();
+    const nombre = 'NetSatipo_Backup_'+Utilities.formatDate(new Date(), tz(), 'yyyyMMdd_HHmm');
+    const copy = s.copy(nombre);
+    try {
+      const file = DriveApp.getFileById(copy.getId());
+      if (!DriveApp.getFoldersByName('NetSatipo_Backups').hasNext()){
+        const f = DriveApp.createFolder('NetSatipo_Backups');
+        file.moveTo(f);
+      } else {
+        file.moveTo(DriveApp.getFoldersByName('NetSatipo_Backups').next());
+      }
+    } catch(_){}
+    audit_('admin', 'backup', 'Copia de seguridad creada: '+nombre);
+    return { ok:true, nombre: nombre, url: copy.getUrl() };
+  } catch(err){
+    throw new Error('No se pudo crear el backup. Autoriza los permisos de Drive en Apps Script (scopes) y reintenta. Detalle: '+(err&&err.message||err));
+  }
 }

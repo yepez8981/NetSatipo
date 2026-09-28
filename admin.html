@@ -229,7 +229,7 @@ td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-
 
 <script>
   /* ===== CONFIG: URL de tu Web App de Apps Script (backend/API) ===== */
-  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxnyJAl-UVRcM5a7nmSwVqZFgYSlma3uNZ3SIE7mwebXDDNW32bbIouDndo4AW8HEM0/exec";
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbytpf38y3a72EQmG25HUtbe6P0Jdh4fPM8WhptgnuUeQ8XWzYhvAkCh2ZAYrDM-actR/exec";
 
   function _api(fn, args){
     args = args || [];
@@ -469,6 +469,7 @@ function renderAdminFacturas(rows){
   const wrap = '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">'
     +'<button class="btn-admin ok" onclick="toggleFacturaForm()">+ Nueva factura</button>'
     +'<button class="btn-admin" onclick="admBulk()">🔄 Facturar todos los activos (mes)</button>'
+    +'<button class="btn-admin" onclick="admCobranza()">🔔 Cobranza automática</button>'
     +(S.factFilter ? '<button class="btn-admin" onclick="S.factFilter=null;loadAdmin(true)">✕ Quitar filtro: '+esc(S.factCliNombre||'cliente')+'</button>' : '')
     +'</div>';
   if (!rows || !rows.length){ $('admin-tab-body').innerHTML = wrap + '<div class="loading">Sin facturas aquí.</div>'; return; }
@@ -804,6 +805,7 @@ const WEB_FIELDS = [
   { k:'promo_texto', l:'Promo - texto', ta:true },
   { k:'promo_price', l:'Promo - precio' },
   { k:'promo_fin', l:'Promo - fecha fin' },
+  { k:'qr_pago', l:'URL del QR de pago (imagen de tu QR Yape/Plin)' },
   { k:'admin_pass', l:'Contraseña del admin (clave)', pass:true },
   { k:'tecnico_clave', l:'Clave del panel técnico', pass:true },
   { k:'ventas_clave', l:'Clave del panel de ventas', pass:true }
@@ -824,9 +826,21 @@ function renderAdminAjustes(r){
     '<h3 style="margin-bottom:6px">Ajustes de la web</h3>'+
     '<p style="font-size:12.5px;color:var(--muted);margin-bottom:18px">Estos valores se reflejan de inmediato en tu página, portal y paneles. Los campos de clave vacíos se mantienen sin cambios.</p>'+
     '<div class="field-row" style="grid-template-columns:1fr 1fr;display:grid">'+WEB_FIELDS.map(fld).join('')+'</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">'+
     '<button class="btn-admin ok" onclick="admSaveAjustes()">💾 Guardar ajustes</button> '+
     '<button class="btn-admin" onclick="loadAdmin(true)">Descartar</button> '+
+    '<button class="btn-admin" onclick="admBackup()">🗄️ Backup en Google Drive</button>'+
+    '</div>'+
     '<span id="aj-msg" style="font-size:12.5px;color:var(--muted)"></span></div>';
+}
+function admBackup(){
+  $('aj-msg').textContent = 'Creando backup…';
+  api('adminBackup', [S.auth]).then(r=>{
+    if (!r.ok){ $('aj-msg').textContent=''; toast(r.error||'Error','err'); return; }
+    $('aj-msg').textContent='';
+    toast('Backup creado: '+r.nombre,'ok');
+    window.alert('Copia de seguridad creada:\n'+r.nombre+'\n\nUrl: '+r.url+'\n\nEn Drive: carpeta "NetSatipo_Backups"');
+  });
 }
 function admSaveAjustes(){
   const pairs = {};

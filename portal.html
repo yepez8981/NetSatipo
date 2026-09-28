@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <script>
-  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbxnyJAl-UVRcM5a7nmSwVqZFgYSlma3uNZ3SIE7mwebXDDNW32bbIouDndo4AW8HEM0/exec";
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbytpf38y3a72EQmG25HUtbe6P0Jdh4fPM8WhptgnuUeQ8XWzYhvAkCh2ZAYrDM-actR/exec";
   function _api(fn, args){
     args = args || [];
     const inGAS = !!(window.google && google.script && google.script.run);
@@ -540,6 +540,7 @@ function reciboFactura(f){
     +'<tr><td>Fecha límite de pago (antes de mora)</td><td>'+dd(f.vencimiento)+'</td></tr>'
     +'<tr><td>Generado el (hora de Perú)</td><td>'+esc(generado)+'</td></tr>'
     +'<tr class="total"><td>Importe</td><td>S/ '+Number(f.monto||0).toFixed(2)+'</td></tr></table>'
+    +(c.qr_pago ? '<div style="text-align:center;margin:20px 0 4px"><img src="'+esc(c.qr_pago)+'" width="180" height="180" style="border:1px solid #d5dbe3;border-radius:10px" alt="Código QR de pago"><div style="font-size:12.5px;color:#666;margin-top:6px">Escanea para pagar con Yape / Plin</div></div>' : '')
     +'<p class="nota">'+rucNote+' En caso de reclamos, presente su solicitud en nuestro Libro de Reclamaciones (Ley 29571, Código de Protección y Defensa del Consumidor).</p>';
   docOpen(inner, 'Recibo '+f.factura_id);
 }
