@@ -1146,7 +1146,8 @@ function adminConfirmFactura(factura_id, token){
   sh.getRange(pos+2, idx.estado+1).setValue('PAGADA');
   if ('pagado_en' in idx) sh.getRange(pos+2, idx.pagado_en+1).setValue(nowISO());
   if ('actualizado_en' in idx) sh.getRange(pos+2, idx.actualizado_en+1).setValue(nowISO());
-  try { cobrarReactivarSiCorresponde_(String(rows[pos][idx.cliente_id]||'')); } catch(_){}\n  audit_('admin', 'factura', 'Confirmada factura '+factura_id);
+  try { cobrarReactivarSiCorresponde_(String(rows[pos][idx.cliente_id]||'')); } catch(_){}
+  audit_('admin', 'factura', 'Confirmada factura '+factura_id);
   return { ok:true };
 }
 
