@@ -194,11 +194,11 @@ function initDB(){
   };
   ensure(DB.TABS.CONFIG, ['clave','valor','notas','actualizado_en']);
   ensure(DB.TABS.PLANES, ['plan_id','nombre','velocidad','precio','periodicidad','extras','recomendado','activo','orden','creado_en','actualizado_en']);
-  ensure(DB.TABS.CLIENTES, ['cliente_id','dni','nombres','telefono','email','direccion','distrito','plan_id','estado','fecha_alta','notas','creado_en','actualizado_en','prioridad','condicion','cuota_especial','saldo_a_favor']);
+  ensure(DB.TABS.CLIENTES, ['cliente_id','dni','nombres','telefono','email','direccion','distrito','plan_id','estado','fecha_alta','notas','creado_en','actualizado_en','prioridad','condicion','cuota_especial','saldo_a_favor','estado_antes_cobranza','cobranza_estado','mora_desde','fecha_suspension','fecha_aviso_baja','fecha_baja','reconexion_pendiente','reconexion_cargo','ultima_notif_cobranza']);
   ensure(DB.TABS.SOLICITUDES, ['solicitud_id','tipo','plan_id','plan_nombre','nombres','dni','telefono','email','direccion','distrito','pago_metodo','pago_estado','estado','observaciones','creado_en','actualizado_en','firma','firmado_en','creado_por']);
   ensure(DB.TABS.VISITAS, ['visita_id','cliente_id','nombres','dni','telefono','tipo_visita','fecha_propuesta','hora_propuesta','direccion','distrito','notas','estado','tecnico','creado_en','actualizado_en','adjunto']);
   ensure(DB.TABS.PAGOS, ['pago_id','solicitud_id','cliente_id','cliente_nombre','monto','metodo','referencia','estado','registrado_por','creado_en','confirmado_en']);
-  ensure(DB.TABS.FACTURAS, ['factura_id','cliente_id','cliente_nombre','plan_id','plan_nombre','periodo','monto','vencimiento','estado','metodo','referencia','pagado_en','creado_en','actualizado_en','enviado_email','enviado_wa']);
+  ensure(DB.TABS.FACTURAS, ['factura_id','cliente_id','cliente_nombre','plan_id','plan_nombre','periodo','monto','vencimiento','estado','metodo','referencia','pagado_en','creado_en','actualizado_en','enviado_email','enviado_wa','dias_mora','fecha_suspension','cargo_reconexion']);
   ensure(DB.TABS.AUDITORIA, ['fecha','usuario','accion','detalle']);
   ensure(DB.TABS.FOTOS, ['foto_id','solicitud_id','cliente_id','url','nota','subido_por','creado_en']);
   const confDefault = {
@@ -237,7 +237,9 @@ function initDB(){
     promo_texto: '',
     promo_price: '',
     promo_fin: '',
-    qr_pago: ''
+    qr_pago: '',
+    dias_gracia: '3', dias_suspension: '5', dias_aviso_baja: '43', dias_baja_mora: '50',
+    tarifa_reactivacion: '5', cobranza_automatica: 'SI'
   };
   const confSh = s.getSheetByName(DB.TABS.CONFIG);
   const { idx: cIdx, rows: cRows } = readSheetData_(DB.TABS.CONFIG);
@@ -456,7 +458,7 @@ function getSiteData(){
 /***********************
  *  ADMIN: AJUSTES DE LA WEB (editar CONFIG desde el panel)
  ***********************/
-var WEB_SETTING_KEYS = ['empresa_nombre','lema','whatsapp','telefono','correo_contacto','direccion_oficina','horario','yape_telefono','yape_nombre','plin_telefono','plin_nombre','banco_nombre','banco_cuenta','banco_titular','tema','razon_social','ruc','domicilio_fiscal','dpo_email','sitio_web','cuota_instalacion','estado_red','licencias','zona_wifi_text','promo_titulo','promo_texto','promo_price','promo_fin','factura_auto','dias_gracia','aviso_activo','aviso_texto','qr_pago','admin_pass','tecnico_clave','ventas_clave','distritos'];
+var WEB_SETTING_KEYS = ['empresa_nombre','lema','whatsapp','telefono','correo_contacto','direccion_oficina','horario','yape_telefono','yape_nombre','plin_telefono','plin_nombre','banco_nombre','banco_cuenta','banco_titular','tema','razon_social','ruc','domicilio_fiscal','dpo_email','sitio_web','cuota_instalacion','estado_red','licencias','zona_wifi_text','promo_titulo','promo_texto','promo_price','promo_fin','factura_auto','dias_gracia','dias_suspension','dias_aviso_baja','dias_baja_mora','tarifa_reactivacion','cobranza_automatica','aviso_activo','aviso_texto','qr_pago','admin_pass','tecnico_clave','ventas_clave','distritos'];
 var WEB_PASSWORD_KEYS = ['admin_pass','tecnico_clave','ventas_clave'];
 function adminGetSettings(token){
   requireAdmin_(token);
@@ -800,7 +802,7 @@ function getClienteRow_(cid){
   return { idx, row: rows[pos], rowNum: pos+2 };
 }
 function esActivoFacturable_(estado){
-  return ['ACTIVO','INSTALADO','INSTALADA','APROBADO','APROBADA'].indexOf(String(estado||'').toUpperCase()) >= 0;
+  return ['ACTIVO','INSTALADO','INSTALADA','APROBADO','APROBADA','MOROSO'].indexOf(String(estado||'').toUpperCase()) >= 0;
 }
 function cuotaClienteRow_(row, idx){
   const cEsp = Number(row[idx.cuota_especial]||0);
@@ -1144,7 +1146,7 @@ function adminConfirmFactura(factura_id, token){
   sh.getRange(pos+2, idx.estado+1).setValue('PAGADA');
   if ('pagado_en' in idx) sh.getRange(pos+2, idx.pagado_en+1).setValue(nowISO());
   if ('actualizado_en' in idx) sh.getRange(pos+2, idx.actualizado_en+1).setValue(nowISO());
-  audit_('admin', 'factura', 'Confirmada factura '+factura_id);
+  try { cobrarReactivarSiCorresponde_(String(rows[pos][idx.cliente_id]||'')); } catch(_){}\n  audit_('admin', 'factura', 'Confirmada factura '+factura_id);
   return { ok:true };
 }
 
@@ -1915,7 +1917,7 @@ function adminConfirmPago(pago_id, token){
     ('referencia' in idx) ? String(rows[pos][idx.referencia]||'') : ''
   );
   if (fid && 'factura_id' in idx){ try { sh.getRange(pos+2, idx.factura_id+1).setValue(fid); } catch(_){} }
-  audit_('admin', 'pago', 'Confirmado pago '+pago_id+(fid? ' -> factura '+fid : ''));
+  if (fid){ try { cobrarReactivarSiCorresponde_(String(rows[pos][idx.cliente_id]||'')); } catch(_){} }\n  audit_('admin', 'pago', 'Confirmado pago '+pago_id+(fid? ' -> factura '+fid : ''));
   return { ok:true };
 }
 
@@ -1937,77 +1939,40 @@ function adminExportCsv(section, token){
 /***********************
  *  COBRANZA AUTOMATICA (trigger diario a las 7:00)
  ***********************/
+function fechaMasDias_(iso,dias){const d=new Date(String(iso||'')+'T00:00:00');if(!isFinite(d.getTime()))return '';d.setDate(d.getDate()+Number(dias||0));return Utilities.formatDate(d,tz(),'yyyy-MM-dd');}
+function diasEntre_(desde,hasta){const a=new Date(String(desde||'')+'T00:00:00').getTime(),b=new Date(String(hasta||'')+'T00:00:00').getTime();if(!isFinite(a)||!isFinite(b))return 0;return Math.floor((b-a)/86400000);}
+function cobrarConfig_(){return{gracia:Math.max(0,Number(getConfig_('dias_gracia','3'))||3),suspension:Math.max(1,Number(getConfig_('dias_suspension','5'))||5),avisoBaja:Math.max(7,Number(getConfig_('dias_aviso_baja','43'))||43),baja:Math.max(1,Number(getConfig_('dias_baja_mora','50'))||50),tarifaReactivacion:Math.max(0,Number(getConfig_('tarifa_reactivacion','5'))||0),activa:String(getConfig_('cobranza_automatica','SI')).toUpperCase()==='SI'};}
+function setClienteCobranza_(cid,data){const found=getClienteRow_(cid);if(!found)return false;updateRow_(tab(DB.TABS.CLIENTES),found.rowNum,found.idx,Object.assign({},data,{actualizado_en:nowISO()}));return true;}
+function clienteDeudaPendiente_(cid){const out={total:0,vencida:false,diasMora:0,facturas:[]};try{const {idx,rows}=readSheetData_(DB.TABS.FACTURAS);rows.forEach(r=>{if(String(r[idx.cliente_id]||'')!==String(cid))return;if(String(r[idx.estado]||'').toUpperCase()==='PAGADA')return;const monto=Number(r[idx.monto]||0);out.total+=monto;const venc=String(r[idx.vencimiento]||'');if(venc&&venc<todayISO()){out.vencida=true;out.diasMora=Math.max(out.diasMora,diasEntre_(venc,todayISO()));out.facturas.push({factura_id:String(r[idx.factura_id]||''),monto:monto,vencimiento:venc});}});}catch(_){ }out.total=fmtNum_(out.total);return out;}
+function notificarCobranzaEtapa_(cid,etapa,nombre,telefono,email,mensaje){const key='cob_'+cid+'_'+etapa+'_'+todayISO();if(propGet_(key)==='1')return false;notifyWa_(telefono,mensaje);notifyEmail_(email,'INTELICEL · '+etapa,mensaje);propSet_(key,'1');setClienteCobranza_(cid,{ultima_notif_cobranza:nowISO()});audit_('sistema','cobranza','Notificación '+etapa+' enviada a '+nombre+' ('+cid+')');return true;}
+function networkSuspendClient_(cid,motivo){audit_('sistema','red_suspendida','Cliente '+cid+' -> '+motivo);return{ok:true,modo:'pendiente_integracion_mikrotik',cliente_id:cid};}
+function networkReactivateClient_(cid){audit_('sistema','red_reactivada','Cliente '+cid+' -> pago regularizado');return{ok:true,modo:'pendiente_integracion_mikrotik',cliente_id:cid};}
+function cobrarReactivarSiCorresponde_(cid){if(!cid)return false;const d=clienteDeudaPendiente_(cid);if(d.vencida)return false;const found=getClienteRow_(cid);if(!found)return false;const idx=found.idx,row=found.row,cob=String(row[idx.cobranza_estado]||'').toUpperCase();if(['SUSPENDIDO','BAJA_PROGRAMADA'].indexOf(cob)<0)return false;const previo=String(row[idx.estado_antes_cobranza]||'ACTIVO').toUpperCase(),restore=['ACTIVO','INSTALADO','INSTALADA'].indexOf(previo)>=0?previo:'ACTIVO';networkReactivateClient_(cid);updateRow_(tab(DB.TABS.CLIENTES),found.rowNum,idx,{estado:restore,cobranza_estado:'AL_DIA',fecha_suspension:'',fecha_aviso_baja:'',reconexion_pendiente:'NO',actualizado_en:nowISO()});audit_('admin','reactivacion','Cliente '+cid+' reactivado tras pago');return true;}
 function cobranzaAutomatica(periodo){
-  periodo = periodo || Utilities.formatDate(new Date(), tz(), 'yyyy-MM');
-  let creadas = 0, existentes = 0, vencidas = 0, recordados = 0;
-  try {
-    const r = readSheetData_(DB.TABS.CLIENTES);
-    if ('cliente_id' in r.idx){
-      const cache = { f: readSheetData_(DB.TABS.FACTURAS), p: null };
-      try { cache.p = readSheetData_(DB.TABS.PLANES); } catch(_){}
-      r.rows.forEach(row => {
-        const cid = String(row[r.idx.cliente_id]||'');
-        if (!cid || !esActivoFacturable_(row[r.idx.estado])) return;
-        try {
-          const res = _crearFacturaMes_(cid, row, r.idx, periodo, { cache: cache, skipAuto: true });
-          if (res.creada){ creadas++; if (Number(row[r.idx.saldo_a_favor]||0) > 0){ try { autoAplicarSaldo_(cid); } catch(_){} } }
-          else existentes++;
-        } catch(_){}
-      });
-    }
-  } catch(_){}
-  const hoy = todayISO();
-  try {
-    const { idx: fIdx, rows: fRows } = readSheetData_(DB.TABS.FACTURAS);
-    if ('estado' in fIdx && 'vencimiento' in fIdx && 'factura_id' in fIdx){
-      const sh = tab(DB.TABS.FACTURAS);
-      const shRows = sh.getDataRange().getValues();
-      const posMap = {};
-      for (let i=1;i<shRows.length;i++) posMap[String(shRows[i][fIdx.factura_id]||'')] = i+1;
-      fRows.forEach(f => {
-        if (String(f[fIdx.estado]||'').toUpperCase()!=='PENDIENTE') return;
-        const venc = String(f[fIdx.vencimiento]||'');
-        if (venc && venc < hoy){
-          const rp = posMap[String(f[fIdx.factura_id]||'')];
-          if (rp){ sh.getRange(rp, fIdx.estado+1).setValue('VENCIDA'); if ('actualizado_en' in fIdx) sh.getRange(rp, fIdx.actualizado_en+1).setValue(nowISO()); vencidas++; }
-        }
-      });
-    }
-  } catch(_){}
-  try {
-    const { idx: fIdx, rows: fRows } = readSheetData_(DB.TABS.FACTURAS);
-    if ('estado' in fIdx && 'cliente_id' in fIdx && 'vencimiento' in fIdx && 'factura_id' in fIdx){
-      const cD = readSheetData_(DB.TABS.CLIENTES);
-      const empresa = getConfig_('empresa_nombre','NetSatipo');
-      const hoyMs = new Date(hoy+'T00:00:00').getTime();
-      fRows.forEach(f => {
-        if (String(f[fIdx.estado]||'').toUpperCase()!=='VENCIDA') return;
-        const venc = String(f[fIdx.vencimiento]||'');
-        if (!venc) return;
-        const dV = new Date(venc+'T00:00:00').getTime();
-        if (!isFinite(dV)) return;
-        if (((hoyMs - dV)/86400000) < 3) return;
-        const fid = String(f[fIdx.factura_id]||'');
-        if (propGet_('rec_'+fid) === hoy) return;
-        const cid = String(f[fIdx.cliente_id]||'');
-        const crow = ('cliente_id' in cD.idx) ? cD.rows.find(x => String(x[cD.idx.cliente_id]||'') === cid) : null;
-        const tel = crow ? String(crow[cD.idx.telefono]||'').replace(/\D/g,'') : '';
-        const nom = crow ? String(crow[cD.idx.nombres]||'') : String(f[fIdx.cliente_nombre]||'');
-        const email = crow ? String(crow[cD.idx.email]||'') : '';
-        const monto = fmtNum_(Number(f[fIdx.monto]||0));
-        const perF = String(f[fIdx.periodo]||'');
-        notifyWa_(tel, 'Hola '+nom+', te recordamos que tu factura '+fid+' ('+perF+') por S/ '+monto+' está vencida. Paga por Yape/Plin o en nuestra oficina para evitar el corte del servicio.');
-        notifyEmail_(email, 'Recordatorio de pago '+fid+' · '+empresa, 'Hola '+nom+',\n\nTu factura '+fid+' ('+perF+') por S/ '+monto+' está vencida desde '+venc+'.\nPaga a tiempo para evitar el corte del servicio.\n\n'+empresa);
-        propSet_('rec_'+fid, hoy);
-        recordados++;
-      });
-    }
-  } catch(_){}
-  if (creadas || vencidas || recordados){
-    try { notifyAdmin_('Cobranza automática '+periodo, 'Facturas creadas: '+creadas+'\nYa existían: '+existentes+'\nMarcadas VENCIDA: '+vencidas+'\nRecordatorios de mora: '+recordados); } catch(_){}
-  }
-  return { ok:true, periodo: periodo, creadas: creadas, existentes: existentes, vencidas: vencidas, recordatorios: recordados };
+ periodo=periodo||Utilities.formatDate(new Date(),tz(),'yyyy-MM');const cfg=cobrarConfig_();let creadas=0,existentes=0,vencidas=0,notificaciones=0,suspendidos=0,bajasProgramadas=0,bajas=0,reactivados=0;
+ if(!cfg.activa)return{ok:true,periodo:periodo,desactivada:true};
+ try{const r=readSheetData_(DB.TABS.CLIENTES);if('cliente_id' in r.idx){const cache={f:readSheetData_(DB.TABS.FACTURAS),p:null};try{cache.p=readSheetData_(DB.TABS.PLANES);}catch(_){}
+ r.rows.forEach(row=>{const cid=String(row[r.idx.cliente_id]||'');if(!cid||!esActivoFacturable_(row[r.idx.estado]))return;try{const res=_crearFacturaMes_(cid,row,r.idx,periodo,{cache:cache,skipAuto:true});if(res.creada)creadas++;else existentes++;}catch(_){}});}}catch(_){}
+ const hoy=todayISO();
+ try{const {idx:fIdx,rows:fRows}=readSheetData_(DB.TABS.FACTURAS),sh=tab(DB.TABS.FACTURAS);fRows.forEach((f,i)=>{if(String(f[fIdx.estado]||'').toUpperCase()==='PENDIENTE'&&String(f[fIdx.vencimiento]||'')&&String(f[fIdx.vencimiento])<hoy){sh.getRange(i+2,fIdx.estado+1).setValue('VENCIDA');if('actualizado_en'in fIdx)sh.getRange(i+2,fIdx.actualizado_en+1).setValue(nowISO());vencidas++;}});}catch(_){}
+ try{const cData=readSheetData_(DB.TABS.CLIENTES);cData.rows.forEach(row=>{
+  const cid=String(row[cData.idx.cliente_id]||'');if(!cid)return;const deuda=clienteDeudaPendiente_(cid),est=String(row[cData.idx.estado]||'').toUpperCase(),cob=String(row[cData.idx.cobranza_estado]||'').toUpperCase();
+  if(!deuda.vencida&&['MOROSO','SUSPENDIDO','BAJA_PROGRAMADA'].indexOf(cob)>=0){cobrarReactivarSiCorresponde_(cid);reactivados++;return;}
+  if(!deuda.vencida)return;
+  const oldest=deuda.facturas.slice().sort((a,b)=>String(a.vencimiento).localeCompare(String(b.vencimiento)))[0],moraDesde=String(row[cData.idx.mora_desde]||oldest.vencimiento||hoy),dias=diasEntre_(moraDesde,hoy),nombre=String(row[cData.idx.nombres]||''),tel=String(row[cData.idx.telefono]||''),email=String(row[cData.idx.email]||'');
+  if(!String(row[cData.idx.mora_desde]||''))setClienteCobranza_(cid,{mora_desde:moraDesde});
+  if(dias===0)notificaciones+=notificarCobranzaEtapa_(cid,'VENCIMIENTO',nombre,tel,email,'Hola '+nombre+'! Hoy vence tu factura de Internet. Puedes pagar para mantener tu servicio activo. Si ya pagaste, ignora este mensaje.')?1:0;
+  if(dias>=cfg.gracia&&!['MOROSO','SUSPENDIDO','BAJA_PROGRAMADA','BAJA'].includes(cob)){setClienteCobranza_(cid,{estado_antes_cobranza:est,cobranza_estado:'MOROSO'});notificaciones+=notificarCobranzaEtapa_(cid,'MORA',nombre,tel,email,'Hola '+nombre+'! Tu factura está vencida. Tienes '+dias+' días de mora. Regulariza tu pago para evitar la suspensión del servicio.')?1:0;}
+  if(dias>=cfg.suspension&&!String(row[cData.idx.fecha_suspension]||'')&&!['SUSPENDIDO','BAJA_PROGRAMADA','BAJA'].includes(cob)){networkSuspendClient_(cid,'Mora por falta de pago');setClienteCobranza_(cid,{estado:'SUSPENDIDO',cobranza_estado:'SUSPENDIDO',fecha_suspension:hoy,reconexion_pendiente:'SI',reconexion_cargo:cfg.tarifaReactivacion});notificaciones+=notificarCobranzaEtapa_(cid,'SUSPENSION',nombre,tel,email,'Hola '+nombre+'! Tu servicio INTELICEL fue suspendido por falta de pago. Regulariza la deuda para solicitar la reactivación. Tarifa de reactivación configurada: S/ '+fmtNum_(cfg.tarifaReactivacion)+'.')?1:0;suspendidos++;}
+  const fechaSusp=String(row[cData.idx.fecha_suspension]||''),diasSusp=fechaSusp?diasEntre_(fechaSusp,hoy):0;
+  if(fechaSusp&&diasSusp>=cfg.avisoBaja&&diasSusp<cfg.baja&&!String(row[cData.idx.fecha_aviso_baja]||'')){const fechaBaja=fechaMasDias_(fechaSusp,cfg.baja);setClienteCobranza_(cid,{cobranza_estado:'BAJA_PROGRAMADA',fecha_aviso_baja:hoy});notificaciones+=notificarCobranzaEtapa_(cid,'AVISO_BAJA',nombre,tel,email,'AVISO IMPORTANTE: tu servicio INTELICEL permanece suspendido por falta de pago. Si no regularizas tu deuda, el servicio podrá darse de baja el '+fechaBaja+'. Deuda pendiente: S/ '+fmtNum_(deuda.total)+'. Tarifa de reactivación: S/ '+fmtNum_(cfg.tarifaReactivacion)+'.')?1:0;bajasProgramadas++;}
+  if(fechaSusp&&diasSusp>=cfg.baja&&cob!=='BAJA'){setClienteCobranza_(cid,{estado:'BAJA',cobranza_estado:'BAJA',fecha_baja:hoy});notificaciones+=notificarCobranzaEtapa_(cid,'BAJA',nombre,tel,email,'Tu servicio INTELICEL ha sido dado de baja por falta de pago. La deuda pendiente permanece registrada. Comunícate con nosotros si deseas regularizar tu situación.')?1:0;bajas++;}
+  try{const fsh=tab(DB.TABS.FACTURAS),fd=readSheetData_(DB.TABS.FACTURAS);fd.rows.forEach((f,fi)=>{if(String(f[fd.idx.cliente_id]||'')!==cid||String(f[fd.idx.estado]||'').toUpperCase()==='PAGADA')return;const dv=String(f[fd.idx.vencimiento]||'');if('dias_mora'in fd.idx)fsh.getRange(fi+2,fd.idx.dias_mora+1).setValue(dv&&dv<hoy?Math.max(0,diasEntre_(dv,hoy)):0);if('fecha_suspension'in fd.idx&&fechaSusp)fsh.getRange(fi+2,fd.idx.fecha_suspension+1).setValue(fechaSusp);});}catch(_){}
+ });}catch(_){}
+ if(creadas||vencidas||notificaciones||suspendidos||bajasProgramadas||bajas||reactivados){try{notifyAdmin_('Cobranza automática '+periodo,'Facturas creadas: '+creadas+'\nVencidas: '+vencidas+'\nNotificaciones: '+notificaciones+'\nSuspendidos: '+suspendidos+'\nBajas programadas: '+bajasProgramadas+'\nBajas: '+bajas+'\nReactivados: '+reactivados);}catch(_){}} 
+ return{ok:true,periodo:periodo,creadas:creadas,existentes:existentes,vencidas:vencidas,notificaciones:notificaciones,suspendidos:suspendidos,bajas_programadas:bajasProgramadas,bajas:bajas,reactivados:reactivados};
 }
+
 function adminCobranza(p, token){
   requireAdmin_(token);
   p = p || {};
