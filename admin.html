@@ -433,7 +433,7 @@ function renderAdminVisitas(rows){
   $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
 }
 function renderAdminClientes(rows){
-  const headers = ['Código','DNI','Nombres','Tel','Email','Distrito','Plan','Prioridad','Condición','Cuota S/','Saldo S/','Estado','Alta','Acciones'];
+  const headers = ['Código','DNI','Nombres','Tel','Email','Distrito','Plan','Prioridad','Condición','Cuota S/','Saldo S/','Estado','Cobranza','Alta','Acciones'];
   if (!rows || !rows.length){ $('admin-tab-body').innerHTML = '<div class="loading">Sin clientes aún.</div>'; return; }
   let html = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
   rows.forEach(r=>{
@@ -455,7 +455,7 @@ function renderAdminClientes(rows){
       <td><select onchange="admRow('CLIENTES',${r.__row},'estado',this.value)">
         ${['ACTIVO','INSTALADO','INSTALADA','APROBADO','APROBADA','PENDIENTE','SUSPENDIDO','CORTADO','BAJA_SOLICITADA'].map(o=>'<option '+(String(d.estado).toUpperCase()===o?'selected':'')+'>'+o+'</option>').join('')}
       </select></td>
-      <td>${esc(String(d.fecha_alta).slice(0,10))}</td>
+      <td>${esc(d.cobranza_estado||'AL_DIA')}</td><td>${esc(String(d.fecha_alta).slice(0,10))}</td>
       <td class="row-actions"><button class="mini-btn" onclick="admWa(${jsq(d.telefono)},${jsq(d.nombres)})">WA</button><button class="mini-btn" onclick="verFacturasCliente(${jsq(d.cliente_id)},${jsq(d.nombres)})">Facturas</button></td></tr>`;
   });
   $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
@@ -573,7 +573,7 @@ function admSaldo(cliente_id, nombre, actual){
 function renderAdminMora(data){
   S.admMoraData = data;
   const body = $('admin-tab-body');
-  const ktop = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">'
+  const ktop = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">'+\n    '<div style="width:100%;padding:12px 14px;background:var(--card-2);border:1px solid var(--line);border-radius:12px;font-size:12px;color:var(--muted)"><b style="color:var(--ink)">Flujo automático:</b> vencimiento → gracia → mora → suspensión → aviso de baja → baja a los 50 días de suspensión. <button class="btn-admin" onclick="admCobranza()">▶ Ejecutar ahora</button></div>'
     +'<div style="background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:10px 16px"><b style="font-size:20px;color:var(--err)">'+(data?data.total:0)+'</b> <span style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase">Clientes en mora</span></div>'
     +'<div style="background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:10px 16px"><b style="font-size:20px;color:var(--warn)">S/ '+(data?data.deuda_total:0)+'</b> <span style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase">Deuda total</span></div>'
     +'<button class="btn-admin" onclick="admMoraClip()">📋 Copiar lista para WhatsApp</button>'
@@ -615,6 +615,15 @@ function verFacturasCliente(cid, nombre){
   S.factFilter = cid; S.factCliNombre = nombre;
   const btn = document.querySelector('.admin-tabs button[data-sec="FACTURAS"]');
   if (btn) setAdminTab(btn);
+}
+function admCobranza(){
+  if(!confirm('Ejecutar ahora la cobranza automática? Se actualizarán vencimientos, mora, suspensiones, avisos y reactivaciones según la configuración.')) return;
+  toast('Procesando cobranza…','ok');
+  api('adminCobranza',[{},S.auth]).then(r=>{
+    if(!r.ok){toast(r.error||'Error','err');return;}
+    window.alert('Cobranza ejecutada\\n\\nFacturas creadas: '+(r.creadas||0)+'\\nVencidas: '+(r.vencidas||0)+'\\nNotificaciones: '+(r.notificaciones||0)+'\\nSuspendidos: '+(r.suspendidos||0)+'\\nBajas programadas: '+(r.bajas_programadas||0)+'\\nBajas: '+(r.bajas||0)+'\\nReactivados: '+(r.reactivados||0));
+    loadAdmin(true);
+  });
 }
 function admConfirmFactura(fid){
   if (!confirm('¿Marcar la factura '+fid+' como PAGADA?')) return;
@@ -793,6 +802,12 @@ const WEB_FIELDS = [
   { k:'licencias', l:'Licencias' },
   { k:'zona_wifi_text', l:'Texto zonas WiFi', ta:true },
   { k:'factura_auto', l:'Factura automática al cliente (SI o NO)' },
+  { k:'dias_gracia', l:'Días de gracia antes de marcar mora' },
+  { k:'dias_suspension', l:'Días de mora antes de suspender' },
+  { k:'dias_aviso_baja', l:'Días suspendido antes del aviso de baja' },
+  { k:'dias_baja_mora', l:'Días suspendido antes de baja' },
+  { k:'tarifa_reactivacion', l:'Tarifa de reactivación (S/)' },
+  { k:'cobranza_automatica', l:'Cobranza automática (SI o NO)' },
   { k:'distritos', l:'Distritos (separados por coma)' },
   { k:'yape_telefono', l:'Yape - teléfono' },
   { k:'yape_nombre', l:'Yape - nombre' },
