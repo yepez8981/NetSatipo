@@ -229,7 +229,7 @@ td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-
 
 <script>
   /* ===== CONFIG: URL de tu Web App de Apps Script (backend/API) ===== */
-  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbytpf38y3a72EQmG25HUtbe6P0Jdh4fPM8WhptgnuUeQ8XWzYhvAkCh2ZAYrDM-actR/exec";
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbz-KcoKMzw85CGtdH4On76E70AL0aaCxkzEaXzv4EPAl1HJCLQbXRN0zy9LxT2o5_De/exec";
 
   function _api(fn, args){
     args = args || [];
@@ -840,6 +840,16 @@ function admBackup(){
     $('aj-msg').textContent='';
     toast('Backup creado: '+r.nombre,'ok');
     window.alert('Copia de seguridad creada:\n'+r.nombre+'\n\nUrl: '+r.url+'\n\nEn Drive: carpeta "NetSatipo_Backups"');
+  });
+}
+function admCobranza(){
+  if (!confirm('¿Ejecutar la cobranza automática del mes actual (crear facturas, marcar vencidas y enviar recordatorios)?')) return;
+  $('aj-msg').textContent = 'Ejecutando cobranza…';
+  api('adminCobranza', [{}, S.auth]).then(r=>{
+    $('aj-msg').textContent='';
+    if (!r.ok){ toast(r.error||'Error','err'); return; }
+    toast('Cobranza lista: '+r.creadas+' factura(s) nueva(s), '+r.recordatorios+' recordatorio(s).','ok');
+    loadAdmin(true);
   });
 }
 function admSaveAjustes(){

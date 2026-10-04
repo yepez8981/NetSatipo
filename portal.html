@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <script>
-  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbytpf38y3a72EQmG25HUtbe6P0Jdh4fPM8WhptgnuUeQ8XWzYhvAkCh2ZAYrDM-actR/exec";
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbz-KcoKMzw85CGtdH4On76E70AL0aaCxkzEaXzv4EPAl1HJCLQbXRN0zy9LxT2o5_De/exec";
   function _api(fn, args){
     args = args || [];
     const inGAS = !!(window.google && google.script && google.script.run);
@@ -20,6 +20,10 @@
           .__rpc(fn, args, null);
       });
     }
+    return _post(fn, args, 0);
+  }
+  const _delay = ms => new Promise(r=>setTimeout(r, ms));
+  function _post(fn, args, attempt){
     const ctrl = ('AbortController' in window) ? new AbortController() : null;
     const t = ctrl ? setTimeout(()=>ctrl.abort(), 120000) : null;
     return fetch(GAS_EXEC, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ fn: fn, args: args }), signal: ctrl ? ctrl.signal : undefined })
@@ -27,14 +31,19 @@
       .then(txt=>{
         const f = txt.trim().slice(0,1);
         if (f === '<' || /<\s*(!doctype|html)/i.test(txt.slice(0,120))){
-          return { ok:false, error:'El Web App no respondió JSON. Revisa en Apps Script: publica con "Ejecutar como: Yo" y "Quién tiene acceso: Cualquier usuario", y activa la versión más reciente.' };
+          if (attempt < 2) return _delay(1200).then(()=>_post(fn,args,attempt+1));
+          return { ok:false, error:'Estamos en mantenimiento. Vuelve a intentarlo en unos minutos.' };
         }
         try { return JSON.parse(txt); }
-        catch(err){ return { ok:false, error:'Respuesta no válida del servidor ('+String(err&&err.message||err)+')' }; }
+        catch(err){
+          if (attempt < 2) return _delay(1200).then(()=>_post(fn,args,attempt+1));
+          return { ok:false, error:'Ocurrió un problema inesperado. Intenta de nuevo en unos minutos.' };
+        }
       })
       .catch(err=>{
-        if (err && (err.name==='AbortError' || /abor/i.test(String(err&&err.message||err)))) return { ok:false, error:'El servidor tardó demasiado en responder. Reintenta en unos segundos.' };
-        return { ok:false, error:String(err&&err.message||err) };
+        if (attempt < 2) return _delay(1200).then(()=>_post(fn,args,attempt+1));
+        if (err && (err.name==='AbortError' || /abor/i.test(String(err&&err.message||err)))) return { ok:false, error:'El servicio tardó demasiado. Reintenta en unos segundos.' };
+        return { ok:false, error:'No pudimos conectarnos ahora. Revisa tu internet e intenta de nuevo.' };
       });
   }
   const __CACHE_TTL = 5*60*1000;
