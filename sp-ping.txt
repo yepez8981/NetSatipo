@@ -1,0 +1,1 @@
+NetSatipo - archivo de medicion de latencia (no borrar). Este archivo pequeno se usa para medir la latencia de tu conexion desde el navegador. No contiene informacion sensible. Satipo - Junin - Peru. 0123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.
