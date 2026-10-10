@@ -1,7 +1,7 @@
 # Auditoría de Seguridad y Hardening — NetSatipo (`security/hardening-v1`)
 
 Fecha: 2026-10-02 · Alcance: `Code.gs` + `index.html`/`portal.html`/`admin.html`/`tecnico.html`/`ventas.html`
-Base de datos: Sheet `1IyjENTHiG8uyF2jwH-Ub1u1C_Xz9Pn2rmjxD8MQ7Ex0` · API (deployment canónico): `AKfycbz-KcoKMzw85CGtdH4On76E70AL0aaCxkzEaXzv4EPAl1HJCLQbXRN0zy9LxT2o5_De/exec`
+Base de datos: Sheet `1IyjENTHiG8uyF2jwH-Ub1u1C_Xz9Pn2rmjxD8MQ7Ex0` · API (deployment canónico): `AKfycbzuMtRF2EQa6SGKu0ZWaMmuSIgN8q_eI75JvjJxupvgKog2Zh9uGX0S4SnbK7Hj0Hej/exec`
 
 ---
 
@@ -133,9 +133,9 @@ Registro/confirmación de pagos, saldos, facturación masiva y exportación CSV 
 
 ## 17. Pendientes / pasos pre-producción para el operador
 
-1. ✅ Hecho: el backend endurecido ya está publicado y activo en el deployment canónico `AKfycbz-KcoK…_De` (verificado: `ping` OK, helpers → `Acción no permitida`). Los 5 HTML ya apuntan a esa URL.
+1. ✅ Hecho: el backend (hardening + soporte DNI/CE + solicitud de cambio de WiFi) ya está publicado en el deployment canónico `AKfycbzuMtRF…Hej` (verificado: `ping` OK, helpers → `Acción no permitida`). Los 5 HTML apuntan a esa URL.
 2. Subir los 5 HTML (`index`/`portal`/`admin`/`tecnico`/`ventas` — ya con la URL nueva) a GitHub Pages junto con `mascota.png`, sitemap y robots.
-3. ⚠️ **Obligatorio:** borrar el deployment viejo `AKfycbytpf38y3a72EQmG25HUtbe6P0Jdh4fPM8WhptgnuUeQ8XWzYhvAkCh2ZAYrDM-actR/exec` (sigue corriendo el código vulnerable: `sesPut_` ejecutable). Dejar solo el canónico.
+3. ⚠️ **Obligatorio:** borrar los deployments anteriores para dejar solo el canónico: (a) el vulnerable `AKfycbytpf38y3a72EQmG25HUtbe6P0Jdh4fPM8WhptgnuUeQ8XWzYhvAkCh2ZAYrDM/exec` (corre el código viejo con `sesPut_` ejecutable) y (b) el canónico anterior ya superado `AKfycbz-KcoKMzw85CGtdH4On76E70AL0aaCxkzEaXzv4EPAl1HJCLQbXRN0zy9LxT2o5_De/exec`.
 4. Opcional: mover `notify_wa_token`/`notify_wa_url` a ScriptProperties (claves `cfg_notify_wa_token`/`cfg_notify_wa_url`) y verificar que los avisos WhatsApp sigan saliendo.
 5. Revisar la hoja CONFIG y, si quedara algún valor en texto plano de `admin_pass`/`tecnico_clave`/`ventas_clave`, dejarlo: la migración a hash ocurre sola en el primer login con la clave correcta (o con `fixConfig`).
 6. Instalar git localmente si se quiere materializar la rama `security/hardening-v1` (el equipo no tiene `git` en PATH; por eso el historial no se ha creado aún).

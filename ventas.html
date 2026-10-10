@@ -6,7 +6,7 @@
 <title>Panel de Ventas – NetSatipo</title>
 <meta name="robots" content="noindex,nofollow">
 <script>
-const GAS_EXEC = "https://script.google.com/macros/s/AKfycbz-KcoKMzw85CGtdH4On76E70AL0aaCxkzEaXzv4EPAl1HJCLQbXRN0zy9LxT2o5_De/exec";
+const GAS_EXEC = "https://script.google.com/macros/s/AKfycbzuMtRF2EQa6SGKu0ZWaMmuSIgN8q_eI75JvjJxupvgKog2Zh9uGX0S4SnbK7Hj0Hej/exec";
 function _api(fn, args){
   try{
     args = args || [];
@@ -39,50 +39,47 @@ async function api(fn, args){
 </script>
 <style>
 :root{
-  --pri:#050b1f; --pri-2:#0d2a55; --acc:#00a2ff; --acc-2:#2ee6ff;
-  --bg:#01030a; --bg-2:#070d1f; --card:#0a1128; --line:#1c2a4d;
-  --tx:#e8eefc; --muted:#8395c4; --ok:#22c55e; --err:#ef4444; --warn:#f59e0b;
+  --pri:#ffffff; --pri-2:#f4f8fb; --acc:#0ea5e9; --acc-2:#0284c7;
+  --bg:#f4f8fb; --bg-2:#ffffff; --card:#ffffff; --line:#e6edf2;
+  --tx:#24303c; --muted:#5c6b7a; --ok:#10b981; --err:#dc2626; --warn:#d97706;
   --r:14px;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:
-  radial-gradient(1000px 500px at 80% -10%,rgba(0,162,255,.14),transparent 60%),
-  radial-gradient(700px 400px at -10% 110%,rgba(46,230,255,.10),transparent 60%),var(--bg);
-  color:var(--tx);min-height:100vh}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
 .wrap{max-width:760px;margin:0 auto;padding:22px 18px 60px}
 a{color:var(--acc);text-decoration:none}
-.top-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:rgba(5,11,31,.75);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.top-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
 .top-bar .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-.top-bar .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc-2));box-shadow:0 0 12px var(--acc)}
+.top-bar .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc-2));box-shadow:0 0 12px rgba(14,165,233,.5)}
 .top-bar .links{display:flex;gap:14px;font-size:13px;align-items:center}
-.card{background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:var(--r);padding:22px;margin:20px 0}
-h1,h2,h3{margin:0 0 10px;letter-spacing:.3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin:20px 0;box-shadow:0 6px 22px rgba(18,48,80,.06)}
+h1,h2,h3{margin:0 0 10px;letter-spacing:.3px;color:#12202f}
 h2{font-size:20px}h3{font-size:15px}
 .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
-input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--tx);font-size:14px;outline:none}
-input:focus,select:focus{border-color:var(--acc)}
+input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--tx);font-size:14px;outline:none}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(14,165,233,.14)}
 label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
-.btn{cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--tx);padding:10px 14px;border-radius:10px;font-size:14px;font-family:inherit;transition:.15s}
-.btn:hover{border-color:var(--acc)}
-.btn.ok{background:linear-gradient(135deg,var(--acc),#0077ff);color:#fff;border:none;font-weight:600}
-.btn.gray{background:rgba(255,255,255,.08);border:none;color:var(--muted)}
+.btn{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--tx);padding:10px 14px;border-radius:10px;font-size:14px;font-family:inherit;transition:.15s}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn.ok{background:linear-gradient(135deg,var(--acc),#0b4d7d);color:#fff;border:none;font-weight:600}
+.btn.gray{background:#eef3f7;border:none;color:var(--muted)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .fld{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 @media(max-width:600px){.fld{grid-template-columns:1fr}}
-.tbl{width:100%;border-collapse:collapse;font-size:13px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.tbl th{text-align:left;padding:10px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);background:rgba(255,255,255,.04)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tbl th{text-align:left;padding:10px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--acc);background:#f4f8fb}
 .tbl td{padding:9px 12px;border-top:1px solid var(--line)}
 .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:800}
-.badge.PENDIENTE{background:rgba(245,158,11,.15);color:var(--warn)}
-.badge.APROBADA{background:rgba(34,197,94,.15);color:var(--ok)}
-.badge.INSTALADA{background:rgba(0,162,255,.15);color:var(--acc)}
-.badge.RECHAZADA,.badge.CANCELADA{background:rgba(239,68,68,.15);color:var(--err)}
+.badge.PENDIENTE{background:#fdf0dd;color:#8a5a08}
+.badge.APROBADA{background:#d9f6ec;color:#0b6b47}
+.badge.INSTALADA{background:#e6f5fd;color:#0b4d7d}
+.badge.RECHAZADA,.badge.CANCELADA{background:#fde9e9;color:#b91c1c}
 .msg{font-size:13px;margin-top:10px;min-height:16px}
 .ok-t{color:var(--ok)}.err-t{color:var(--err)}.hidden{display:none}
 .pulsing{animation:pulse 1.2s infinite}
 @keyframes pulse{50%{opacity:.45}}
 .loading{color:var(--muted);text-align:center;padding:40px}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0b1a3a;border:1px solid var(--line);color:var(--tx);padding:10px 18px;border-radius:10px;font-size:14px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#122e4a;border:1px solid var(--line);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;z-index:50;box-shadow:0 10px 30px rgba(18,48,80,.2)}
 </style>
 </head>
 <body>
@@ -109,7 +106,12 @@ label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-b
       <h3>➕ Registrar nuevo contrato</h3>
       <div class="fld">
         <div><label>Nombres y apellidos *</label><input id="v-nombres" placeholder="Ej: Juan Pérez"></div>
-        <div><label>DNI</label><input id="v-dni" maxlength="8" inputmode="numeric" placeholder="8 dígitos"></div>
+        <div><label>Tipo y N.º de documento</label>
+          <div style="display:flex;gap:6px">
+            <select id="v-tipodoc" style="max-width:130px" onchange="docTipoUI('v')"><option value="DNI">DNI</option><option value="CE">CE</option></select>
+            <input id="v-dni" maxlength="8" inputmode="numeric" placeholder="8 dígitos" style="flex:1">
+          </div>
+        </div>
       </div>
       <div class="fld">
         <div><label>Teléfono</label><input id="v-telefono" maxlength="9" inputmode="numeric" placeholder="9 dígitos"></div>
@@ -143,6 +145,8 @@ label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-b
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function docClean(v){ return String(v==null?'':v).toUpperCase().replace(/[^0-9A-Z]/g,''); }
+function docTipoUI(pre){ const sel=$(pre+'-tipodoc'), inp=$(pre+'-dni'); if(!sel||!inp) return; if(sel.value==='CE'){ inp.maxLength=12; inp.inputMode='text'; inp.placeholder='N.º de carnet';} else { inp.maxLength=8; inp.inputMode='numeric'; inp.placeholder='8 dígitos'; inp.value=inp.value.replace(/\D/g,''); } }
 let V = { token:null, planes:[], busy:false };
 function toast(msg, tipo){
   const d = document.createElement('div');
@@ -191,11 +195,12 @@ async function cargarPlanes(){
 }
 function limpiarForm(){
   ['v-nombres','v-dni','v-telefono','v-email','v-direccion','v-distrito','v-notas'].forEach(id=>$(id).value='');
+  if ($('v-tipodoc')) $('v-tipodoc').selectedIndex = 0;
   $('v-pago').selectedIndex=0;
 }
 async function ventasRegistrar(){
   const p = {
-    nombres: $('v-nombres').value.trim(), dni: $('v-dni').value.trim(), telefono: $('v-telefono').value.trim(),
+    nombres: $('v-nombres').value.trim(), dni: docClean($('v-dni').value), tipo_doc: $('v-tipodoc').value, telefono: $('v-telefono').value.trim(),
     email: $('v-email').value.trim(), direccion: $('v-direccion').value.trim(), distrito: $('v-distrito').value.trim(),
     plan_id: $('v-plan').value, pago_metodo: $('v-pago').value, notas: $('v-notas').value.trim()
   };

@@ -9,23 +9,21 @@
 <title>Panel de administración</title>
 <style>
 :root{
-  --pri:#050b1f; --pri-2:#0d2a55; --acc:#00a2ff; --acc-2:#2ee6ff; --acc-3:#4db8ff; --acc-ink:#f4fbff;
-  --bg:#01030a; --bg-2:#070d1f; --card:rgba(255,255,255,.05); --card-2:rgba(255,255,255,.03);
-  --glass:rgba(255,255,255,.06); --ink:#d9e7fa; --head:#ffffff; --muted:#9fb4cf; --line:rgba(148,163,184,.16);
-  --ok:#34d399; --err:#f87171; --glow:rgba(0,162,255,.5); --radius:18px;
-  --shadow:0 10px 30px rgba(0,0,0,.35); --shadow-lg:0 24px 60px rgba(0,0,0,.5);
+  --pri:#ffffff; --pri-2:#f4f8fb; --acc:#0ea5e9; --acc-2:#0284c7; --acc-3:#0ea5e9; --acc-ink:#ffffff;
+  --bg:#f4f8fb; --bg-2:#ffffff; --card:#ffffff; --card-2:#ffffff;
+  --glass:#ffffff; --ink:#24303c; --head:#12202f; --muted:#5c6b7a; --line:#e6edf2;
+  --ok:#10b981; --err:#dc2626; --glow:rgba(14,165,233,.35); --radius:18px;
+  --shadow:0 6px 22px rgba(18,48,80,.08); --shadow-lg:0 16px 44px rgba(18,48,80,.14);
 }
-body[data-theme="moderno"]{--pri:#030713;--pri-2:#0a1a38;--acc:#0099ff;--acc-2:#33e1ff;--acc-3:#66b8ff;--acc-ink:#f2fbff;--glow:rgba(0,153,255,.5)}
-body[data-theme="corporativo"]{--pri:#081327;--pri-2:#0f2b57;--acc:#ffd166;--acc-2:#ffc300;--acc-3:#2ea8ff;--acc-ink:#241a00;--glow:rgba(255,209,102,.4)}
-body[data-theme="naturaleza"]{--pri:#031a22;--pri-2:#073a4e;--acc:#00d9ff;--acc-2:#57f2c2;--acc-3:#00b8ff;--acc-ink:#032129;--glow:rgba(0,217,255,.5)}
+body[data-theme="moderno"]{--acc:#0ea5e9;--acc-2:#0284c7;--acc-3:#0ea5e9}
+body[data-theme="corporativo"]{--acc:#f59e0b;--acc-2:#d97706;--acc-3:#0ea5e9;--acc-ink:#3a2a00}
+body[data-theme="naturaleza"]{--acc:#10b981;--acc-2:#0b6b47;--acc-3:#0ea5e9}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{
-  color-scheme:dark;
+  color-scheme:light;
   font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
-  background:radial-gradient(1200px 600px at 85% -10%,rgba(0,153,255,.16),transparent 60%),
-    radial-gradient(900px 500px at -10% 30%,rgba(46,230,255,.09),transparent 55%),
-    var(--bg);
+  background:var(--bg);
   color:var(--ink);line-height:1.55;min-height:100vh;
 }
 button{font-family:inherit;cursor:pointer}
@@ -33,13 +31,13 @@ input,select,textarea{font-family:inherit;font-size:15px}
 a{color:var(--acc-2)}
 ::selection{background:var(--acc);color:var(--acc-ink)}
 ::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-track{background:#05070d}
-::-webkit-scrollbar-thumb{background:#1c2b47;border-radius:99px}
+::-webkit-scrollbar-track{background:#eef3f7}
+::-webkit-scrollbar-thumb{background:#c7d5e0;border-radius:99px}
 ::-webkit-scrollbar-thumb:hover{background:var(--acc-2)}
 .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
 
 /* BARRA SUPERIOR */
-.adm-bar{position:sticky;top:0;z-index:50;background:rgba(4,6,13,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.adm-bar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .adm-bar .ab-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .ab-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--head)}
 .ab-brand .dot{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc-2));display:grid;place-items:center;color:var(--acc-ink);font-size:15px;box-shadow:0 0 18px var(--glow)}
@@ -64,7 +62,7 @@ a{color:var(--acc-2)}
 #admin-tab-body .field-row label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
 #admin-tab-body .field-row input:not([type=checkbox]),#admin-tab-body .field-row select{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:var(--ink);font-size:14px}
 #admin-tab-body .field-row input:focus,#admin-tab-body .field-row select:focus{outline:none;border-color:var(--acc-2);box-shadow:0 0 0 3px rgba(0,153,255,.2)}
-.btn-admin.ok{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.4);color:#86efac}
+.btn-admin.ok{background:#d9f6ec;border-color:#b7efdb;color:#0b6b47}
 
 /* ADMIN */
 .admin-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:26px 0 22px}
@@ -81,7 +79,7 @@ a{color:var(--acc-2)}
 .admin-tabs button:hover{border-color:var(--acc-2);color:var(--ink)}
 .admin-tabs button.on{background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--acc-ink);border-color:transparent}
 .tbl{width:100%;border-collapse:collapse;background:var(--card-2);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:13.5px}
-.tbl th{background:rgba(255,255,255,.05);text-align:left;padding:11px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--acc);white-space:nowrap}
+.tbl th{background:#f4f8fb;text-align:left;padding:11px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--acc);white-space:nowrap}
 .tbl td{padding:10px 12px;border-top:1px solid var(--line);color:var(--ink);vertical-align:top}
 .tbl .mono{font-family:Consolas,monospace;font-size:12.5px;color:var(--acc)}
 td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-radius:8px;background:var(--card-2);border:1px solid var(--line);color:var(--ink)}
@@ -89,8 +87,8 @@ td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-
 .row-actions{display:flex;gap:6px;flex-wrap:wrap}
 .mini-btn{background:var(--glass);border:1px solid var(--line);padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;color:var(--ink);transition:.2s}
 .mini-btn:hover{border-color:var(--acc-2);color:var(--acc)}
-.mini-btn.danger{color:var(--err);border-color:rgba(248,113,113,.3)}
-.mini-btn.ok{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.4);color:#86efac}
+.mini-btn.danger{color:var(--err);border-color:#f4c6c6}
+.mini-btn.ok{background:#d9f6ec;border-color:#b7efdb;color:#0b6b47}
 .export-bar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .export-bar button{background:var(--card-2);border:1px solid var(--line);padding:8px 14px;border-radius:99px;font-weight:700;font-size:12.5px;color:var(--head);transition:.2s}
 .export-bar button:hover{border-color:var(--acc-2);color:var(--acc)}
@@ -174,11 +172,16 @@ td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-
       <button class="btn-admin" onclick="window.open('tecnico.html','_blank')">🛠 Panel técnico</button>
       <button class="btn-admin" onclick="window.open('ventas.html','_blank')">💼 Panel ventas</button>
     </div>
-    <div id="alta-form" style="display:none;background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px">
+    <div id="alta-form" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px">
       <h3 style="margin-bottom:14px"><span id="alta-title">Nuevo contrato</span></h3>
       <div class="field-row">
         <div><label>Nombres y apellidos *</label><input id="alta-nombres" placeholder="Ej: Juan Pérez"></div>
-        <div><label>DNI</label><input id="alta-dni" maxlength="8" inputmode="numeric" placeholder="8 dígitos"></div>
+        <div><label>Tipo y N.º de documento</label>
+          <div style="display:flex;gap:6px">
+            <select id="alta-tipodoc" style="max-width:130px" onchange="docTipoUI('alta')"><option value="DNI">DNI</option><option value="CE">CE</option></select>
+            <input id="alta-dni" maxlength="8" inputmode="numeric" placeholder="8 dígitos" style="flex:1">
+          </div>
+        </div>
       </div>
       <div class="field-row">
         <div><label>Teléfono</label><input id="alta-telefono" maxlength="9" inputmode="numeric" placeholder="9 dígitos"></div>
@@ -202,7 +205,7 @@ td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-
         <span id="alta-msg" style="font-size:12px;color:var(--muted);align-self:center"></span>
       </div>
     </div>
-    <div id="factura-form" style="display:none;background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px">
+    <div id="factura-form" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px">
       <h3 style="margin-bottom:14px">Nueva factura</h3>
       <div class="field-row">
         <div><label>Cliente</label><select id="fact-cliente" onchange="onFactCliente()"><option value="">Selecciona un cliente…</option></select></div>
@@ -229,7 +232,7 @@ td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-
 
 <script>
   /* ===== CONFIG: URL de tu Web App de Apps Script (backend/API) ===== */
-  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbz-KcoKMzw85CGtdH4On76E70AL0aaCxkzEaXzv4EPAl1HJCLQbXRN0zy9LxT2o5_De/exec";
+  const GAS_EXEC = "https://script.google.com/macros/s/AKfycbzuMtRF2EQa6SGKu0ZWaMmuSIgN8q_eI75JvjJxupvgKog2Zh9uGX0S4SnbK7Hj0Hej/exec";
 
   function _api(fn, args){
     args = args || [];
@@ -269,6 +272,8 @@ td select,td input.td{width:auto;margin:0;padding:6px 8px;font-size:13px;border-
 let S = { cfg:{}, auth:null, admTab:'SOLICITUDES', admCache:{}, altaModo:'SOLICITUD' };
 const $ = id => document.getElementById(id);
 const esc = (s)=> String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function docClean(v){ return String(v==null?'':v).toUpperCase().replace(/[^0-9A-Z]/g,''); }
+function docTipoUI(pre){ const sel=$(pre+'-tipodoc'), inp=$(pre+'-dni'); if(!sel||!inp) return; if(sel.value==='CE'){ inp.maxLength=12; inp.inputMode='text'; inp.placeholder='N.º de carnet';} else { inp.maxLength=8; inp.inputMode='numeric'; inp.placeholder='8 dígitos'; inp.value=inp.value.replace(/\D/g,''); } }
 const jsq = (v)=> esc(JSON.stringify(v==null?'':v));
 const badge = (s)=>{ const k=String(s||'').toUpperCase(); return '<span class="badge '+esc(k)+'">'+esc(s||'—')+'</span>'; };
 
@@ -655,23 +660,32 @@ function renderAdminPagos(rows){
   $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
 }
 function renderAdminPlanes(rows){
-  const headers = ['ID','Nombre','Velocidad','Precio S/','Período','Extras','Recom','Activo','Orden','Acciones'];
+  const headers = ['ID','Nombre','Velocidad','Precio S/','Período','Categoría','Modalidad','Extras','Recom','Activo','Orden','Acciones'];
   if (!rows || !rows.length){ $('admin-tab-body').innerHTML = '<div class="loading">Sin planes.</div>'; return; }
+  const cats = ['FIBRA','MOVIL'];
+  const mods = ['','PREPAGO','POSPAGO'];
+  const per = ['MENSUAL','TRIMESTRAL','SEMESTRAL','ANUAL','UNICO'];
   let html = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
   rows.forEach(r=>{
     const d = r.data;
     const sel = d.activo===true || String(d.activo).toUpperCase()==='TRUE' ? 'checked' : '';
     const recom = d.recomendado===true || String(d.recomendado).toUpperCase()==='TRUE' ? 'checked' : '';
+    const cat = String(d.categoria||'FIBRA').toUpperCase();
+    const mod = String(d.modalidad||'').toUpperCase();
+    const catOpts = cats.map(o=>'<option '+(cat===o?'selected':'')+' value="'+o+'">'+o+'</option>').join('');
+    const modOpts = mods.map(o=>'<option '+(mod===o?'selected':'')+' value="'+o+'">'+(o||'—')+'</option>').join('');
     html += `<tr>
       <td class="mono">${esc(d.plan_id)}</td>
       <td><input class="td" style="width:110px" value="${esc(d.nombre)}" onchange="admPlan('${esc(d.plan_id)}','nombre',this.value)"></td>
       <td><input class="td" style="width:80px" value="${esc(d.velocidad)}" onchange="admPlan('${esc(d.plan_id)}','velocidad',this.value)"></td>
-      <td><input class="td" style="width:70px" type="number" value="${esc(d.precio)}" onchange="admPlan('${esc(d.plan_id)}','precio',this.value)"></td>
-      <td><select class="td" onchange="admPlan('${esc(d.plan_id)}','periodicidad',this.value)">${['MENSUAL','TRIMESTRAL','SEMESTRAL','ANUAL'].map(o=>'<option '+(String(d.periodicidad).toUpperCase()===o?'selected':'')+'>'+o+'</option>').join('')}</select></td>
-      <td><input class="td" style="width:140px" value="${esc(d.extras)}" onchange="admPlan('${esc(d.plan_id)}','extras',this.value)" placeholder="A|B|C"></td>
+      <td><input class="td" style="width:64px" type="number" value="${esc(d.precio)}" onchange="admPlan('${esc(d.plan_id)}','precio',this.value)"></td>
+      <td><select class="td" onchange="admPlan('${esc(d.plan_id)}','periodicidad',this.value)">${per.map(o=>'<option '+(String(d.periodicidad).toUpperCase()===o?'selected':'')+'>'+o+'</option>').join('')}</select></td>
+      <td><select class="td" onchange="admPlan('${esc(d.plan_id)}','categoria',this.value)">${catOpts}</select></td>
+      <td><select class="td" onchange="admPlan('${esc(d.plan_id)}','modalidad',this.value)">${modOpts}</select></td>
+      <td><input class="td" style="width:130px" value="${esc(d.extras)}" onchange="admPlan('${esc(d.plan_id)}','extras',this.value)" placeholder="A|B|C"></td>
       <td><input type="checkbox" ${recom} onchange="admPlan('${esc(d.plan_id)}','recomendado',this.checked)"></td>
       <td><input type="checkbox" ${sel} onchange="admPlan('${esc(d.plan_id)}','activo',this.checked)"></td>
-      <td><input class="td" style="width:50px" type="number" value="${esc(d.orden)}" onchange="admPlan('${esc(d.plan_id)}','orden',this.value)"></td>
+      <td><input class="td" style="width:46px" type="number" value="${esc(d.orden)}" onchange="admPlan('${esc(d.plan_id)}','orden',this.value)"></td>
       <td class="row-actions"><button class="mini-btn danger" onclick="admDelPlan('${esc(d.plan_id)}')">Eliminar</button></td></tr>`;
   });
   $('admin-tab-body').innerHTML = html + '</tbody></table></div>';
@@ -713,7 +727,7 @@ function admNewPagoRow(){
 function onExportPlanNew(){
   const n = window.prompt('Nombre del nuevo plan:','Hogar');
   if (!n || !n.trim()) return;
-  api('adminSavePlan', [{ nombre:n.trim(), velocidad:'50 megas', precio:79, periodicidad:'MENSUAL', extras:'WiFi|Router|Soporte todo el día', recomendado:false, activo:true, orden:99 }, S.auth]).then(r=>{
+  api('adminSavePlan', [{ nombre:n.trim(), velocidad:'50 megas', precio:79, periodicidad:'MENSUAL', categoria:'FIBRA', modalidad:'', extras:'WiFi|Router|Soporte todo el día', recomendado:false, activo:true, orden:99 }, S.auth]).then(r=>{
     if (!r.ok) toast(r.error||'Error','err'); else { toast('Plan creado','ok'); loadAdmin(true); }
   });
 }
@@ -741,7 +755,7 @@ async function cargarPlanesAlta(){
 function admNuevoContrato(){
   const tipo = S.altaModo==='CLIENTE' ? 'CLIENTE' : 'SOLICITUD';
   const p = {
-    tipo, nombres: $('alta-nombres').value.trim(), dni: $('alta-dni').value.trim(),
+    tipo, nombres: $('alta-nombres').value.trim(), dni: docClean($('alta-dni').value), tipo_doc: $('alta-tipodoc').value,
     telefono: $('alta-telefono').value.trim(), email: $('alta-email').value.trim(),
     direccion: $('alta-direccion').value.trim(), distrito: $('alta-distrito').value.trim(),
     plan_id: $('alta-plan').value, pago_metodo: $('alta-pago').value,
@@ -822,7 +836,7 @@ function renderAdminAjustes(r){
         : '<input id="aj-'+f.k+'" value="'+val+'">');
     return '<div><label>'+esc(f.l)+'</label>'+inp+'</div>';
   };
-  b.innerHTML = '<div style="background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:14px;padding:22px">'+
+  b.innerHTML = '<div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">'+
     '<h3 style="margin-bottom:6px">Ajustes de la web</h3>'+
     '<p style="font-size:12.5px;color:var(--muted);margin-bottom:18px">Estos valores se reflejan de inmediato en tu página, portal y paneles. Los campos de clave vacíos se mantienen sin cambios.</p>'+
     '<div class="field-row" style="grid-template-columns:1fr 1fr;display:grid">'+WEB_FIELDS.map(fld).join('')+'</div>'+

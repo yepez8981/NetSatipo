@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://yepez8981.github.io/NetSatipo/sitemap.xml
